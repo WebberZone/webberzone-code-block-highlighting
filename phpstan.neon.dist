@@ -1,0 +1,16 @@
+includes:
+	- phpstan-baseline.neon
+parameters:
+    level: 5
+    paths:
+        - webberzone-code-block-highlighting.php
+        - uninstall.php
+        - includes/
+    scanFiles:
+        - webberzone-code-block-highlighting.php
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+    scanDirectories:
+        - includes
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    ignoreErrors:

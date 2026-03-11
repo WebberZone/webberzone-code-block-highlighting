@@ -1,0 +1,40 @@
+{
+	"name": "@webberzone/webberzone-code-block-highlighting",
+	"version": "1.0.0",
+	"description": "Extends the Gutenberg Code block with syntax highlighting powered by Prism.js.",
+	"author": "WebberZone",
+	"license": "GPL-2.0-or-later",
+	"main": "src/index.js",
+	"scripts": {
+		"build": "wp-scripts build src/index.js src/frontend.js",
+		"build:assets": "node build-assets.js",
+		"start": "wp-scripts start src/index.js src/frontend.js",
+		"format": "wp-scripts format ./src/",
+		"lint:js": "wp-scripts lint-js ./src/",
+		"lint:css": "wp-scripts lint-style ./src/",
+		"packages-update": "wp-scripts packages-update",
+		"zip": "wp-scripts plugin-zip"
+	},
+	"files": [
+		"assets",
+		"build",
+		"includes",
+		"languages",
+		"webberzone-code-block-highlighting.php",
+		"index.php",
+		"uninstaller.php",
+		"readme.txt"
+	],
+	"dependencies": {
+		"prism-themes": "^1.9.0",
+		"prismjs": "^1.30.0"
+	},
+	"devDependencies": {
+		"@wordpress/prettier-config": "^4.41.0",
+		"@wordpress/scripts": "^31",
+		"clean-css-cli": "^5.6.3",
+		"rtlcss": "^4.3.0",
+		"terser": "^5.46.0"
+	},
+	"prettier": "@wordpress/prettier-config"
+}
