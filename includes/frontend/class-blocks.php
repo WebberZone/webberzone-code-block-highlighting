@@ -36,7 +36,7 @@ class Blocks {
 	 * @since 1.0.0
 	 */
 	public function enqueue_editor_assets(): void {
-		$asset_file = WZ_CBH_PLUGIN_DIR . 'build/index.asset.php';
+		$asset_file = WZ_CBH_PLUGIN_DIR . 'includes/build/index.asset.php';
 
 		if ( ! file_exists( $asset_file ) ) {
 			return;
@@ -46,17 +46,17 @@ class Blocks {
 
 		wp_enqueue_script(
 			'wz-cbh-editor',
-			WZ_CBH_PLUGIN_URL . 'build/index.js',
+			WZ_CBH_PLUGIN_URL . 'includes/build/index.js',
 			$asset['dependencies'],
 			$asset['version'],
 			true
 		);
 
-		$editor_css = WZ_CBH_PLUGIN_DIR . 'build/index.css';
+		$editor_css = WZ_CBH_PLUGIN_DIR . 'includes/build/index.css';
 		if ( file_exists( $editor_css ) ) {
 			wp_enqueue_style(
 				'wz-cbh-editor-style',
-				WZ_CBH_PLUGIN_URL . 'build/index.css',
+				WZ_CBH_PLUGIN_URL . 'includes/build/index.css',
 				array(),
 				$asset['version']
 			);

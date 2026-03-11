@@ -15,16 +15,13 @@ defined( 'ABSPATH' ) || exit;
  * @param string $class_name The name of the class to load.
  */
 function autoload( $class_name ) {
-	$namespace         = __NAMESPACE__;
-	$classes_subfolder = 'includes';
+	$namespace = __NAMESPACE__;
 
 	if ( class_exists( $class_name, false ) ) {
 		return;
 	}
 
 	if ( false !== strpos( $class_name, $namespace ) ) {
-		$classes_dir = realpath( dirname( __DIR__ ) ) . DIRECTORY_SEPARATOR . $classes_subfolder . DIRECTORY_SEPARATOR;
-
 		// Project namespace.
 		$project_namespace = $namespace . '\\';
 		$length            = strlen( $project_namespace );
@@ -39,7 +36,7 @@ function autoload( $class_name ) {
 
 		// Join everything back together and add the file extension.
 		$class_file = implode( DIRECTORY_SEPARATOR, $class_parts ) . '.php';
-		$location   = $classes_dir . $class_file;
+		$location   = __DIR__ . DIRECTORY_SEPARATOR . $class_file;
 
 		if ( ! is_file( $location ) ) {
 			return;

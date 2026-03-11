@@ -6,9 +6,9 @@
 	"license": "GPL-2.0-or-later",
 	"main": "includes/blocks/js/index.js",
 	"scripts": {
-		"build": "wp-scripts build includes/blocks/js/index.js includes/frontend/js/frontend.js",
+		"build": "wp-scripts build includes/blocks/js/index.js includes/frontend/js/frontend.js --output-path ./includes/build",
 		"build:assets": "node build-assets.js",
-		"start": "wp-scripts start includes/blocks/js/index.js includes/frontend/js/frontend.js",
+		"start": "wp-scripts start includes/blocks/js/index.js includes/frontend/js/frontend.js --output-path ./includes/build",
 		"format": "wp-scripts format ./includes/",
 		"lint:js": "wp-scripts lint-js ./includes/",
 		"lint:css": "wp-scripts lint-style ./includes/",
@@ -17,7 +17,6 @@
 	},
 	"files": [
 		"assets",
-		"build",
 		"includes",
 		"languages",
 		"webberzone-code-block-highlighting.php",

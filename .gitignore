@@ -1,6 +1,6 @@
 /vendor/
 /node_modules/
-/build/
+/includes/build/
 /phpcompat-tools/
 
 # Lock files

@@ -83,6 +83,7 @@ class Settings {
 	 */
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'initialise_settings' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_language_data' ), 20 );
 	}
 
 	/**
@@ -182,16 +183,13 @@ class Settings {
 					'options' => self::$color_schemes,
 				),
 				array(
-					'id'          => 'default-lang',
-					'name'        => __( 'Default Language', 'webberzone-code-block-highlighting' ),
-					'desc'        => sprintf(
-						/* translators: %s: link to Prism supported languages list */
-						__( 'Automatically set this language when a code block is inserted. Use a language alias from the %s. Leave blank to disable.', 'webberzone-code-block-highlighting' ),
-						'<a href="https://prismjs.com/#supported-languages" target="_blank" rel="noopener noreferrer">' . __( 'supported languages list', 'webberzone-code-block-highlighting' ) . '</a>'
-					),
-					'type'        => 'text',
-					'default'     => '',
-					'placeholder' => 'javascript',
+					'id'               => 'default-lang',
+					'name'             => __( 'Default Language', 'webberzone-code-block-highlighting' ),
+					'desc'             => __( 'Automatically set this language when a code block is inserted. Leave blank to disable.', 'webberzone-code-block-highlighting' ),
+					'type'             => 'csv',
+					'default'          => '',
+					'field_class'      => 'ts_autocomplete',
+					'field_attributes' => self::get_language_field_attributes(),
 				),
 			),
 		);
@@ -228,6 +226,56 @@ class Settings {
 	}
 
 	/**
+	 * Get field attributes for the Tom Select language picker.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return array
+	 */
+	public static function get_language_field_attributes(): array {
+		return array(
+			'data-wp-prefix'   => strtoupper( self::$prefix ),
+			'data-wp-endpoint' => 'prism_languages',
+			'data-ts-config'   => wp_json_encode(
+				array(
+					'maxItems' => 1,
+					'plugins'  => array( 'dropdown_input', 'clear_button' ),
+					'render'   => (object) array(),
+				)
+			),
+		);
+	}
+
+	/**
+	 * Inject Prism language list into WZTomSelectSettings for the settings page autocomplete.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $hook Current admin page hook.
+	 */
+	public function enqueue_language_data( string $hook ): void {
+		if ( ! isset( $this->settings_api ) || $hook !== $this->settings_api->settings_page ) {
+			return;
+		}
+
+		$languages = \WebberZone\Code_Block_Highlighting\Frontend\Blocks::get_languages();
+		$options   = array();
+
+		foreach ( $languages as $slug => $label ) {
+			$options[] = array(
+				'id'   => $slug,
+				'name' => $label,
+			);
+		}
+
+		wp_add_inline_script(
+			'wz-' . self::$prefix . '-tom-select-init',
+			'window.WZTomSelectSettings = window.WZTomSelectSettings || {}; window.WZTomSelectSettings.prism_languages = ' . wp_json_encode( $options ) . ';',
+			'before'
+		);
+	}
+
+	/**
 	 * Get the URL (or filesystem path) to the active color scheme CSS file.
 	 *
 	 * Falls back to the default A11y Dark theme if the chosen file does not exist.
@@ -239,10 +287,10 @@ class Settings {
 	 */
 	public static function get_color_scheme_css( bool $return_path = false ): string {
 		$option   = wz_cbh_get_option( 'color-scheme', 'prism-a11y-dark' );
-		$rel_path = "assets/{$option}.css";
+		$rel_path = "includes/assets/{$option}.css";
 
 		if ( ! file_exists( WZ_CBH_PLUGIN_DIR . $rel_path ) ) {
-			$rel_path = 'assets/prism-a11y-dark.css';
+			$rel_path = 'includes/assets/prism-a11y-dark.css';
 		}
 
 		if ( $return_path ) {
