@@ -67,8 +67,8 @@ Selected language is stored in the block comment:
 ### JS build
 
 Two entry points, both built by `wp-scripts build`:
-- `src/index.js` → `build/index.js` + `build/index.asset.php` — editor block filters
-- `src/frontend.js` → `build/frontend.js` + `build/frontend.css` + `build/frontend.asset.php` — Prism core, all language grammars, line-numbers plugin (CSS extracted by webpack)
+- `includes/blocks/js/index.js` → `build/index.js` + `build/index.asset.php` — editor block filters
+- `includes/frontend/js/frontend.js` → `build/frontend.js` + `build/frontend.css` + `build/frontend.asset.php` — Prism core, all language grammars, line-numbers plugin (CSS extracted by webpack)
 
 Always `require` the `.asset.php` manifest in PHP before calling `wp_enqueue_script` — it provides the correct dependency array and cache-busting version.
 
