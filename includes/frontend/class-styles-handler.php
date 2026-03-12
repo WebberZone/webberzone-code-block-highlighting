@@ -67,7 +67,7 @@ class Styles_Handler {
 			}
 		}
 
-		$asset_file = WZ_CBH_PLUGIN_DIR . 'includes/build/frontend.asset.php';
+		$asset_file = WZ_CBH_PLUGIN_DIR . 'includes/blocks/build/frontend.asset.php';
 
 		if ( ! file_exists( $asset_file ) ) {
 			return;
@@ -86,7 +86,7 @@ class Styles_Handler {
 		// Line-numbers plugin CSS (extracted from src/frontend.js by webpack).
 		wp_enqueue_style(
 			'wz-cbh-prism-css',
-			WZ_CBH_PLUGIN_URL . 'includes/build/frontend.css',
+			WZ_CBH_PLUGIN_URL . 'includes/blocks/build/frontend.css',
 			array(),
 			$asset['version']
 		);
@@ -94,7 +94,7 @@ class Styles_Handler {
 		// Prism core + all language grammars + plugins, bundled by webpack.
 		wp_enqueue_script(
 			'wz-cbh-prism-js',
-			WZ_CBH_PLUGIN_URL . 'includes/build/frontend.js',
+			WZ_CBH_PLUGIN_URL . 'includes/blocks/build/frontend.js',
 			$asset['dependencies'],
 			$asset['version'],
 			true

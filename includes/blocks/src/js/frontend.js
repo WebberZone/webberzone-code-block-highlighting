@@ -27,7 +27,8 @@ import 'prismjs/components/prism-csharp'; // depends: clike
 import 'prismjs/components/prism-objectivec'; // depends: c
 
 // ── PHP ───────────────────────────────────────────────────────────────────────
-import 'prismjs/components/prism-php'; // depends: markup, clike
+import 'prismjs/components/prism-markup-templating'; // depends: markup - required by php
+import 'prismjs/components/prism-php'; // depends: markup, clike, markup-templating
 
 // ── CSS extensions ────────────────────────────────────────────────────────────
 import 'prismjs/components/prism-sass'; // depends: css
