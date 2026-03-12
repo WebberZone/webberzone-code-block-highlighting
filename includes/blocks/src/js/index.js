@@ -80,7 +80,10 @@ const edit = ({ attributes, setAttributes }) => {
 	};
 
 	const blockProps = useBlockProps({
-		className: language ? `language-${language}` : undefined,
+		className:
+			[language ? `language-${language}` : '', wordWrap ? 'word-wrap' : '']
+				.filter(Boolean)
+				.join(' ') || undefined,
 	});
 
 	return (

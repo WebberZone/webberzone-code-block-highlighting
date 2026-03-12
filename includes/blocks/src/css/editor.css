@@ -22,6 +22,12 @@ pre.wp-block-code .rich-text {
 	white-space: pre;
 }
 
+pre.wp-block-code.word-wrap code,
+pre.wp-block-code.word-wrap .rich-text {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
 .editor-styles-wrapper .wp-block-code {
 	margin-top: 0.5rem !important;
 }
