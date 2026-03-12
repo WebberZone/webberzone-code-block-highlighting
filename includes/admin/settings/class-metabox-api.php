@@ -2,7 +2,7 @@
 /**
  * Class to display and save a Metabox.
  *
- * @package WebberZone\Code_Block_Highlighting
+ * @package WebberZone\Better_External_Links
  */
 
 namespace WebberZone\Code_Block_Highlighting\Admin\Settings;

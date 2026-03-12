@@ -1,0 +1,61 @@
+/**
+ * Editor styles for WebberZone Code Block Highlighting.
+ */
+
+pre.wp-block-code {
+	font-family: Hack, 'Fira Code', Consolas, Menlo, Monaco, 'Andale Mono',
+		'Lucida Console', 'Lucida Sans Typewriter', 'DejaVu Sans Mono',
+		'Bitstream Vera Sans Mono', 'Liberation Mono', 'Nimbus Mono L',
+		'Courier New', Courier, monospace;
+	padding: 1em;
+	margin-top: 0.5rem !important;
+	margin-bottom: 1rem;
+	overflow: auto;
+	border-radius: 0.3em;
+}
+
+pre.wp-block-code code,
+pre.wp-block-code .rich-text {
+	padding-left: 0;
+	border: none;
+	overflow-x: initial;
+	white-space: pre;
+}
+
+.editor-styles-wrapper .wp-block-code {
+	margin-top: 0.5rem !important;
+}
+
+.wz-cbh-block__labels {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+		Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+	font-size: 0.85rem;
+	margin-top: 1rem;
+	margin-bottom: 0;
+	text-align: left;
+}
+
+.wz-cbh-block__labels span {
+	padding: 8px;
+	margin: 0 8px 0 0;
+	color: #333;
+	background-color: #eee;
+}
+
+.editor-styles-wrapper pre.wp-block-code code[contenteditable='true'] {
+	display: block;
+	min-height: 1.5em;
+	outline: none;
+}
+
+.wz-cbh-save-default {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+}
+
+.wz-cbh-save-default__notice {
+	font-size: 0.85em;
+	color: #1e7e34;
+}

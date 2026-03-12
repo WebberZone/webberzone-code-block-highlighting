@@ -8,6 +8,7 @@
 	"scripts": {
 		"build": "wp-scripts build includes/blocks/js/index.js includes/frontend/js/frontend.js --output-path ./includes/build",
 		"build:assets": "node build-assets.js",
+		"build:prism": "node build-prism.js",
 		"start": "wp-scripts start includes/blocks/js/index.js includes/frontend/js/frontend.js --output-path ./includes/build",
 		"format": "wp-scripts format ./includes/",
 		"lint:js": "wp-scripts lint-js ./includes/",
@@ -16,7 +17,6 @@
 		"zip": "wp-scripts plugin-zip"
 	},
 	"files": [
-		"assets",
 		"includes",
 		"languages",
 		"webberzone-code-block-highlighting.php",
@@ -31,6 +31,7 @@
 	"devDependencies": {
 		"@wordpress/prettier-config": "^4.41.0",
 		"@wordpress/scripts": "^31",
+		"babel-plugin-prismjs": "^2.1.0",
 		"clean-css-cli": "^5.6.3",
 		"rtlcss": "^4.3.0",
 		"terser": "^5.46.0"

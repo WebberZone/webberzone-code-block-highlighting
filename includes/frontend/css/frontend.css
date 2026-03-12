@@ -1,0 +1,8 @@
+/**
+ * WebberZone Code Block Highlighting — Frontend utilities
+ */
+
+pre.word-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}

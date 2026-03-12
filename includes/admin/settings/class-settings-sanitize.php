@@ -4,7 +4,7 @@
  *
  * @link  https://webberzone.com
  *
- * @package WebberZone\Code_Block_Highlighting
+ * @package WebberZone\Better_External_Links
  */
 
 namespace WebberZone\Code_Block_Highlighting\Admin\Settings;

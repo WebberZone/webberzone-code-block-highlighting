@@ -179,8 +179,15 @@ class Settings {
 					'name'    => __( 'Color Scheme', 'webberzone-code-block-highlighting' ),
 					'desc'    => __( 'Select the syntax highlighting color scheme applied to all code blocks.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'select',
-					'default' => 'prism-a11y-dark',
+					'default' => 'prism-onedark',
 					'options' => self::$color_schemes,
+				),
+				array(
+					'id'      => 'copy-to-clipboard',
+					'name'    => __( 'Copy to Clipboard', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Show a "Copy" button on code blocks, allowing visitors to copy the code with one click.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'checkbox',
+					'default' => true,
 				),
 				array(
 					'id'               => 'default-lang',
@@ -286,11 +293,11 @@ class Settings {
 	 * @return string
 	 */
 	public static function get_color_scheme_css( bool $return_path = false ): string {
-		$option   = wz_cbh_get_option( 'color-scheme', 'prism-a11y-dark' );
+		$option   = wz_cbh_get_option( 'color-scheme', 'prism-onedark' );
 		$rel_path = "includes/assets/{$option}.css";
 
 		if ( ! file_exists( WZ_CBH_PLUGIN_DIR . $rel_path ) ) {
-			$rel_path = 'includes/assets/prism-a11y-dark.css';
+			$rel_path = 'includes/assets/prism-onedark.css';
 		}
 
 		if ( $return_path ) {

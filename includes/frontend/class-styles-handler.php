@@ -91,13 +91,23 @@ class Styles_Handler {
 			$asset['version']
 		);
 
-		// Prism core + all language grammars + line-numbers plugin, bundled by webpack.
+		// Prism core + all language grammars + plugins, bundled by webpack.
 		wp_enqueue_script(
 			'wz-cbh-prism-js',
 			WZ_CBH_PLUGIN_URL . 'includes/build/frontend.js',
 			$asset['dependencies'],
 			$asset['version'],
 			true
+		);
+
+		$settings = array(
+			'copyToClipboard' => (bool) wz_cbh_get_option( 'copy-to-clipboard', true ),
+		);
+
+		wp_add_inline_script(
+			'wz-cbh-prism-js',
+			'const cbhSettings = ' . wp_json_encode( $settings ) . ';',
+			'before'
 		);
 	}
 
