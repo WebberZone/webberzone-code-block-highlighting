@@ -4,7 +4,7 @@
  *
  * @link  https://webberzone.com
  *
- * @package WebberZone\CRP
+ * @package WebberZone\Code_Block_Highlighting
  */
 
 namespace WebberZone\Code_Block_Highlighting\Admin\Settings;
