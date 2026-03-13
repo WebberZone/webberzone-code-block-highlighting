@@ -131,6 +131,47 @@ const setupCopyAnnouncements = function (codeToolbar) {
 		});
 };
 
+// ── Expand/collapse toolbar button (shown when max-height is set) ─────────────
+Prism.plugins.toolbar.registerButton('wz-cbh-expand', function (env) {
+	const pre = env.element.parentElement;
+	if (!pre || !pre.style.maxHeight) {
+		return;
+	}
+
+	const originalMaxHeight = pre.style.maxHeight;
+	const originalOverflowY = pre.style.overflowY;
+	let expanded = false;
+
+	const button = document.createElement('button');
+	button.type = 'button';
+	button.className = 'wz-cbh-expand-button';
+	button.setAttribute('aria-expanded', 'false');
+	button.textContent = __('Expand', 'webberzone-code-block-highlighting');
+
+	button.addEventListener('click', function () {
+		expanded = !expanded;
+		if (expanded) {
+			pre.style.maxHeight = '';
+			pre.style.overflowY = '';
+			button.setAttribute('aria-expanded', 'true');
+			button.textContent = __(
+				'Collapse',
+				'webberzone-code-block-highlighting'
+			);
+		} else {
+			pre.style.maxHeight = originalMaxHeight;
+			pre.style.overflowY = originalOverflowY;
+			button.setAttribute('aria-expanded', 'false');
+			button.textContent = __(
+				'Expand',
+				'webberzone-code-block-highlighting'
+			);
+		}
+	});
+
+	return button;
+});
+
 // ── Title/filename toolbar button ─────────────────────────────────────────────
 Prism.plugins.toolbar.registerButton('wz-cbh-title', function (env) {
 	if (typeof cbhSettings !== 'undefined' && !cbhSettings.showFileName) {
