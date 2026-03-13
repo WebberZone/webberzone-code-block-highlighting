@@ -29,8 +29,16 @@ import apiFetch from '@wordpress/api-fetch';
  * Edit function for core/code block.
  */
 const edit = ({ attributes, setAttributes }) => {
-	const { content, language, lineNumbers, lineNumbersStart, wordWrap, title } =
-		attributes;
+	const {
+		content,
+		language,
+		lineNumbers,
+		lineNumbersStart,
+		wordWrap,
+		title,
+		highlightLines,
+		maxHeight,
+	} = attributes;
 	const [isSaving, setIsSaving] = useState(false);
 	const [savedNotice, setSavedNotice] = useState('');
 
@@ -84,6 +92,9 @@ const edit = ({ attributes, setAttributes }) => {
 			[language ? `language-${language}` : '', wordWrap ? 'word-wrap' : '']
 				.filter(Boolean)
 				.join(' ') || undefined,
+		style: maxHeight
+			? { maxHeight: `${maxHeight}px`, overflowY: 'auto' }
+			: undefined,
 	});
 
 	return (
@@ -180,6 +191,45 @@ const edit = ({ attributes, setAttributes }) => {
 						/>
 					</PanelRow>
 					<PanelRow>
+						<TextControl
+							label={__(
+								'Highlight lines',
+								'webberzone-code-block-highlighting'
+							)}
+							value={highlightLines || ''}
+							onChange={(val) =>
+								setAttributes({
+									highlightLines: val || undefined,
+								})
+							}
+							placeholder={__(
+								'e.g. 1,3-5 (optional)',
+								'webberzone-code-block-highlighting'
+							)}
+						/>
+					</PanelRow>
+					<PanelRow>
+						<TextControl
+							type="number"
+							label={__(
+								'Max height (px)',
+								'webberzone-code-block-highlighting'
+							)}
+							value={maxHeight || ''}
+							min={0}
+							onChange={(val) =>
+								setAttributes({
+									maxHeight:
+										parseInt(val, 10) || undefined,
+								})
+							}
+							placeholder={__(
+								'e.g. 400 (optional)',
+								'webberzone-code-block-highlighting'
+							)}
+						/>
+					</PanelRow>
+					<PanelRow>
 						<div className="wz-cbh-save-default">
 							<Button
 								variant="secondary"
@@ -201,7 +251,7 @@ const edit = ({ attributes, setAttributes }) => {
 				</PanelBody>
 			</InspectorControls>
 			<>
-				{(language || title) && (
+				{(language || title || highlightLines || maxHeight) && (
 					<div className="wp-block wz-cbh-block__labels">
 						{title && (
 							<span className="wz-cbh-block__label-title">
@@ -221,6 +271,16 @@ const edit = ({ attributes, setAttributes }) => {
 						{wordWrap && (
 							<span className="wz-cbh-block__label-word-wrap">
 								&#8629;
+							</span>
+						)}
+						{highlightLines && (
+							<span className="wz-cbh-block__label-highlight">
+								&#9776;
+							</span>
+						)}
+						{maxHeight && (
+							<span className="wz-cbh-block__label-max-height">
+								&#8597;
 							</span>
 						)}
 					</div>
@@ -249,8 +309,15 @@ const edit = ({ attributes, setAttributes }) => {
  * Save function for core/code block.
  */
 const save = ({ attributes }) => {
-	const { language, lineNumbers, lineNumbersStart, wordWrap, title } =
-		attributes;
+	const {
+		language,
+		lineNumbers,
+		lineNumbersStart,
+		wordWrap,
+		title,
+		highlightLines,
+		maxHeight,
+	} = attributes;
 	const codeClassName = language ? `language-${language}` : undefined;
 	const preClassName = [
 		language ? `language-${language}` : '',
@@ -265,6 +332,10 @@ const save = ({ attributes }) => {
 		'data-title': title || undefined,
 		...(lineNumbers && lineNumbersStart && lineNumbersStart !== 1
 			? { 'data-start': lineNumbersStart }
+			: {}),
+		...(highlightLines ? { 'data-line': highlightLines } : {}),
+		...(maxHeight
+			? { style: { maxHeight: `${maxHeight}px`, overflowY: 'auto' } }
 			: {}),
 	});
 
@@ -312,6 +383,12 @@ const addSyntaxToCodeBlock = (settings) => {
 			},
 			wordWrap: {
 				type: 'boolean',
+			},
+			highlightLines: {
+				type: 'string',
+			},
+			maxHeight: {
+				type: 'number',
 			},
 			title: {
 				type: 'string',

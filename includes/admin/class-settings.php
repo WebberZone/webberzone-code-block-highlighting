@@ -190,6 +190,20 @@ class Settings {
 					'default' => true,
 				),
 				array(
+					'id'      => 'show-language-label',
+					'name'    => __( 'Show Language Label', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Display the programming language name in the toolbar above each code block.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'checkbox',
+					'default' => true,
+				),
+				array(
+					'id'      => 'show-file-name',
+					'name'    => __( 'Show File Name', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Display the file name or title in the toolbar above each code block, when one is set.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'checkbox',
+					'default' => true,
+				),
+				array(
 					'id'               => 'default-lang',
 					'name'             => __( 'Default Language', 'webberzone-code-block-highlighting' ),
 					'desc'             => __( 'Automatically set this language when a code block is inserted. Leave blank to disable.', 'webberzone-code-block-highlighting' ),

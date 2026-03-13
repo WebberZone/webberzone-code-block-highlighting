@@ -63,6 +63,8 @@ import 'prismjs/components/prism-yaml';
 // ── Plugins ───────────────────────────────────────────────────────────────────
 import 'prismjs/plugins/line-numbers/prism-line-numbers';
 import 'prismjs/plugins/line-numbers/prism-line-numbers.css';
+import 'prismjs/plugins/line-highlight/prism-line-highlight';
+import 'prismjs/plugins/line-highlight/prism-line-highlight.css';
 import 'prismjs/plugins/toolbar/prism-toolbar';
 import 'prismjs/plugins/toolbar/prism-toolbar.css';
 import 'prismjs/plugins/show-language/prism-show-language';
@@ -131,6 +133,9 @@ const setupCopyAnnouncements = function (codeToolbar) {
 
 // ── Title/filename toolbar button ─────────────────────────────────────────────
 Prism.plugins.toolbar.registerButton('wz-cbh-title', function (env) {
+	if (typeof cbhSettings !== 'undefined' && !cbhSettings.showFileName) {
+		return;
+	}
 	const title =
 		env.element.parentElement &&
 		(
@@ -169,6 +174,24 @@ Prism.hooks.add('complete', function (env) {
 
 	setupCopyAnnouncements(codeToolbar);
 });
+
+// ── Conditionally remove show-language label based on global setting ──────────
+if (typeof cbhSettings !== 'undefined' && !cbhSettings.showLanguageLabel) {
+	Prism.hooks.add('complete', function (env) {
+		const codeToolbar = env.element.closest('.code-toolbar');
+		if (!codeToolbar) {
+			return;
+		}
+		codeToolbar
+			.querySelectorAll('.toolbar-item > span:not(.wz-cbh-toolbar-title)')
+			.forEach(function (el) {
+				const item = el.closest('.toolbar-item');
+				if (item) {
+					item.remove();
+				}
+			});
+	});
+}
 
 // ── Conditionally remove copy-to-clipboard based on global setting ────────────
 // cbhSettings is injected as an inline script before this bundle runs.

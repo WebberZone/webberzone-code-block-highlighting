@@ -253,6 +253,7 @@ class Blocks {
 	 * - Adds `line-numbers` class and `data-start` on `<pre>` when enabled.
 	 * - Adds `word-wrap` class on `<pre>` when enabled.
 	 * - Adds `data-title` attribute on `<pre>` for toolbar pickup.
+	 * - Adds `data-line` attribute on `<pre>` for line highlight plugin.
 	 *
 	 * @since 1.0.0
 	 *
@@ -268,6 +269,7 @@ class Blocks {
 		$line_numbers_start = isset( $attrs['lineNumbersStart'] ) ? (int) $attrs['lineNumbersStart'] : 1;
 		$word_wrap          = ! empty( $attrs['wordWrap'] );
 		$title              = isset( $attrs['title'] ) ? sanitize_text_field( $attrs['title'] ) : '';
+		$highlight_lines    = isset( $attrs['highlightLines'] ) ? sanitize_text_field( $attrs['highlightLines'] ) : '';
 
 		// ── Apply language class to <code> ────────────────────────────────────
 		if ( $language ) {
@@ -307,6 +309,10 @@ class Blocks {
 
 		if ( $title ) {
 			$pre_attrs[] = 'data-title="' . esc_attr( $title ) . '"';
+		}
+
+		if ( $highlight_lines ) {
+			$pre_attrs[] = 'data-line="' . esc_attr( $highlight_lines ) . '"';
 		}
 
 		if ( $pre_classes ) {

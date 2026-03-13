@@ -101,7 +101,9 @@ class Styles_Handler {
 		);
 
 		$settings = array(
-			'copyToClipboard' => (bool) wz_cbh_get_option( 'copy-to-clipboard', true ),
+			'copyToClipboard'   => (bool) wz_cbh_get_option( 'copy-to-clipboard', true ),
+			'showLanguageLabel' => (bool) wz_cbh_get_option( 'show-language-label', true ),
+			'showFileName'      => (bool) wz_cbh_get_option( 'show-file-name', true ),
 		);
 
 		wp_add_inline_script(
