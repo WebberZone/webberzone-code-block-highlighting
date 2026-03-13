@@ -262,7 +262,7 @@ const save = ({ attributes }) => {
 
 	const blockProps = useBlockProps.save({
 		className: preClassName || undefined,
-		title: title || undefined,
+		'data-title': title || undefined,
 		...(lineNumbers && lineNumbersStart && lineNumbersStart !== 1
 			? { 'data-start': lineNumbersStart }
 			: {}),
@@ -276,8 +276,8 @@ const save = ({ attributes }) => {
 					typeof attributes.content === 'string'
 						? attributes.content
 						: attributes.content?.toHTMLString?.({
-								preserveWhiteSpace: true,
-						  }) ?? ''
+							preserveWhiteSpace: true,
+						}) ?? ''
 				}
 				lang={language || undefined}
 				className={codeClassName}
@@ -317,7 +317,7 @@ const addSyntaxToCodeBlock = (settings) => {
 				type: 'string',
 				source: 'attribute',
 				selector: 'pre',
-				attribute: 'title',
+				attribute: 'data-title',
 			},
 		},
 		edit,

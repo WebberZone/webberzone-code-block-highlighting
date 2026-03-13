@@ -2,6 +2,19 @@
  * WebberZone Code Block Highlighting — Frontend utilities
  */
 
+#wz-cbh-copy-live-region {
+	border: 0;
+	clip: rect(1px, 1px, 1px, 1px);
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
 pre.word-wrap,
 pre.word-wrap code[class*='language-'] {
 	white-space: pre-wrap;
