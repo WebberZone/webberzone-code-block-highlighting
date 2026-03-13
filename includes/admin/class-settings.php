@@ -177,7 +177,7 @@ class Settings {
 				array(
 					'id'      => 'color-scheme',
 					'name'    => __( 'Color Scheme', 'webberzone-code-block-highlighting' ),
-					'desc'    => __( 'Select the syntax highlighting color scheme applied to all code blocks.', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Choose the syntax highlighting theme for all code blocks. This styling is applied only on the frontend and not in the block editor.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'select',
 					'default' => 'prism-onedark',
 					'options' => self::$color_schemes,
@@ -285,7 +285,10 @@ class Settings {
 	/**
 	 * Get the URL (or filesystem path) to the active color scheme CSS file.
 	 *
-	 * Falls back to the default A11y Dark theme if the chosen file does not exist.
+	 * Returns the plain unminified LTR path. Frontend enqueuing (with SCRIPT_DEBUG
+	 * and RTL awareness) is handled by Styles_Handler.
+	 *
+	 * Falls back to the default One Dark theme if the chosen file does not exist.
 	 *
 	 * @since 1.0.0
 	 *
@@ -311,6 +314,6 @@ class Settings {
 		 *
 		 * @param string $url Absolute URL of the CSS file to enqueue.
 		 */
-		return apply_filters( 'wz_cbh_color_scheme_css_url', WZ_CBH_PLUGIN_URL . $rel_path );
+		return apply_filters( 'wz_cbh_color_scheme_css_url', WZ_CBH_PLUGIN_URL . $rel_path ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 }

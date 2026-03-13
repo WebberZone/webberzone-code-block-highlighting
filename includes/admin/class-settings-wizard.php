@@ -114,7 +114,7 @@ class Settings_Wizard extends Settings_Wizard_API {
 		 *
 		 * @param array $steps Wizard steps.
 		 */
-		return apply_filters( 'wz_cbh_wizard_steps', $steps );
+		return apply_filters( 'wz_cbh_wizard_steps', $steps ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 
 	/**

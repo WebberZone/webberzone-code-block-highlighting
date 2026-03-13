@@ -46,7 +46,7 @@ function autoload( $class_name ) {
 	}
 }
 
-$autoload_functions = spl_autoload_functions();
-if ( ! in_array( __NAMESPACE__ . '\autoload', $autoload_functions ? $autoload_functions : array(), true ) ) {
+$wz_cbh_autoload_functions = spl_autoload_functions(); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+if ( ! in_array( __NAMESPACE__ . '\autoload', $wz_cbh_autoload_functions ? $wz_cbh_autoload_functions : array(), true ) ) {
 	spl_autoload_register( __NAMESPACE__ . '\autoload' );
 }

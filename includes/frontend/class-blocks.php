@@ -9,6 +9,8 @@
 
 namespace WebberZone\Code_Block_Highlighting\Frontend;
 
+use WebberZone\Code_Block_Highlighting\Admin\Settings;
+
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
@@ -27,6 +29,7 @@ class Blocks {
 	 */
 	public function __construct() {
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
+		add_action( 'enqueue_block_assets', array( $this, 'enqueue_editor_canvas_styles' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 		add_filter( 'render_block_core/code', array( $this, 'render_code_block' ), 10, 2 );
 	}
@@ -53,26 +56,6 @@ class Blocks {
 			true
 		);
 
-		$color_scheme_path    = \WebberZone\Code_Block_Highlighting\Admin\Settings::get_color_scheme_css( true );
-		$color_scheme_version = file_exists( $color_scheme_path ) ? (string) filemtime( $color_scheme_path ) : WZ_CBH_VERSION;
-
-		wp_enqueue_style(
-			'wz-cbh-editor-theme',
-			\WebberZone\Code_Block_Highlighting\Admin\Settings::get_color_scheme_css(),
-			array(),
-			$color_scheme_version
-		);
-
-		$editor_css = WZ_CBH_PLUGIN_DIR . 'includes/blocks/build/index.css';
-		if ( file_exists( $editor_css ) ) {
-			wp_enqueue_style(
-				'wz-cbh-editor-style',
-				WZ_CBH_PLUGIN_URL . 'includes/blocks/build/index.css',
-				array( 'wz-cbh-editor-theme' ),
-				$asset['version']
-			);
-		}
-
 		$languages    = self::get_languages();
 		$default_lang = wz_cbh_get_option( 'default-lang', '' );
 
@@ -95,6 +78,103 @@ class Blocks {
 			),
 			'before'
 		);
+	}
+
+	/**
+	 * Enqueue editor layout styles and inject the active Prism theme into the
+	 * block editor iframe canvas.
+	 *
+	 * `enqueue_block_editor_assets` only loads styles into the outer editor shell.
+	 * Since WordPress 6.0 the editing canvas runs in an iframe, styles must be
+	 * registered via `enqueue_block_assets` to appear inside it.
+	 *
+	 * The block editor's `.block-editor-block-list__layout pre` rule (specificity
+	 * 0,1,1) overrides Prism's `pre[class*="language-"]` (also 0,1,1) by source
+	 * order. To beat it, only the `background` and `color` declarations are
+	 * extracted from the active Prism theme file and re-injected inline with
+	 * `.block-editor-block-list__layout` prepended, raising specificity to 0,2,1.
+	 * Layout properties (margin, padding, position, overflow) are intentionally
+	 * excluded to avoid disrupting the editor's block positioning.
+	 *
+	 * Only runs in the admin context to avoid duplicating the frontend enqueue
+	 * that `Styles_Handler` already handles via `wp_enqueue_scripts`.
+	 *
+	 * @since 1.2.0
+	 */
+	public function enqueue_editor_canvas_styles(): void {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		$asset_file = WZ_CBH_PLUGIN_DIR . 'includes/blocks/build/index.asset.php';
+
+		if ( ! file_exists( $asset_file ) ) {
+			return;
+		}
+
+		$asset = require $asset_file;
+
+		$editor_css = WZ_CBH_PLUGIN_DIR . 'includes/blocks/build/index.css';
+		if ( file_exists( $editor_css ) ) {
+			wp_enqueue_style(
+				'wz-cbh-editor-canvas-style',
+				WZ_CBH_PLUGIN_URL . 'includes/blocks/build/index.css',
+				array(),
+				$asset['version']
+			);
+		}
+
+		// Extract only background and color from the Prism theme and inject them
+		// with a more specific selector so they beat the block editor's generic
+		// .block-editor-block-list__layout pre rule (specificity 0,1,1).
+		// Boosting layout properties (margin, padding, position, overflow) would
+		// break the editor's block positioning, so we target only visual props.
+		// Scan all matching rule blocks to handle themes that place `background`
+		// in a separate `pre[class*="language-"]` rule rather than the combined
+		// `code[class*="language-"], pre[class*="language-"]` block.
+		// Later declarations win, mirroring the CSS cascade.
+		$theme_path = Settings::get_color_scheme_css( true );
+		if ( file_exists( $theme_path ) && wp_style_is( 'wz-cbh-editor-canvas-style', 'enqueued' ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			$theme_css   = file_get_contents( $theme_path );
+			$bg_value    = '';
+			$color_value = '';
+
+			if ( preg_match_all( '/([^{}]+)\{([^}]+)\}/', $theme_css, $all_rules, PREG_SET_ORDER ) ) {
+				foreach ( $all_rules as $rule ) {
+					$selector     = $rule[1];
+					$declarations = $rule[2];
+
+					if ( ! preg_match( '/(?:code|pre)\[class\*=["\']language-["\']\]/i', $selector ) ) {
+						continue;
+					}
+
+					// Skip pseudo-element (::selection) and :not(pre) rules.
+					if ( preg_match( '/::/i', $selector ) || preg_match( '/:not\(/i', $selector ) ) {
+						continue;
+					}
+
+					foreach ( preg_split( '/[\n;]/', $declarations ) as $decl ) {
+						$decl = trim( $decl );
+						if ( preg_match( '/^background(?:-color)?:\s*.+$/i', $decl ) ) {
+							$bg_value = $decl . ';';
+						} elseif ( preg_match( '/^color:\s*.+$/i', $decl ) ) {
+							$color_value = $decl . ';';
+						}
+					}
+				}
+			}
+
+			$props = array_filter( array( $bg_value, $color_value ) );
+			if ( $props ) {
+				$selectors = '.block-editor-block-list__layout pre[class*="language-"],' .
+							'.block-editor-block-list__layout code[class*="language-"]';
+				wp_add_inline_style(
+					'wz-cbh-editor-canvas-style',
+					$selectors . '{' . implode( ' ', $props ) . '}'
+				);
+			}
+		}
 	}
 
 	/**
@@ -321,6 +401,6 @@ class Blocks {
 		 *
 		 * @param array<string, string> $languages Language slug => display label.
 		 */
-		return apply_filters( 'wz_cbh_languages', $languages );
+		return apply_filters( 'wz_cbh_languages', $languages ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 }

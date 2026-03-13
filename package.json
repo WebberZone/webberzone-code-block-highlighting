@@ -8,7 +8,7 @@
 	"scripts": {
 		"build": "wp-scripts build includes/blocks/src/js/index.js includes/blocks/src/js/frontend.js --output-path ./includes/blocks/build",
 		"build:assets": "node build-assets.js",
-		"build:prism": "node build-prism.js",
+		"build:prism": "node build-prism.js && node build-assets.js includes/assets",
 		"start": "wp-scripts start includes/blocks/src/js/index.js includes/blocks/src/js/frontend.js --output-path ./includes/blocks/build",
 		"format": "wp-scripts format ./includes/",
 		"lint:js": "wp-scripts lint-js ./includes/",

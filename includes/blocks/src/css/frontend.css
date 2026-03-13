@@ -8,3 +8,32 @@ pre.word-wrap code[class*='language-'] {
 	word-break: break-all;
 	overflow-wrap: break-word;
 }
+
+/**
+ * Toolbar buttons — accessible across all Prism themes.
+ *
+ * Prism's defaults use rgba(224,224,224,0.2) background with #bbb text,
+ * which fails contrast on light themes. Override with a solid dark background
+ * and white text so contrast holds on both light and dark code themes.
+ */
+div.code-toolbar > .toolbar > .toolbar-item > a,
+div.code-toolbar > .toolbar > .toolbar-item > button,
+div.code-toolbar > .toolbar > .toolbar-item > span {
+	color: #fff;
+	background: rgba(0, 0, 0, 0.65);
+	box-shadow: none;
+	border-radius: 0.3em;
+	padding: 0.1em 0.5em;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a:hover,
+div.code-toolbar > .toolbar > .toolbar-item > a:focus,
+div.code-toolbar > .toolbar > .toolbar-item > button:hover,
+div.code-toolbar > .toolbar > .toolbar-item > button:focus,
+div.code-toolbar > .toolbar > .toolbar-item > span:hover,
+div.code-toolbar > .toolbar > .toolbar-item > span:focus {
+	color: #fff;
+	background: rgba(0, 0, 0, 0.85);
+	outline: 2px solid rgba(255, 255, 255, 0.6);
+	outline-offset: 1px;
+}

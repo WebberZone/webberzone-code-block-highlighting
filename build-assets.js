@@ -46,7 +46,6 @@ const config = {
 		'includes/frontend/blocks',
 		'includes/pro/blocks',
 		'includes/build',
-		'includes/assets',
 		'includes/frontend/js',
 	],
 

@@ -45,7 +45,7 @@ class Styles_Handler {
 		 *
 		 * @param bool $force_load Whether to force-load assets. Default false.
 		 */
-		$force_load = apply_filters( 'wz_cbh_force_load_assets', false );
+		$force_load = apply_filters( 'wz_cbh_force_load_assets', false ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
 		if ( ! $force_load ) {
 			global $posts;
@@ -78,7 +78,7 @@ class Styles_Handler {
 		// Color scheme theme CSS (copied from prism-themes via npm run build:prism).
 		wp_enqueue_style(
 			'wz-cbh-prism-theme',
-			\WebberZone\Code_Block_Highlighting\Admin\Settings::get_color_scheme_css(),
+			self::get_theme_css_url(),
 			array(),
 			self::get_color_scheme_version()
 		);
@@ -112,6 +112,45 @@ class Styles_Handler {
 	}
 
 	/**
+	 * Build the theme CSS file name, respecting SCRIPT_DEBUG and is_rtl().
+	 *
+	 * Assumes minified and RTL variants are always present after npm run build:prism.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string File name relative to includes/assets/ (e.g. 'prism-onedark-rtl.min.css').
+	 */
+	private static function get_theme_css_file_name(): string {
+		$option   = wz_cbh_get_option( 'color-scheme', 'prism-onedark' );
+		$min      = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
+		$rtl_part = is_rtl() ? '-rtl' : '';
+
+		return "{$option}{$rtl_part}{$min}.css";
+	}
+
+	/**
+	 * Get the URL for the active theme CSS.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
+	private static function get_theme_css_url(): string {
+		return WZ_CBH_PLUGIN_URL . 'includes/assets/' . self::get_theme_css_file_name();
+	}
+
+	/**
+	 * Get the filesystem path for the active theme CSS.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string
+	 */
+	private static function get_theme_css_path(): string {
+		return WZ_CBH_PLUGIN_DIR . 'includes/assets/' . self::get_theme_css_file_name();
+	}
+
+	/**
 	 * Get a version string for the active color scheme CSS for cache busting.
 	 *
 	 * @since 1.0.0
@@ -119,7 +158,7 @@ class Styles_Handler {
 	 * @return string
 	 */
 	private static function get_color_scheme_version(): string {
-		$path = \WebberZone\Code_Block_Highlighting\Admin\Settings::get_color_scheme_css( true );
+		$path = self::get_theme_css_path();
 
 		return file_exists( $path ) ? (string) filemtime( $path ) : WZ_CBH_VERSION;
 	}
