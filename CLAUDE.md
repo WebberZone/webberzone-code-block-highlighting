@@ -1,95 +1,187 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+WordPress plugin that extends the native Gutenberg `core/code` block with Prism.js syntax highlighting. The editor integration is implemented by replacing the `core/code` block edit/save behaviour via a JS block filter, while frontend output is normalized and enhanced through the `render_block_core/code` PHP filter.
 
 ## Commands
 
 ```bash
-npm install              # Install dependencies (includes prismjs + prism-themes)
-npm run build            # Production build → build/ (compiles index.js + frontend.js)
-npm run build:assets     # Copy Prism theme CSS from node_modules → assets/
-npm run start            # Development watch mode
-npm run lint:js          # Lint JS source
-npm run lint:css         # Lint CSS/SCSS source
-npm run format           # Auto-format source files
-npm run zip              # Build distributable zip
-```
-
-First-time setup requires both: `npm install && npm run build && npm run build:assets`
-
-PHP linting (requires phpcs + WordPress Coding Standards):
-```bash
+# PHP
 composer install
-vendor/bin/phpcs
+composer test
+composer phpcs
+composer phpstan
+
+# JS
+npm install
+npm run build          # Production build -> includes/blocks/build/
+npm run build:prism    # Copy Prism themes -> includes/assets/
+npm run build:assets   # Minify generated CSS/JS assets
+npm run start          # Watch mode for block/editor/frontend bundles
+npm run zip            # Plugin zip
 ```
+
+## Current feature scope
+
+The current implementation follows the active plan in `PLAN.md`, not the broader experimental ideas in `OLD-FEATURE-PLAN.md`.
+
+- Extends `core/code` with per-block attributes:
+  - `language`
+  - `lineNumbers`
+  - `lineNumbersStart`
+  - `wordWrap`
+  - `title`
+  - `highlightLines` — maps to `data-line` on `<pre>`, consumed by Prism line-highlight plugin
+  - `maxHeight` — inline `style="max-height:{n}px;overflow-y:auto"` on `<pre>` (CSS only, no Prism)
+- Adds Inspector Controls for:
+  - language selection
+  - file name/title
+  - line numbers toggle + start line
+  - word wrap
+  - highlight lines (e.g. `1,3-5`)
+  - max height in px
+  - save current settings as defaults
+- Saves defaults through the REST route `wz-cbh/v1/default-settings`
+- Frontend integrates Prism plugins for:
+  - line numbers
+  - line highlight
+  - toolbar
+  - show language
+  - copy to clipboard
+- Registers a custom Prism toolbar label that reads from `data-title`
+- Registers a `wz-cbh-expand` Prism toolbar button that appears when `max-height` is set; toggles the block between collapsed (original inline style) and expanded (inline style cleared), updating `aria-expanded` on each toggle
+- Supports global settings for:
+  - color scheme
+  - copy to clipboard
+  - show language label
+  - default language
+- Ships with `One Dark` as the default theme slug: `prism-onedark`
+
+Do not assume features from `OLD-FEATURE-PLAN.md` exist unless they are implemented in code.
 
 ## Architecture
 
-This is a WordPress plugin that **extends** the native Gutenberg `core/code` block with Prism.js syntax highlighting. It does not replace the block — it uses filters to avoid block validation errors on existing posts.
+**Namespace:** `WebberZone\Code_Block_Highlighting`
 
-### PHP namespace & autoloader
+**Autoloader:** `includes/autoloader.php`
 
-All classes live under the `WebberZone\Code_Block_Highlighting` namespace. A custom PSR-4-style autoloader (`includes/autoloader.php`) maps the namespace to `includes/`, converting class names to files:
+**Bootstrap flow:**
 
-- `Main` → `includes/class-main.php`
-- `Admin\Settings` → `includes/admin/class-settings.php`
-- `Frontend\Blocks` → `includes/frontend/class-blocks.php`
-- `Frontend\Styles_Handler` → `includes/frontend/class-styles-handler.php`
+- Main plugin file loads the autoloader.
+- `wz_cbh()` resolves the `Main` singleton on `plugins_loaded`.
+- `Main` loads `includes/options-api.php`.
+- `Main` instantiates:
+  - `Frontend\Blocks`
+  - `Frontend\Styles_Handler`
+- `Admin\Admin` is created on `init` only when `is_admin()`.
 
-Underscores in class names become dashes in filenames; all lowercase.
+**Key PHP classes:**
 
-### Bootstrap flow
+- `includes/class-main.php` — plugin bootstrap and object wiring
+- `includes/frontend/class-blocks.php` — editor asset registration, REST route, `render_block_core/code`
+- `includes/frontend/class-styles-handler.php` — conditional frontend Prism asset loading
+- `includes/admin/class-settings.php` — settings registration, theme resolution, language autocomplete wiring
 
-`webberzone-code-block-highlighting.php` defines constants (`WZ_CBH_VERSION`, `WZ_CBH_PLUGIN_FILE`, `WZ_CBH_PLUGIN_DIR`, `WZ_CBH_PLUGIN_URL`), loads the autoloader, then calls `Main::get_instance()` on the `plugins_loaded` action.
+**JS entry points:**
 
-`Main` (singleton) instantiates `Frontend\Blocks` and `Frontend\Styles_Handler` immediately, and `Admin\Settings` only inside `is_admin()`.
+- `includes/blocks/src/js/index.js` — replaces `core/code` edit/save and adds Inspector Controls
+- `includes/blocks/src/js/frontend.js` — Prism core, supported grammars, toolbar/copy/show-language plugins, frontend toolbar behaviour
 
-### Three-layer highlighting strategy
+**Build output:**
 
-| Layer | Where | What it does |
-|---|---|---|
-| `blocks.registerBlockType` JS filter | Editor | Adds `language`, `lineNumbers`, `title` attributes to `core/code` |
-| `editor.BlockEdit` JS filter (HOC) | Editor | Adds InspectorControls panel with language picker, line number toggle, title field |
-| `blocks.getSaveContent.extraProps` JS filter | Editor save | Adds `language-*` and `line-numbers` classes to the serialized `<pre>` |
-| `render_block_core/code` PHP filter | Frontend | Injects `language-*` class onto `<code>` element in rendered HTML |
+- `includes/blocks/build/index.js`
+- `includes/blocks/build/frontend.js`
+- corresponding `.asset.php` manifests and extracted CSS files
 
-### Attribute storage
+Always `require` the generated `.asset.php` file before enqueueing block scripts.
 
-Selected language is stored in the block comment:
-```html
-<!-- wp:code {"language":"javascript","lineNumbers":true,"title":"index.js"} -->
-<pre class="wp-block-code language-javascript line-numbers" data-label="index.js">
-  <code class="language-javascript">...</code>
-</pre>
-<!-- /wp:code -->
-```
+## Data flow
 
-### JS build
+- Language list is provided by `Frontend\Blocks::get_languages()`
+- Editor globals are injected with `wp_add_inline_script()`:
+  - `cbhLanguages`
+  - `cbhDefaultLang`
+  - `cbhDefaultSettings`
+- Frontend globals are injected with `wp_add_inline_script()`:
+  - `cbhSettings`
+- Block attributes are saved in block markup and normalized again in `render_code_block()`
+- Default settings are stored in plugin options through the REST endpoint
 
-Two entry points, both built by `wp-scripts build`:
-- `includes/blocks/js/index.js` → `build/index.js` + `build/index.asset.php` — editor block filters
-- `includes/frontend/js/frontend.js` → `build/frontend.js` + `build/frontend.css` + `build/frontend.asset.php` — Prism core, all language grammars, line-numbers plugin (CSS extracted by webpack)
+## Asset loading
 
-Always `require` the `.asset.php` manifest in PHP before calling `wp_enqueue_script` — it provides the correct dependency array and cache-busting version.
+`Frontend\Styles_Handler::enqueue_assets()` only loads Prism on the frontend when at least one `core/code` block is present in the current queried posts.
 
-Language list is passed from PHP → JS via `wp_add_inline_script` as globals `cbhLanguages` (object) and `cbhDefaultLang` (string) before the editor script loads.
+Use `wz_cbh_force_load_assets` to bypass conditional loading.
 
-### Frontend asset loading
+The editor canvas styling is handled separately in `Frontend\Blocks::enqueue_editor_canvas_styles()`, which:
 
-`Styles_Handler` uses `array_reduce` over `$posts` with `has_block( 'core/code', $post )` to only enqueue Prism assets when code blocks are present. Override with the `wz_cbh_force_load_assets` filter.
+- enqueues editor CSS into the block editor iframe
+- extracts only `background` and `color` declarations from the active Prism theme
+- re-injects them with stronger selectors so the editor canvas matches the chosen frontend theme without breaking editor layout
 
-### Key filters & options
+## Key filters, options, and routes
 
-- `wz_cbh_languages` — filter the language list array (`slug => label`)
-- `wz_cbh_color_scheme_css_url` — override the Prism theme CSS URL
-- `wz_cbh_force_load_assets` — force Prism to load on every page
-- `wz-cbh-color-scheme` WP option — active theme slug (default: `prism-a11y-dark`)
-- `wz-cbh-default-lang` WP option — auto-applied language on new code block inserts
+- `wz_cbh_languages` — filter supported Prism languages (`slug => label`)
+- `wz_cbh_color_scheme_css_url` — filter the resolved Prism theme CSS URL
+- `wz_cbh_force_load_assets` — force frontend Prism assets to load
+- REST route: `wz-cbh/v1/default-settings`
+- Settings option key: `wz_cbh_settings`
+- Settings prefix: `wz_cbh`
+- Settings page slug: `wz_cbh_settings`
 
-### Assets (not committed, generated by npm scripts)
+## Current option IDs
 
-- `build/frontend.js` — Prism core + all languages + line-numbers plugin (via `npm run build`)
-- `build/frontend.css` — line-numbers plugin CSS (extracted from `src/frontend.js` by webpack)
-- `assets/prism-*.css` — color scheme theme files copied from `prism-themes` package (via `npm run build:assets`)
+These option IDs are registered in `includes/admin/class-settings.php`:
 
-Bundled themes (defined in `build-assets.js`): `prism-a11y-dark`, `prism-atom-dark`, `prism-darcula`, `prism-dracula`, `prism-ghcolors`, `prism-gruvbox-dark`, `prism-gruvbox-light`, `prism-material-dark`, `prism-material-oceanic`, `prism-night-owl`, `prism-nord`, `prism-onedark`, `prism-one-light`, `prism-shades-of-purple`, `prism-solarized-dark-atom`, `prism-synthwave84`, `prism-vs`, `prism-vsc-dark-plus`. To add a new theme, add an entry to `build-assets.js`, register it in `includes/admin/class-settings.php`, then run `npm run build:assets`.
+- `color-scheme`
+- `copy-to-clipboard`
+- `show-language-label`
+- `show-file-name`
+- `default-lang`
+- `default-line-numbers`
+- `default-line-numbers-start`
+- `default-word-wrap`
+- `font-size`
+
+The default color scheme is `prism-onedark`.
+
+## Frontend rendering rules
+
+`Frontend\Blocks::render_code_block()` currently:
+
+- adds `language-{slug}` to `<code>`
+- adds `line-numbers` to `<pre>` when enabled
+- adds `data-start` to `<pre>` when line numbering starts from a value other than `1`
+- adds `word-wrap` to `<pre>` when enabled
+- adds `data-title` to `<pre>` for the custom toolbar label
+- adds `data-line` to `<pre>` from `highlightLines` attribute (consumed by Prism line-highlight plugin)
+- `maxHeight` is CSS-only: serialized as inline `style` by the block save function, not touched by PHP
+
+If you change block attributes in JS, update the PHP rendering logic and defaults flow as well.
+
+## Accessibility notes
+
+The active plan targets strong accessibility support. Current frontend code already includes:
+
+- decorative toolbar language labels marked `aria-hidden`
+- a custom title label in the toolbar
+- Prism copy-to-clipboard integration controlled by plugin settings
+- expand/collapse button with `aria-expanded` state management
+
+If you extend toolbar behaviour, preserve keyboard access and screen reader behaviour.
+
+## Adding a Prism theme
+
+1. Add the theme mapping in `build-prism.js`
+2. Ensure the generated CSS file is copied to `includes/assets/`
+3. Register the theme slug in `includes/admin/class-settings.php`
+4. Run `npm run build:prism`
+
+## Notes for future work
+
+- Prefer `PLAN.md` as the source of truth for current implementation direction
+- Treat `OLD-FEATURE-PLAN.md` as backlog/reference only
+- Before adding new per-block controls, verify:
+  - the JS attribute schema
+  - the save output
+  - the PHP render filter
+  - frontend Prism plugin support

@@ -317,7 +317,10 @@ class Settings {
 	 * @return string
 	 */
 	public static function get_color_scheme_css( bool $return_path = false ): string {
-		$option   = wz_cbh_get_option( 'color-scheme', 'prism-onedark' );
+		$option = wz_cbh_get_option( 'color-scheme', 'prism-onedark' );
+		if ( ! array_key_exists( $option, self::$color_schemes ) ) {
+			$option = 'prism-onedark';
+		}
 		$rel_path = "includes/assets/{$option}.css";
 
 		if ( ! file_exists( WZ_CBH_PLUGIN_DIR . $rel_path ) ) {
