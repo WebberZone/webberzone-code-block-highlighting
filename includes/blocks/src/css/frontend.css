@@ -2,6 +2,16 @@
  * WebberZone Code Block Highlighting — Frontend utilities
  */
 
+:root {
+	--wz-cbh-font-size: inherit;
+	--wz-cbh-toolbar-color: #fff;
+	--wz-cbh-toolbar-bg: rgba(0, 0, 0, 0.65);
+	--wz-cbh-toolbar-bg-hover: rgba(0, 0, 0, 0.85);
+	--wz-cbh-toolbar-outline: rgba(255, 255, 255, 0.6);
+	--wz-cbh-toolbar-radius: 0.3em;
+	--wz-cbh-toolbar-padding: 0.1em 0.5em;
+}
+
 #wz-cbh-copy-live-region {
 	border: 0;
 	clip: rect(1px, 1px, 1px, 1px);
@@ -13,6 +23,11 @@
 	position: absolute;
 	white-space: nowrap;
 	width: 1px;
+}
+
+pre[class*='language-'],
+code[class*='language-'] {
+	font-size: var(--wz-cbh-font-size);
 }
 
 pre.word-wrap,
@@ -32,11 +47,11 @@ pre.word-wrap code[class*='language-'] {
 div.code-toolbar > .toolbar > .toolbar-item > a,
 div.code-toolbar > .toolbar > .toolbar-item > button,
 div.code-toolbar > .toolbar > .toolbar-item > span {
-	color: #fff;
-	background: rgba(0, 0, 0, 0.65);
+	color: var(--wz-cbh-toolbar-color);
+	background: var(--wz-cbh-toolbar-bg);
 	box-shadow: none;
-	border-radius: 0.3em;
-	padding: 0.1em 0.5em;
+	border-radius: var(--wz-cbh-toolbar-radius);
+	padding: var(--wz-cbh-toolbar-padding);
 }
 
 div.code-toolbar > .toolbar > .toolbar-item > a:hover,
@@ -45,8 +60,8 @@ div.code-toolbar > .toolbar > .toolbar-item > button:hover,
 div.code-toolbar > .toolbar > .toolbar-item > button:focus,
 div.code-toolbar > .toolbar > .toolbar-item > span:hover,
 div.code-toolbar > .toolbar > .toolbar-item > span:focus {
-	color: #fff;
-	background: rgba(0, 0, 0, 0.85);
-	outline: 2px solid rgba(255, 255, 255, 0.6);
+	color: var(--wz-cbh-toolbar-color);
+	background: var(--wz-cbh-toolbar-bg-hover);
+	outline: 2px solid var(--wz-cbh-toolbar-outline);
 	outline-offset: 1px;
 }

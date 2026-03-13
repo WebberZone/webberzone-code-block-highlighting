@@ -109,6 +109,14 @@ class Styles_Handler {
 			'const cbhSettings = ' . wp_json_encode( $settings ) . ';',
 			'before'
 		);
+
+		$font_size = (int) wz_cbh_get_option( 'font-size', 0 );
+		if ( $font_size > 0 ) {
+			wp_add_inline_style(
+				'wz-cbh-prism-css',
+				':root { --wz-cbh-font-size: ' . $font_size . 'px; }'
+			);
+		}
 	}
 
 	/**

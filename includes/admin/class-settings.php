@@ -198,6 +198,13 @@ class Settings {
 					'field_class'      => 'ts_autocomplete',
 					'field_attributes' => self::get_language_field_attributes(),
 				),
+				array(
+					'id'      => 'font-size',
+					'name'    => __( 'Font Size (px)', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Font size for code blocks in pixels. Set to 0 to use the active theme default.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'number',
+					'default' => 0,
+				),
 			),
 		);
 	}
