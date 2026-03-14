@@ -1,5 +1,7 @@
 # WebberZone Code Block Highlighting
 
+[![WordPress Plugin Version](https://github.com/WebberZone/webberzone-code-block-highlighting/blob/main/wporg-assets/banner-1544x500.png)](https://wordpress.org/plugins/webberzone-code-block-highlighting/)
+
 [![WordPress Plugin Version](https://img.shields.io/wordpress/plugin/v/webberzone-code-block-highlighting.svg?style=flat-square)](https://wordpress.org/plugins/webberzone-code-block-highlighting/)
 [![License](https://img.shields.io/badge/license-GPL_v2%2B-orange.svg?style=flat-square)](http://opensource.org/licenses/GPL-2.0)
 [![WordPress Tested](https://img.shields.io/wordpress/v/webberzone-code-block-highlighting.svg?style=flat-square)](https://wordpress.org/plugins/webberzone-code-block-highlighting/)
@@ -70,6 +72,9 @@ A11y Dark, Coldark Cold (Light), Coldark Dark, Dracula, Duotone Dark, Duotone Li
 WebberZone Code Block Highlighting does not collect personal data, set cookies, or communicate with any external services.
 
 ## Screenshots
+
+![Code block in editor with highlighting options](https://raw.github.com/WebberZone/webberzone-code-block-highlighting/main/wporg-assets/screenshot-1.png)
+_Code block in editor with highlighting options_
 
 More screenshots are available on the [WordPress plugin page](https://wordpress.org/plugins/webberzone-code-block-highlighting/screenshots/).
 
