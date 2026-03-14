@@ -36,6 +36,7 @@ const edit = ({ attributes, setAttributes }) => {
 		lineNumbersStart,
 		wordWrap,
 		title,
+		_legacyTitle,
 		highlightLines,
 		maxHeight,
 	} = attributes;
@@ -56,6 +57,11 @@ const edit = ({ attributes, setAttributes }) => {
 			updates.lineNumbersStart = defaults.lineNumbersStart;
 		if (wordWrap === undefined && defaults.wordWrap)
 			updates.wordWrap = defaults.wordWrap;
+
+		// Migrate title from old code-syntax-block format (pre[title]) to ours
+		// (pre[data-title]). Mirrors the toolbar JS: getAttribute('data-title') ||
+		// getAttribute('title'). On first save the block adopts our format.
+		if (!title && _legacyTitle) updates.title = _legacyTitle;
 
 		if (Object.keys(updates).length) setAttributes(updates);
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -395,6 +401,15 @@ const addSyntaxToCodeBlock = (settings) => {
 				source: 'attribute',
 				selector: 'pre',
 				attribute: 'data-title',
+			},
+			// Read-only fallback: sources title from pre[title] as saved by the
+			// old code-syntax-block plugin. Migrated to `title` (data-title) on
+			// first edit. Never written by our save function.
+			_legacyTitle: {
+				type: 'string',
+				source: 'attribute',
+				selector: 'pre',
+				attribute: 'title',
 			},
 		},
 		edit,

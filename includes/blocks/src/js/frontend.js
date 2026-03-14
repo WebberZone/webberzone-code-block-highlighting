@@ -131,6 +131,35 @@ const setupCopyAnnouncements = function (codeToolbar) {
 		});
 };
 
+// ── Compatibility shim for code-syntax-block (mkaz) HTML structure ───────────
+// The old code-syntax-block plugin (mkaz/code-block-highlighting) stored
+// two things differently from what Prism expects:
+//   1. `line-numbers` class on <code> rather than <pre>
+//   2. language encoded as a `lang` attribute on <code> rather than a class
+// This hook normalises those before Prism processes any element so that blocks
+// saved by the old plugin are highlighted correctly without any PHP migration.
+Prism.hooks.add('before-highlightall', function () {
+	document.querySelectorAll('pre > code').forEach(function (code) {
+		const pre = code.parentElement;
+
+		// 1. Move `line-numbers` from <code> to <pre> when <pre> lacks it.
+		if (
+			code.classList.contains('line-numbers') &&
+			!pre.classList.contains('line-numbers')
+		) {
+			pre.classList.add('line-numbers');
+			code.classList.remove('line-numbers');
+		}
+
+		// 2. Add `language-{lang}` class from the `lang` attribute when the
+		//    class is not already present (old plugin stored lang as an attr).
+		const lang = code.getAttribute('lang');
+		if (lang && !code.className.includes('language-')) {
+			code.classList.add('language-' + lang);
+		}
+	});
+});
+
 // ── Expand/collapse toolbar button (shown when max-height is set) ─────────────
 Prism.plugins.toolbar.registerButton('wz-cbh-expand', function (env) {
 	const pre = env.element.parentElement;

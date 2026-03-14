@@ -36,9 +36,9 @@ WebberZone Code Block Highlighting extends the native WordPress Gutenberg `core/
 
 The plugin uses three layers of integration with the block editor:
 
-1. **Editor attributes** — A `blocks.registerBlockType` JS filter adds `language`, `lineNumbers`, and `title` attributes to `core/code` without replacing it.
-2. **InspectorControls** — A `editor.BlockEdit` HOC adds a sidebar panel with a language picker, line number toggle, and title field.
-3. **Frontend rendering** — A `render_block_core/code` PHP filter injects the `language-*` class onto the `<code>` element so Prism.js picks it up automatically.
+1. __Editor attributes__ — A `blocks.registerBlockType` JS filter adds `language`, `lineNumbers`, and `title` attributes to `core/code` without replacing it.
+2. __InspectorControls__ — A `editor.BlockEdit` HOC adds a sidebar panel with a language picker, line number toggle, and title field.
+3. __Frontend rendering__ — A `render_block_core/code` PHP filter injects the `language-*` class onto the `<code>` element so Prism.js picks it up automatically.
 
 ### Developer filters
 
