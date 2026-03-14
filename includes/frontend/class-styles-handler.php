@@ -9,6 +9,8 @@
 
 namespace WebberZone\Code_Block_Highlighting\Frontend;
 
+use WebberZone\Code_Block_Highlighting\Util\Hook_Registry;
+
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
@@ -26,7 +28,7 @@ class Styles_Handler {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		Hook_Registry::add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 	}
 
 	/**

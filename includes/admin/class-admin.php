@@ -68,7 +68,7 @@ class Admin {
 		$this->settings_wizard   = new Settings_Wizard();
 		$this->admin_banner      = new Admin_Banner( $this->get_admin_banner_config() );
 
-		add_filter( 'plugin_action_links_' . plugin_basename( WZ_CBH_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
+		Hook_Registry::add_filter( 'plugin_action_links_' . plugin_basename( WZ_CBH_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
 	}
 
 	/**

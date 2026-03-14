@@ -7,6 +7,8 @@
 
 namespace WebberZone\Code_Block_Highlighting;
 
+use WebberZone\Code_Block_Highlighting\Util\Hook_Registry;
+
 if ( ! defined( 'WPINC' ) ) {
 	exit;
 }
@@ -90,7 +92,7 @@ final class Main {
 		$this->blocks = new Frontend\Blocks();
 		$this->styles = new Frontend\Styles_Handler();
 
-		add_action( 'init', array( $this, 'init_admin' ) );
+		Hook_Registry::add_action( 'init', array( $this, 'init_admin' ) );
 	}
 
 	/**

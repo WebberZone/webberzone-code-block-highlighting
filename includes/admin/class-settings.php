@@ -8,6 +8,7 @@
 namespace WebberZone\Code_Block_Highlighting\Admin;
 
 use WebberZone\Code_Block_Highlighting\Admin\Settings\Settings_API;
+use WebberZone\Code_Block_Highlighting\Util\Hook_Registry;
 
 if ( ! defined( 'WPINC' ) ) {
 	die;
@@ -85,8 +86,8 @@ class Settings {
 	 * @since 1.1.0
 	 */
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'initialise_settings' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_language_data' ), 20 );
+		Hook_Registry::add_action( 'admin_menu', array( $this, 'initialise_settings' ) );
+		Hook_Registry::add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_language_data' ), 20 );
 	}
 
 	/**

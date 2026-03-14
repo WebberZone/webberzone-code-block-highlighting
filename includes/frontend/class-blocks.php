@@ -10,6 +10,7 @@
 namespace WebberZone\Code_Block_Highlighting\Frontend;
 
 use WebberZone\Code_Block_Highlighting\Admin\Settings;
+use WebberZone\Code_Block_Highlighting\Util\Hook_Registry;
 
 if ( ! defined( 'WPINC' ) ) {
 	die;
@@ -28,10 +29,10 @@ class Blocks {
 	 * @since 1.0.0
 	 */
 	public function __construct() {
-		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
-		add_action( 'enqueue_block_assets', array( $this, 'enqueue_editor_canvas_styles' ) );
-		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
-		add_filter( 'render_block_core/code', array( $this, 'render_code_block' ), 10, 2 );
+		Hook_Registry::add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
+		Hook_Registry::add_action( 'enqueue_block_assets', array( $this, 'enqueue_editor_canvas_styles' ) );
+		Hook_Registry::add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+		Hook_Registry::add_filter( 'render_block_core/code', array( $this, 'render_code_block' ), 10, 2 );
 	}
 
 	/**
