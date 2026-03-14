@@ -30,6 +30,7 @@ The current implementation follows the active plan in `PLAN.md`, not the broader
   - `lineNumbersStart`
   - `wordWrap`
   - `title`
+  - `_legacyTitle` — read-only migration attribute; copies `title` from old `code-syntax-block` format on first load, then clears itself
   - `highlightLines` — maps to `data-line` on `<pre>`, consumed by Prism line-highlight plugin
   - `maxHeight` — inline `style="max-height:{n}px;overflow-y:auto"` on `<pre>` (CSS only, no Prism)
 - Adds Inspector Controls for:
@@ -53,7 +54,12 @@ The current implementation follows the active plan in `PLAN.md`, not the broader
   - color scheme
   - copy to clipboard
   - show language label
+  - show file name
   - default language
+  - default line numbers toggle
+  - default line numbers start
+  - default word wrap
+  - font size
 - Ships with `One Dark` as the default theme slug: `prism-onedark`
 
 Do not assume features from `OLD-FEATURE-PLAN.md` exist unless they are implemented in code.

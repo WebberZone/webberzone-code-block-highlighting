@@ -1,125 +1,172 @@
 === WebberZone Code Block Highlighting ===
-Tags: code, syntax highlighting, prism, code block, gutenberg
 Contributors: webberzone, ajay
 Donate link: https://wzn.io/donate-cbh
-Stable tag: 1.0.0
+Tags: syntax highlighting, code block, prism, gutenberg, code, highlight, block editor, syntax highlighter, code highlighting, prism.js, developer, code syntax
 Requires at least: 6.6
 Tested up to: 6.9
+Stable tag: 1.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Add beautiful syntax highlighting to the Gutenberg Code block — powered by Prism.js with 18 themes and 35+ languages, zero configuration required.
 
 == Description ==
 
-WebberZone Code Block Highlighting extends the native WordPress Gutenberg `core/code` block with [Prism.js](https://prismjs.com/) syntax highlighting. It does not replace the block — existing posts remain fully compatible with zero risk of block validation errors.
+**WebberZone Code Block Highlighting** is the easiest way to add syntax highlighting to your WordPress site. It extends the native Gutenberg `core/code` block with [Prism.js](https://prismjs.com/) highlighting — no shortcodes, no block replacement, no risk of breaking existing posts.
 
-### Key features
+Simply activate the plugin and your code blocks will instantly display beautiful, readable syntax highlighting on the frontend. Choose from 35+ programming languages and 18 colour themes, all controlled from the block editor's Inspector Controls sidebar.
 
-* __Zero configuration__: Activate and start writing. Prism.js highlighting is automatically applied to all code blocks on the frontend.
-* __35+ languages__: Pick the language for each code block from the Inspector Controls panel in the block editor. Includes Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Markdown, Nginx, Objective-C, PHP, PowerShell, Python, Ruby, Rust, Sass, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, YAML and more.
-* __18 beautiful themes__: Choose from A11y Dark, Atom Dark, Darcula, Dracula, GitHub (Light), Gruvbox Dark, Gruvbox Light, Material Dark, Material Oceanic, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS (Light), and VS Code Dark+.
-* __Line numbers__: Toggle line numbers per code block from the editor sidebar.
-* __Block title / label__: Add an optional title or filename label to each code block.
-* __Smart asset loading__: Prism CSS and JS are only enqueued on pages that actually contain code blocks, keeping other pages fast.
-* __Extendable__: Developer-friendly filters to customize the language list, override the theme CSS URL, or force assets to load on every page.
+### Why use this plugin?
 
-### How it works
+* **Safe by design** — Works as a filter on top of `core/code`. Existing posts are never invalidated. Deactivate the plugin and your blocks are still valid standard WordPress code blocks.
+* **Zero configuration** — Activate and start writing. No setup wizard, no shortcodes.
+* **Smart asset loading** — Prism CSS and JS only load on pages that actually contain code blocks. Pages without code stay fast.
+* **Per-block controls** — Set language, theme, line numbers, word wrap, title, highlighted lines, and max height individually for each block.
+* **Developer-friendly** — Filters to add languages, override themes, and force asset loading.
 
-The plugin uses three layers of integration with the block editor:
+### Supported languages
 
-1. **Editor attributes** — A `blocks.registerBlockType` JS filter adds `language`, `lineNumbers`, and `title` attributes to `core/code` without replacing it.
-2. **InspectorControls** — A `editor.BlockEdit` HOC adds a sidebar panel with a language picker, line number toggle, and title field.
-3. **Frontend rendering** — A `render_block_core/code` PHP filter injects the `language-*` class onto the `<code>` element so Prism.js picks it up automatically.
+35+ languages including: Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Markdown, Nginx, Objective-C, PHP, PowerShell, Python, Ruby, Rust, Sass, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, YAML, and more. Use the `wz_cbh_languages` filter to register additional languages.
+
+### Included themes (18)
+
+A11y Dark, Atom Dark, Darcula, Dracula, GitHub (Light), Gruvbox Dark, Gruvbox Light, Material Dark, Material Oceanic, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS (Light), VS Code Dark+.
+
+### Per-block features
+
+* **Language selector** — Choose the programming language from the sidebar; applies the correct Prism grammar automatically.
+* **Line numbers** — Toggle line numbers per block, with a configurable start line.
+* **File title / label** — Add an optional filename or label displayed in the code block toolbar.
+* **Highlight lines** — Specify lines or ranges (e.g. `1,3-5`) to visually highlight using Prism's line-highlight plugin.
+* **Max height with expand/collapse** — Set a maximum height in pixels; an expand/collapse toolbar button appears automatically.
+* **Word wrap** — Toggle soft word wrapping per block.
+
+### Global settings
+
+* Default colour scheme (theme)
+* Default language
+* Default line numbers toggle and start value
+* Default word wrap
+* Copy-to-clipboard button
+* Show language label in toolbar
+* Font size
 
 ### Developer filters
 
-* `wz_cbh_languages` — filter the language list array (`slug => label`)
-* `wz_cbh_color_scheme_css_url` — override the Prism theme CSS URL
-* `wz_cbh_force_load_assets` — force Prism assets to load on every page
+* `wz_cbh_languages` — Filter the language list array (`slug => label`)
+* `wz_cbh_color_scheme_css_url` — Override the Prism theme CSS URL
+* `wz_cbh_force_load_assets` — Force Prism assets to load on every page
 
 ### GDPR
 
-WebberZone Code Block Highlighting does not collect personal data or communicate with external services.
+WebberZone Code Block Highlighting does not collect personal data, set cookies, or communicate with any external services.
 
 ### Contribute
 
-WebberZone Code Block Highlighting is also available on [Github](https://github.com/WebberZone/webberzone-code-block-highlighting).
-So, if you've got some cool feature you'd like to implement into the plugin or a bug you've been able to fix, consider forking the project and sending me a pull request.
-
-Bug reports are [welcomed on Github](https://github.com/WebberZone/webberzone-code-block-highlighting/issues). Please note Github is _not_ a support forum, and issues that aren't suitably qualified as bugs will be closed.
+The plugin is open source and available on [GitHub](https://github.com/WebberZone/webberzone-code-block-highlighting). Pull requests for bug fixes and new features are welcome. Please use [GitHub Issues](https://github.com/WebberZone/webberzone-code-block-highlighting/issues) for bug reports — GitHub is not a support forum.
 
 ### Translations
 
-WebberZone Code Block Highlighting is available for [translation directly on WordPress.org](https://translate.wordpress.org/projects/wp-plugins/webberzone-code-block-highlighting). Check out the official [Translator Handbook](https://make.wordpress.org/polyglots/handbook/rosetta/theme-plugin-directories/) to contribute.
+Help translate WebberZone Code Block Highlighting into your language on [WordPress.org](https://translate.wordpress.org/projects/wp-plugins/webberzone-code-block-highlighting). See the [Translator Handbook](https://make.wordpress.org/polyglots/handbook/rosetta/theme-plugin-directories/) for guidance.
 
-### Other Plugins by WebberZone
+### Other plugins by WebberZone
 
-WebberZone Code Block Highlighting is one of the many plugins developed by WebberZone. Check out our other plugins:
-
-* [Contextual Related Posts](https://wordpress.org/plugins/contextual-related-posts/) - Display fast, intelligent related posts to keep visitors on your site longer
-* [Top 10](https://wordpress.org/plugins/top-10/) - Track daily and total visits to your blog posts and display the popular and trending posts
-* [WebberZone Snippetz](https://wordpress.org/plugins/add-to-all/) - The ultimate snippet manager for WordPress to create and manage custom HTML, CSS or JS code snippets
-* [Knowledge Base](https://wordpress.org/plugins/knowledgebase/) - Create a knowledge base or FAQ section on your WordPress site
-* [Better Search](https://wordpress.org/plugins/better-search/) - Enhance the default WordPress search with contextual results sorted by relevance
-* [Auto-Close](https://wordpress.org/plugins/autoclose/) - Automatically close comments, pingbacks and trackbacks and manage revisions
-* [Popular Authors](https://wordpress.org/plugins/popular-authors/) - Display popular authors in your WordPress widget
-* [Followed Posts](https://wordpress.org/plugins/where-did-they-go-from-here/) - Show a list of related posts based on what your users have read
+* [Contextual Related Posts](https://wordpress.org/plugins/contextual-related-posts/) — Display fast, intelligent related posts to keep visitors on your site longer
+* [Top 10](https://wordpress.org/plugins/top-10/) — Track daily and total visits and display popular and trending posts
+* [WebberZone Snippetz](https://wordpress.org/plugins/add-to-all/) — Manage custom HTML, CSS and JS snippets across your site
+* [Knowledge Base](https://wordpress.org/plugins/knowledgebase/) — Create a knowledge base or FAQ section on your WordPress site
+* [Better Search](https://wordpress.org/plugins/better-search/) — Contextual search results sorted by relevance
+* [Auto-Close](https://wordpress.org/plugins/autoclose/) — Automatically close comments, pingbacks, trackbacks and manage revisions
+* [Popular Authors](https://wordpress.org/plugins/popular-authors/) — Display popular authors in a WordPress widget
+* [Followed Posts](https://wordpress.org/plugins/where-did-they-go-from-here/) — Show related posts based on what your visitors have already read
 
 == Installation ==
 
-### WordPress install (the easy way)
+= WordPress admin (recommended) =
 
-1. Navigate to Plugins within your WordPress Admin Area
-2. Click "Add new" and in the search box enter "WebberZone Code Block Highlighting"
-3. Find the plugin in the list (usually the first result) and click "Install Now"
+1. Go to **Plugins > Add New** in your WordPress admin.
+2. Search for **WebberZone Code Block Highlighting**.
+3. Click **Install Now**, then **Activate**.
 
-### Manual install
+= Manual installation =
 
-1. Download the plugin
-2. Extract the contents of webberzone-code-block-highlighting.zip to wp-content/plugins/ folder. You should get a folder called webberzone-code-block-highlighting.
-3. Activate the Plugin in WP-Admin under the Plugins screen
+1. Download the plugin zip file.
+2. Extract it to your `wp-content/plugins/` directory. You should end up with a `webberzone-code-block-highlighting/` folder.
+3. Go to **Plugins** in your WordPress admin and activate **WebberZone Code Block Highlighting**.
+
+After activation, open any post or page in the block editor, add or select a Code block, and the **Code Highlighting** panel will appear in the Inspector Controls sidebar.
 
 == Screenshots ==
 
-1. Block editor with language picker and line numbers toggle in the Inspector Controls sidebar
-2. Frontend code block with Prism.js syntax highlighting applied
-3. Plugin settings page — color scheme and default language options
+1. Block editor — language picker, line numbers toggle, title field, and more in the Inspector Controls sidebar.
+2. Frontend code block with Prism.js syntax highlighting, line numbers, and toolbar.
+3. Plugin settings page — choose a global colour scheme, default language, and more.
 
 == Frequently Asked Questions ==
 
-Check out the [FAQ on the plugin page](https://wordpress.org/plugins/webberzone-code-block-highlighting/faq/).
-
-If your question isn't listed here, please create a new post at the [WordPress.org support forum](https://wordpress.org/support/plugin/webberzone-code-block-highlighting).
-
 = Does this plugin replace the core Code block? =
 
-No. WebberZone Code Block Highlighting uses JavaScript and PHP filters to extend the native `core/code` block. Your existing posts are never invalidated.
+No. WebberZone Code Block Highlighting uses JavaScript and PHP filters to extend the native `core/code` block. It never swaps the block for a custom one, so existing posts are never invalidated and the plugin can be deactivated without leaving behind broken blocks.
 
-= Which languages are supported? =
+= Will my code blocks break if I deactivate the plugin? =
 
-35+ languages including Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Markdown, Nginx, Objective-C, PHP, PowerShell, Python, Ruby, Rust, Sass, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML. Use the `wz_cbh_languages` filter to add more.
+No. Because the plugin extends `core/code` rather than replacing it, deactivating simply removes the highlighting. Your code content is stored in standard WordPress block markup and remains valid.
 
-= Can I add more themes? =
+= Which programming languages are supported? =
 
-Yes. Add an entry to `build-assets.js`, register it in `includes/admin/class-settings.php`, then run `npm run build:assets`. You can also use the `wz_cbh_color_scheme_css_url` filter to point to any CSS file.
+35+ languages out of the box: Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Markdown, Nginx, Objective-C, PHP, PowerShell, Python, Ruby, Rust, Sass, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML.
 
-= Will Prism.js load on every page? =
+Use the `wz_cbh_languages` filter to register additional Prism.js grammars.
 
-No. Assets are only enqueued on pages that contain at least one code block. Use the `wz_cbh_force_load_assets` filter to override this behavior.
+= How do I add a custom or additional Prism theme? =
 
-= How can I report security bugs? =
+1. Add the theme mapping in `build-prism.js`.
+2. Copy the generated CSS to `includes/assets/`.
+3. Register the slug in `includes/admin/class-settings.php`.
+4. Run `npm run build:prism`.
 
-You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team help validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/webberzone-code-block-highlighting)
+You can also use the `wz_cbh_color_scheme_css_url` filter to point to any CSS file without touching the plugin source.
+
+= Does Prism.js load on every page? =
+
+No. Prism CSS and JS are only enqueued on pages that contain at least one code block. All other pages are unaffected. Use the `wz_cbh_force_load_assets` filter to override this behaviour if needed.
+
+= How do I highlight specific lines in a code block? =
+
+Enter a comma-separated list of lines or ranges in the **Highlight Lines** field in the Inspector Controls sidebar (e.g. `1,3-5,8`). This maps to the `data-line` attribute consumed by the Prism line-highlight plugin.
+
+= Can I show a filename or label on the code block? =
+
+Yes. Use the **Title** field in the Inspector Controls sidebar. The label is displayed in the Prism toolbar above the code block.
+
+= Does the plugin support dark mode or multiple themes? =
+
+The plugin ships with 18 Prism themes. The active theme is selected globally on the settings page (**Settings > Code Block Highlighting**). Per-block theme switching is not currently supported.
+
+= Is this plugin compatible with the WordPress block editor (Gutenberg)? =
+
+Yes. The plugin is built specifically for the Gutenberg block editor (WordPress 6.6+) and uses the native block filter APIs. It does not support the Classic Editor.
+
+= How can I report security vulnerabilities? =
+
+Report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team will validate, triage, and handle any reported vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/webberzone-code-block-highlighting)
 
 == Changelog ==
 
 = 1.0.0 =
 
 * Initial release.
-* Extends `core/code` block with Prism.js syntax highlighting.
-* 35+ languages, 18 themes, line numbers, and block title support.
-* Smart asset loading — Prism only enqueued when code blocks are present.
+* Extends `core/code` with Prism.js syntax highlighting — no block replacement, no block validation errors.
+* 35+ supported languages with per-block language selection.
+* 18 built-in Prism themes selectable from the settings page.
+* Per-block controls: language, line numbers, start line, word wrap, title, highlight lines, and max height.
+* Expand/collapse toolbar button for blocks with a max-height set.
+* Smart asset loading — Prism CSS and JS only enqueued on pages containing code blocks.
+* Copy-to-clipboard and show-language toolbar buttons (configurable globally).
+* Global settings page for colour scheme, default language, and more.
+* Developer filters: `wz_cbh_languages`, `wz_cbh_color_scheme_css_url`, `wz_cbh_force_load_assets`.
+* GDPR-friendly: no data collection, no external requests.
 
 == Upgrade Notice ==
 
