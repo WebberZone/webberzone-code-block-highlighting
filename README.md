@@ -16,13 +16,13 @@ __License:__ [GPL-2.0+](http://www.gnu.org/licenses/gpl-2.0.html)
 
 __Plugin page:__ [WebberZone Code Block Highlighting](https://webberzone.com/plugins/webberzone-code-block-highlighting/) | [WordPress.org listing](https://wordpress.org/plugins/webberzone-code-block-highlighting/)
 
-Add beautiful syntax highlighting to the Gutenberg Code block — powered by Prism.js with 18 themes and 40 languages, zero configuration required.
+Add beautiful syntax highlighting to the Gutenberg Code block — powered by Prism.js with 21 themes and 40 languages, zero configuration required.
 
 ## Description
 
 __WebberZone Code Block Highlighting__ is the easiest way to add syntax highlighting to your WordPress site. It extends the native Gutenberg `core/code` block with [Prism.js](https://prismjs.com/) highlighting — no shortcodes, no block replacement, no risk of breaking existing posts.
 
-Simply activate the plugin and your code blocks will instantly display beautiful, readable syntax highlighting on the frontend. Choose from 35+ programming languages and 18 colour themes, all controlled from the block editor's Inspector Controls sidebar.
+Simply activate the plugin and your code blocks will instantly display beautiful, readable syntax highlighting on the frontend. Choose from 35+ programming languages and 21 colour themes, all controlled from the block editor's Inspector Controls sidebar.
 
 ### Why use this plugin?
 
@@ -36,9 +36,9 @@ Simply activate the plugin and your code blocks will instantly display beautiful
 
 40 languages out of the box: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML. Use the `wz_cbh_languages` filter to add or remove entries from the language picker.
 
-### Included themes (18)
+### Included themes (21)
 
-A11y Dark, Atom Dark, Darcula, Dracula, GitHub (Light), Gruvbox Dark, Gruvbox Light, Material Dark, Material Oceanic, Night Owl, Nord, One Dark, one Light, Shades of Purple, Solarized Dark, Synthwave '84, VS (Light), VS Code Dark+.
+A11y Dark, Coldark Cold (Light), Coldark Dark, Dracula, Duotone Dark, Duotone Light, GitHub (Light), Gruvbox Dark, Gruvbox Light, Lucario, Material Dark, Material Light, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS Code Dark+, Xonokai (Monokai).
 
 ### Per-block features
 

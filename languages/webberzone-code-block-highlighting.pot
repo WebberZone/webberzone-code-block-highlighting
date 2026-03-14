@@ -1,0 +1,386 @@
+# Copyright (C) 2026 WebberZone
+# This file is distributed under the GPL-2.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: WebberZone Code Block Highlighting 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/webberzone-code-block-highlighting\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-03-14T08:15:12+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: webberzone-code-block-highlighting\n"
+
+#. Plugin Name of the plugin
+#: webberzone-code-block-highlighting.php
+#: includes/admin/class-admin.php:92
+msgid "WebberZone Code Block Highlighting"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: webberzone-code-block-highlighting.php
+msgid "https://github.com/WebberZone/webberzone-code-block-highlighting"
+msgstr ""
+
+#. Description of the plugin
+#: webberzone-code-block-highlighting.php
+msgid "Extends the Gutenberg Code block with syntax highlighting powered by Prism.js."
+msgstr ""
+
+#. Author of the plugin
+#: webberzone-code-block-highlighting.php
+msgid "WebberZone"
+msgstr ""
+
+#. Author URI of the plugin
+#: webberzone-code-block-highlighting.php
+msgid "https://webberzone.com"
+msgstr ""
+
+#: includes/admin/class-admin.php:90
+msgid "Code Block Highlighting quick links"
+msgstr ""
+
+#: includes/admin/class-admin.php:91
+msgid "Code Block Highlighting admin shortcuts"
+msgstr ""
+
+#: includes/admin/class-admin.php:93
+msgid "Beautiful syntax highlighting for your code blocks."
+msgstr ""
+
+#: includes/admin/class-admin.php:94
+msgid "Configure your Prism.js theme and default language settings, or explore more WebberZone plugins."
+msgstr ""
+
+#: includes/admin/class-admin.php:98
+msgid "Settings"
+msgstr ""
+
+#: includes/admin/class-admin.php:104
+msgid "WebberZone Plugins"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:74
+msgid "Welcome to Code Block Highlighting"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:75
+msgid "Thank you for installing Code Block Highlighting! This wizard will help you configure the essential settings to get your code blocks looking great."
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:79
+#: includes/admin/class-settings-wizard.php:84
+#: includes/admin/class-settings.php:182
+msgid "Color Scheme"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:80
+msgid "Choose the syntax highlighting color scheme applied to all code blocks on your site."
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:85
+msgid "Select the Prism.js theme for syntax highlighting."
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:93
+#: includes/admin/class-settings-wizard.php:98
+#: includes/admin/class-settings.php:211
+msgid "Default Language"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:94
+msgid "Optionally set a default programming language to apply automatically when a new code block is inserted."
+msgstr ""
+
+#. translators: %s: link to Prism supported languages list
+#: includes/admin/class-settings-wizard.php:101
+#, php-format
+msgid "Use a language alias from the %s. Leave blank to disable."
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:102
+msgid "supported languages list"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:129
+#: includes/admin/class-settings-wizard.php:131
+msgid "Code Block Highlighting Setup Wizard"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:130
+msgid "Setup Wizard"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:132
+msgid "Next Step"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:133
+msgid "Previous Step"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:134
+msgid "Finish Setup"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:135
+msgid "Skip Wizard"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:136
+msgid "Setup Wizard Steps"
+msgstr ""
+
+#. translators: %1$d: Current step number, %2$d: Total number of steps
+#: includes/admin/class-settings-wizard.php:138
+#, php-format
+msgid "Step %1$d of %2$d"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:139
+msgid "Setup Complete!"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:140
+msgid "Your Code Block Highlighting plugin has been configured successfully!"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:141
+msgid "Go to Settings"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:161
+msgid "Welcome to Code Block Highlighting! Would you like to run the setup wizard to configure the plugin?"
+msgstr ""
+
+#: includes/admin/class-settings-wizard.php:163
+msgid "Run Setup Wizard"
+msgstr ""
+
+#: includes/admin/class-settings.php:119
+#: includes/admin/class-settings.php:142
+msgid "Code Block Highlighting Settings"
+msgstr ""
+
+#: includes/admin/class-settings.php:120
+msgid "Settings have been reset to their default values. Reload this page to view the updated settings."
+msgstr ""
+
+#: includes/admin/class-settings.php:121
+msgid "Settings updated."
+msgstr ""
+
+#: includes/admin/class-settings.php:122
+msgid "Save Changes"
+msgstr ""
+
+#: includes/admin/class-settings.php:123
+msgid "Reset all settings"
+msgstr ""
+
+#: includes/admin/class-settings.php:124
+msgid "Do you really want to reset all these settings to their default values?"
+msgstr ""
+
+#: includes/admin/class-settings.php:125
+msgid "Modified from default setting"
+msgstr ""
+
+#: includes/admin/class-settings.php:143
+msgid "Code Block Highlighting"
+msgstr ""
+
+#. translators: %s: plugin name
+#: includes/admin/class-settings.php:151
+#, php-format
+msgid "Thank you for using %s!"
+msgstr ""
+
+#: includes/admin/class-settings.php:166
+msgid "General"
+msgstr ""
+
+#: includes/admin/class-settings.php:183
+msgid "Choose the syntax highlighting theme for all code blocks. This styling is applied only on the frontend and not in the block editor."
+msgstr ""
+
+#: includes/admin/class-settings.php:190
+msgid "Copy to Clipboard"
+msgstr ""
+
+#: includes/admin/class-settings.php:191
+msgid "Show a \"Copy\" button on code blocks, allowing visitors to copy the code with one click."
+msgstr ""
+
+#: includes/admin/class-settings.php:197
+msgid "Show Language Label"
+msgstr ""
+
+#: includes/admin/class-settings.php:198
+msgid "Display the programming language name in the toolbar above each code block."
+msgstr ""
+
+#: includes/admin/class-settings.php:204
+msgid "Show File Name"
+msgstr ""
+
+#: includes/admin/class-settings.php:205
+msgid "Display the file name or title in the toolbar above each code block, when one is set."
+msgstr ""
+
+#: includes/admin/class-settings.php:212
+msgid "Automatically set this language when a code block is inserted. Leave blank to disable."
+msgstr ""
+
+#: includes/admin/class-settings.php:220
+msgid "Font Size (px)"
+msgstr ""
+
+#: includes/admin/class-settings.php:221
+msgid "Font size for code blocks in pixels. Set to 0 to use the active theme default."
+msgstr ""
+
+#: includes/admin/settings/sidebar.php:16
+#: includes/admin/sidebar.php:16
+msgid "Quick links"
+msgstr ""
+
+#: includes/admin/settings/sidebar.php:22
+#: includes/admin/sidebar.php:22
+msgid "WebberZone Code Block Highlighting homepage"
+msgstr ""
+
+#: includes/admin/settings/sidebar.php:26
+#: includes/admin/sidebar.php:26
+msgid "Knowledge Base"
+msgstr ""
+
+#: includes/admin/settings/sidebar.php:30
+#: includes/admin/sidebar.php:30
+msgid "Support"
+msgstr ""
+
+#: includes/admin/settings/sidebar.php:34
+#: includes/admin/sidebar.php:34
+msgid "Reviews"
+msgstr ""
+
+#: includes/admin/settings/sidebar.php:38
+#: includes/admin/sidebar.php:38
+msgid "Github repository"
+msgstr ""
+
+#: includes/admin/settings/sidebar.php:42
+#: includes/admin/sidebar.php:42
+msgid "Ajay's blog"
+msgstr ""
+
+#: includes/admin/settings/sidebar.php:50
+#: includes/admin/sidebar.php:50
+msgid "WebberZone plugins"
+msgstr ""
+
+#: includes/admin/settings/sidebar.php:72
+#: includes/admin/sidebar.php:72
+msgid "Follow us"
+msgstr ""
+
+#: includes/blocks/build/frontend.js:1
+#: includes/blocks/src/js/frontend.js:185
+#: includes/blocks/src/js/frontend.js:201
+msgid "Expand"
+msgstr ""
+
+#: includes/blocks/build/frontend.js:1
+#: includes/blocks/src/js/frontend.js:193
+msgid "Collapse"
+msgstr ""
+
+#: includes/blocks/build/frontend.js:1
+#: includes/blocks/src/js/frontend.js:125
+msgid "Copied code to clipboard."
+msgstr ""
+
+#: includes/blocks/build/frontend.js:1
+#: includes/blocks/src/js/frontend.js:129
+msgid "Unable to copy code to clipboard."
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:110
+msgid "Syntax Highlighting"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:118
+msgid "Language"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:125
+msgid "Select a language"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:144
+msgid "File name or title"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:150
+msgid "e.g. index.js (optional)"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:158
+msgid "Show line numbers"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:172
+msgid "Start line number"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:189
+msgid "Word wrap"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:201
+msgid "Highlight lines"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:211
+msgid "e.g. 1,3-5 (optional)"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:220
+msgid "Max height (px)"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:232
+msgid "e.g. 400 (optional)"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:84
+msgid "Saved!"
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:89
+msgid "Error saving."
+msgstr ""
+
+#: includes/blocks/build/index.js:1
+#: includes/blocks/src/js/index.js:245
+msgid "Save as default"
+msgstr ""
