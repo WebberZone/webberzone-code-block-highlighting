@@ -64,6 +64,7 @@ class Blocks {
 			'lineNumbers'      => (bool) wz_cbh_get_option( 'default-line-numbers', false ),
 			'lineNumbersStart' => (int) wz_cbh_get_option( 'default-line-numbers-start', 1 ),
 			'wordWrap'         => (bool) wz_cbh_get_option( 'default-word-wrap', false ),
+			'maxHeight'        => (int) wz_cbh_get_option( 'default-max-height', 0 ),
 		);
 
 		wp_add_inline_script(
@@ -207,6 +208,10 @@ class Blocks {
 					'wordWrap'         => array(
 						'type' => 'boolean',
 					),
+					'maxHeight'        => array(
+						'type'    => 'integer',
+						'minimum' => 0,
+					),
 				),
 			)
 		);
@@ -241,6 +246,11 @@ class Blocks {
 		if ( $request->has_param( 'wordWrap' ) ) {
 			wz_cbh_update_option( 'default-word-wrap', (bool) $request->get_param( 'wordWrap' ) );
 			$updated[] = 'wordWrap';
+		}
+
+		if ( $request->has_param( 'maxHeight' ) ) {
+			wz_cbh_update_option( 'default-max-height', (int) $request->get_param( 'maxHeight' ) );
+			$updated[] = 'maxHeight';
 		}
 
 		return new \WP_REST_Response( array( 'updated' => $updated ), 200 );

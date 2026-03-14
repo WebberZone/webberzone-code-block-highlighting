@@ -51,12 +51,14 @@ const edit = ({ attributes, setAttributes }) => {
 
 		if (!language)
 			updates.language = defaults.language || cbhDefaultLang || '';
-		if (lineNumbers === undefined && defaults.lineNumbers)
+		if (lineNumbers === undefined && 'lineNumbers' in defaults)
 			updates.lineNumbers = defaults.lineNumbers;
 		if (lineNumbersStart === undefined && defaults.lineNumbersStart > 1)
 			updates.lineNumbersStart = defaults.lineNumbersStart;
-		if (wordWrap === undefined && defaults.wordWrap)
+		if (wordWrap === undefined && 'wordWrap' in defaults)
 			updates.wordWrap = defaults.wordWrap;
+		if (maxHeight === undefined && defaults.maxHeight > 0)
+			updates.maxHeight = defaults.maxHeight;
 
 		// Migrate title from old code-syntax-block format (pre[title]) to ours
 		// (pre[data-title]). Mirrors the toolbar JS: getAttribute('data-title') ||
@@ -78,6 +80,7 @@ const edit = ({ attributes, setAttributes }) => {
 					lineNumbers: !!lineNumbers,
 					lineNumbersStart: lineNumbersStart || 1,
 					wordWrap: !!wordWrap,
+					maxHeight: maxHeight || 0,
 				},
 			});
 			setSavedNotice(
