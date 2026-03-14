@@ -38,6 +38,21 @@ pre.word-wrap code[class*='language-'] {
 }
 
 /**
+ * Line highlight — override Prism's near-invisible defaults (8–10% opacity)
+ * and fix vertical alignment.
+ *
+ * Prism's `padding: inherit 0` makes each stripe inherit the pre's top/bottom
+ * padding, causing it to render taller than one line and appear misaligned.
+ * Reset padding to zero so the stripe height matches exactly one line row.
+ */
+.line-highlight {
+	padding-top: 0;
+	padding-bottom: 0;
+	background: hsla(24, 20%, 50%, 0.3);
+	background: linear-gradient(to right, hsla(24, 20%, 50%, 0.35) 70%, hsla(24, 20%, 50%, 0));
+}
+
+/**
  * Toolbar buttons — accessible across all Prism themes.
  *
  * Prism's defaults use rgba(224,224,224,0.2) background with #bbb text,
@@ -60,7 +75,6 @@ div.code-toolbar > .toolbar > .toolbar-item > button:hover,
 div.code-toolbar > .toolbar > .toolbar-item > button:focus,
 div.code-toolbar > .toolbar > .toolbar-item > span:hover,
 div.code-toolbar > .toolbar > .toolbar-item > span:focus {
-	color: var(--wz-cbh-toolbar-color);
 	background: var(--wz-cbh-toolbar-bg-hover);
 	outline: 2px solid var(--wz-cbh-toolbar-outline);
 	outline-offset: 1px;

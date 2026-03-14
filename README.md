@@ -16,7 +16,7 @@ __License:__ [GPL-2.0+](http://www.gnu.org/licenses/gpl-2.0.html)
 
 __Plugin page:__ [WebberZone Code Block Highlighting](https://webberzone.com/plugins/webberzone-code-block-highlighting/) | [WordPress.org listing](https://wordpress.org/plugins/webberzone-code-block-highlighting/)
 
-Add beautiful syntax highlighting to the Gutenberg Code block — powered by Prism.js with 18 themes and 35+ languages, zero configuration required.
+Add beautiful syntax highlighting to the Gutenberg Code block — powered by Prism.js with 18 themes and 40 languages, zero configuration required.
 
 ## Description
 
@@ -34,7 +34,7 @@ Simply activate the plugin and your code blocks will instantly display beautiful
 
 ### Supported languages
 
-35+ languages out of the box: Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Markdown, Nginx, Objective-C, PHP, PowerShell, Python, Ruby, Rust, Sass, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, YAML, and more. Use the `wz_cbh_languages` filter to register additional languages.
+40 languages out of the box: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML. Use the `wz_cbh_languages` filter to add or remove entries from the language picker.
 
 ### Included themes (18)
 
@@ -97,7 +97,7 @@ __Does this plugin replace the core Code block?__
 No. The plugin uses JavaScript and PHP filters to extend `core/code`. Deactivating it leaves behind valid, standard WordPress blocks.
 
 __Which languages are supported?__
-35+ out of the box. Use the `wz_cbh_languages` filter to register additional Prism.js grammars.
+40 out of the box. Use the `wz_cbh_languages` filter to add or remove entries from the language picker — note the corresponding Prism.js grammar must also be available on the frontend.
 
 __Does Prism.js load on every page?__
 No. Assets are only enqueued on pages containing at least one code block. Use `wz_cbh_force_load_assets` to override.

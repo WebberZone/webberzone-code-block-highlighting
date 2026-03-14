@@ -9,7 +9,7 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add beautiful syntax highlighting to the Gutenberg Code block — powered by Prism.js with 18 themes and 35+ languages, zero configuration required.
+Add beautiful syntax highlighting to the Gutenberg Code block — powered by Prism.js with 18 themes and 40 languages, zero configuration required.
 
 == Description ==
 
@@ -27,7 +27,7 @@ Simply activate the plugin and your code blocks will instantly display beautiful
 
 ### Supported languages
 
-35+ languages including: Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Markdown, Nginx, Objective-C, PHP, PowerShell, Python, Ruby, Rust, Sass, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, YAML, and more. Use the `wz_cbh_languages` filter to register additional languages.
+40 languages including: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, YAML. Use the `wz_cbh_languages` filter to add or remove entries from the language picker.
 
 ### Included themes (18)
 
@@ -115,9 +115,9 @@ No. Because the plugin extends `core/code` rather than replacing it, deactivatin
 
 = Which programming languages are supported? =
 
-35+ languages out of the box: Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Markdown, Nginx, Objective-C, PHP, PowerShell, Python, Ruby, Rust, Sass, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML.
+40 languages out of the box: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML.
 
-Use the `wz_cbh_languages` filter to register additional Prism.js grammars.
+Use the `wz_cbh_languages` filter to add or remove entries from the language picker. Note: adding a language to the filter only affects the UI dropdown — the corresponding Prism.js grammar must also be available on the frontend (either bundled in `frontend.js` or loaded separately).
 
 = How do I add a custom or additional Prism theme? =
 
@@ -158,7 +158,7 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 
 * Initial release.
 * Extends `core/code` with Prism.js syntax highlighting — no block replacement, no block validation errors.
-* 35+ supported languages with per-block language selection.
+* 35 supported languages with per-block language selection.
 * 18 built-in Prism themes selectable from the settings page.
 * Per-block controls: language, line numbers, start line, word wrap, title, highlight lines, and max height.
 * Expand/collapse toolbar button for blocks with a max-height set.
