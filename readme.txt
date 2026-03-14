@@ -9,13 +9,13 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add beautiful syntax highlighting to the Gutenberg Code block — powered by Prism.js with 18 themes and 40 languages, zero configuration required.
+Add beautiful syntax highlighting to the Gutenberg Code block — powered by Prism.js with 21 themes and 40 languages, zero configuration required.
 
 == Description ==
 
 **WebberZone Code Block Highlighting** is the easiest way to add syntax highlighting to your WordPress site. It extends the native Gutenberg `core/code` block with [Prism.js](https://prismjs.com/) highlighting — no shortcodes, no block replacement, no risk of breaking existing posts.
 
-Simply activate the plugin and your code blocks will instantly display beautiful, readable syntax highlighting on the frontend. Choose from 35+ programming languages and 18 colour themes, all controlled from the block editor's Inspector Controls sidebar.
+Simply activate the plugin and your code blocks will instantly display beautiful, readable syntax highlighting on the frontend. Choose from 35+ programming languages and 21 colour themes, all controlled from the block editor's Inspector Controls sidebar.
 
 ### Why use this plugin?
 
@@ -29,9 +29,9 @@ Simply activate the plugin and your code blocks will instantly display beautiful
 
 40 languages including: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, YAML. Use the `wz_cbh_languages` filter to add or remove entries from the language picker.
 
-### Included themes (18)
+### Included themes (21)
 
-A11y Dark, Atom Dark, Darcula, Dracula, GitHub (Light), Gruvbox Dark, Gruvbox Light, Material Dark, Material Oceanic, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS (Light), VS Code Dark+.
+A11y Dark, Coldark Cold (Light), Coldark Dark, Dracula, Duotone Dark, Duotone Light, GitHub (Light), Gruvbox Dark, Gruvbox Light, Lucario, Material Dark, Material Light, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS Code Dark+, Xonokai (Monokai).
 
 ### Per-block features
 
@@ -142,7 +142,7 @@ Yes. Use the **Title** field in the Inspector Controls sidebar. The label is dis
 
 = Does the plugin support dark mode or multiple themes? =
 
-The plugin ships with 18 Prism themes. The active theme is selected globally on the settings page (**Settings > Code Block Highlighting**). Per-block theme switching is not currently supported.
+The plugin ships with 21 Prism themes. The active theme is selected globally on the settings page (**Settings > Code Block Highlighting**). Per-block theme switching is not currently supported.
 
 = Is this plugin compatible with the WordPress block editor (Gutenberg)? =
 

@@ -15,12 +15,12 @@ const themes = [
 		dest: 'includes/assets/prism-a11y-dark.css',
 	},
 	{
-		src: 'node_modules/prism-themes/themes/prism-atom-dark.css',
-		dest: 'includes/assets/prism-atom-dark.css',
+		src: 'node_modules/prism-themes/themes/prism-coldark-cold.css',
+		dest: 'includes/assets/prism-coldark-cold.css',
 	},
 	{
-		src: 'node_modules/prism-themes/themes/prism-darcula.css',
-		dest: 'includes/assets/prism-darcula.css',
+		src: 'node_modules/prism-themes/themes/prism-coldark-dark.css',
+		dest: 'includes/assets/prism-coldark-dark.css',
 	},
 	{
 		src: 'node_modules/prism-themes/themes/prism-dracula.css',
@@ -43,8 +43,8 @@ const themes = [
 		dest: 'includes/assets/prism-material-dark.css',
 	},
 	{
-		src: 'node_modules/prism-themes/themes/prism-material-oceanic.css',
-		dest: 'includes/assets/prism-material-oceanic.css',
+		src: 'node_modules/prism-themes/themes/prism-lucario.css',
+		dest: 'includes/assets/prism-lucario.css',
 	},
 	{
 		src: 'node_modules/prism-themes/themes/prism-night-owl.css',
@@ -75,8 +75,20 @@ const themes = [
 		dest: 'includes/assets/prism-synthwave84.css',
 	},
 	{
-		src: 'node_modules/prism-themes/themes/prism-vs.css',
-		dest: 'includes/assets/prism-vs.css',
+		src: 'node_modules/prism-themes/themes/prism-duotone-dark.css',
+		dest: 'includes/assets/prism-duotone-dark.css',
+	},
+	{
+		src: 'node_modules/prism-themes/themes/prism-duotone-light.css',
+		dest: 'includes/assets/prism-duotone-light.css',
+	},
+	{
+		src: 'node_modules/prism-themes/themes/prism-material-light.css',
+		dest: 'includes/assets/prism-material-light.css',
+	},
+	{
+		src: 'node_modules/prism-themes/themes/prism-xonokai.css',
+		dest: 'includes/assets/prism-xonokai.css',
 	},
 	{
 		src: 'node_modules/prism-themes/themes/prism-vsc-dark-plus.css',

@@ -75,6 +75,7 @@ div.code-toolbar > .toolbar > .toolbar-item > button:hover,
 div.code-toolbar > .toolbar > .toolbar-item > button:focus,
 div.code-toolbar > .toolbar > .toolbar-item > span:hover,
 div.code-toolbar > .toolbar > .toolbar-item > span:focus {
+	color: var(--wz-cbh-toolbar-color);
 	background: var(--wz-cbh-toolbar-bg-hover);
 	outline: 2px solid var(--wz-cbh-toolbar-outline);
 	outline-offset: 1px;

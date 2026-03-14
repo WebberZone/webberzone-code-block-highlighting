@@ -51,6 +51,8 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **Editor canvas styling** — `enqueue_editor_canvas_styles()` extracts only `background` and `color` from the active Prism theme CSS and re-injects them with `.block-editor-block-list__layout` prepended to win the specificity race against the editor's own `pre` styles. Layout properties are intentionally excluded.
 
+**Themes (21):** A11y Dark, Coldark Cold, Coldark Dark, Dracula, Duotone Dark, Duotone Light, GitHub Light, Gruvbox Dark, Gruvbox Light, Lucario, Material Dark, Material Light, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS Code Dark+, Xonokai (Monokai).
+
 **Default color scheme:** `prism-onedark`
 
 **If you change block attributes in JS**, update `render_code_block()` in `class-blocks.php` and the defaults flow as well.

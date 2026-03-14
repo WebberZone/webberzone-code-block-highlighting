@@ -29,14 +29,17 @@ class Settings {
 	 */
 	public static array $color_schemes = array(
 		'prism-a11y-dark'           => 'A11y Dark',
-		'prism-atom-dark'           => 'Atom Dark',
-		'prism-darcula'             => 'Darcula',
+		'prism-coldark-cold'        => 'Coldark Cold (Light)',
+		'prism-coldark-dark'        => 'Coldark Dark',
 		'prism-dracula'             => 'Dracula',
+		'prism-duotone-dark'        => 'Duotone Dark',
+		'prism-duotone-light'       => 'Duotone Light',
 		'prism-ghcolors'            => 'GitHub (Light)',
 		'prism-gruvbox-dark'        => 'Gruvbox Dark',
 		'prism-gruvbox-light'       => 'Gruvbox Light',
+		'prism-lucario'             => 'Lucario',
 		'prism-material-dark'       => 'Material Dark',
-		'prism-material-oceanic'    => 'Material Oceanic',
+		'prism-material-light'      => 'Material Light',
 		'prism-night-owl'           => 'Night Owl',
 		'prism-nord'                => 'Nord',
 		'prism-onedark'             => 'One Dark',
@@ -44,8 +47,8 @@ class Settings {
 		'prism-shades-of-purple'    => 'Shades of Purple',
 		'prism-solarized-dark-atom' => 'Solarized Dark',
 		'prism-synthwave84'         => 'Synthwave \'84',
-		'prism-vs'                  => 'VS (Light)',
 		'prism-vsc-dark-plus'       => 'VS Code Dark+',
+		'prism-xonokai'             => 'Xonokai (Monokai)',
 	);
 
 	/**
