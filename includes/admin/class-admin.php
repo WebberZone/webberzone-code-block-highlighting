@@ -67,6 +67,28 @@ class Admin {
 		$this->admin_notices_api = new Admin_Notices_API();
 		$this->settings_wizard   = new Settings_Wizard();
 		$this->admin_banner      = new Admin_Banner( $this->get_admin_banner_config() );
+
+		add_filter( 'plugin_action_links_' . plugin_basename( WZ_CBH_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
+	}
+
+	/**
+	 * Add action links to the plugin listing page.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param array<string, string> $links Existing action links.
+	 * @return array<string, string> Modified action links.
+	 */
+	public function plugin_action_links( array $links ): array {
+		$settings_link = sprintf(
+			'<a href="%s">%s</a>',
+			esc_url( admin_url( 'options-general.php?page=wz_cbh_settings' ) ),
+			esc_html__( 'Settings', 'webberzone-code-block-highlighting' )
+		);
+
+		array_unshift( $links, $settings_link );
+
+		return $links;
 	}
 
 	/**
