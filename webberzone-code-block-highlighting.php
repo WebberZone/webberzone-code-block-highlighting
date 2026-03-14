@@ -14,7 +14,7 @@
  * Plugin Name: WebberZone Code Block Highlighting
  * Plugin URI:  https://github.com/WebberZone/webberzone-code-block-highlighting
  * Description: Extends the Gutenberg Code block with syntax highlighting powered by Prism.js.
- * Version:     1.0.0
+ * Version:     1.0.0-RC1
  * Author:      WebberZone
  * Author URI:  https://webberzone.com
  * License:     GPL-2.0+
