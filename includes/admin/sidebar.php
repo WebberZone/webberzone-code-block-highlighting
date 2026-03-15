@@ -60,6 +60,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<li><a href="https://webberzone.com/webberzone-followed-posts/" target="_blank">Followed Posts</a></li>
 					<li><a href="https://webberzone.com/plugins/popular-authors/" target="_blank">Popular Authors</a></li>
 					<li><a href="https://webberzone.com/plugins/autoclose/" target="_blank">Auto-Close</a></li>
+					<li><a href="https://webberzone.com/plugins/webberzone-link-warnings/" target="_blank">Link Warnings</a></li>
 				</ul>
 			</div>
 		</div><!-- /.inside -->
