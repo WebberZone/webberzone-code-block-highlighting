@@ -1,6 +1,6 @@
 === WebberZone Code Block Highlighting ===
 Contributors: webberzone, ajay
-Donate link: https://wzn.io/donate-cbh
+Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code, highlight, block editor, syntax highlighter, code highlighting, prism.js, developer, code syntax
 Requires at least: 6.6
 Tested up to: 6.9
@@ -64,7 +64,7 @@ WebberZone Code Block Highlighting does not collect personal data, set cookies, 
 
 ### Contribute
 
-The plugin is open source and available on [GitHub](https://github.com/WebberZone/webberzone-code-block-highlighting). Pull requests for bug fixes and new features are welcome. Please use [GitHub Issues](https://github.com/WebberZone/webberzone-code-block-highlighting/issues) for bug reports — GitHub is not a support forum.
+The plugin is open source and available on [GitHub](https://github.com/WebberZone/webberzone-code-block-highlighting). Pull requests for bug fixes and new features are welcome. Please use the [WordPress.org support forum](https://wordpress.org/support/plugin/webberzone-code-block-highlighting/) for support and [GitHub Issues](https://github.com/WebberZone/webberzone-code-block-highlighting/issues) for confirmed bug reports.
 
 ### Translations
 
@@ -159,8 +159,8 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 
 * Initial release.
 * Extends `core/code` with Prism.js syntax highlighting — no block replacement, no block validation errors.
-* 35 supported languages with per-block language selection.
-* 18 built-in Prism themes selectable from the settings page.
+* 40 supported languages with per-block language selection.
+* 21 built-in Prism themes selectable from the settings page.
 * Per-block controls: language, line numbers, start line, word wrap, title, highlight lines, and max height.
 * Expand/collapse toolbar button for blocks with a max-height set.
 * Smart asset loading — Prism CSS and JS only enqueued on pages containing code blocks.
