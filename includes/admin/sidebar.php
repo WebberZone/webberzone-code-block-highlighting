@@ -12,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 ?>
 <div class="postbox-container">
+	<a href="https://wzn.io/donate-wz" target="_blank" rel="noopener noreferrer"><img src="<?php echo esc_url( WZ_CBH_PLUGIN_URL . 'includes/admin/images/support.webp' ); ?>" alt="<?php esc_attr_e( 'Support WebberZone Code Block Highlighting', 'webberzone-code-block-highlighting' ); ?>" style="max-width: 100%; height: auto;"></a>
+
 	<div id="qlinksdiv" class="postbox meta-box-sortables">
 		<h2 class="metabox-holder"><span><?php esc_html_e( 'Quick links', 'webberzone-code-block-highlighting' ); ?></span></h2>
 
@@ -63,14 +65,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<li><a href="https://webberzone.com/plugins/webberzone-link-warnings/" target="_blank" rel="noopener noreferrer">Link Warnings</a></li>
 				</ul>
 			</div>
-		</div><!-- /.inside -->
-	</div><!-- /.postbox -->
-
-	<div id="supportdiv" class="postbox meta-box-sortables">
-		<h2 class="metabox-holder"><span><?php esc_html_e( 'Support the plugin', 'webberzone-code-block-highlighting' ); ?></span></h2>
-
-		<div class="inside" style="text-align: center">
-			<a href="https://wzn.io/donate-wz" target="_blank" rel="noopener noreferrer"><img src="<?php echo esc_url( WZ_CBH_PLUGIN_URL . 'includes/admin/images/support.webp' ); ?>" alt="<?php esc_attr_e( 'Support WebberZone Code Block Highlighting', 'webberzone-code-block-highlighting' ); ?>"></a>
 		</div><!-- /.inside -->
 	</div><!-- /.postbox -->
 
