@@ -2,7 +2,7 @@
 /**
  * Admin notices API.
  *
- * @package WebberZone\Knowledge_Base\Admin
+ * @package WebberZone\Code_Block_Highlighting\Admin
  */
 
 namespace WebberZone\Code_Block_Highlighting\Admin;
