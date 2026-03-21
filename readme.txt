@@ -1,7 +1,7 @@
 === WebberZone Code Block Highlighting ===
 Contributors: webberzone, ajay
 Donate link: https://wzn.io/donate-wz
-Tags: syntax highlighting, code block, prism, gutenberg, code, highlight, block editor, syntax highlighter, code highlighting, prism.js, developer, code syntax
+Tags: syntax highlighting, code block, prism, gutenberg, code
 Requires at least: 6.6
 Tested up to: 6.9
 Stable tag: 1.0.0
