@@ -1,6 +1,7 @@
 /vendor/
 /node_modules/
 /phpcompat-tools/
+/build/
 
 # Lock files
 package-lock.json
