@@ -29,7 +29,7 @@ npm run zip            # Plugin zip
 
 **Namespace:** `WebberZone\Code_Block_Highlighting`
 
-Bootstrap: `wz_cbh()` singleton on `plugins_loaded` → instantiates `Frontend\Blocks`, `Frontend\Styles_Handler` → `Admin\Admin` on `init` (admin only).
+Bootstrap: `wzcbh()` singleton on `plugins_loaded` → instantiates `Frontend\Blocks`, `Frontend\Styles_Handler` → `Admin\Admin` on `init` (admin only).
 
 Key files:
 - `includes/class-main.php` — bootstrap and object wiring
@@ -47,7 +47,7 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **`maxHeight`** — CSS-only: serialized as inline `style` by the block save function, not touched by the PHP render filter.
 
-**`wz_cbh_languages` filter** — controls the editor UI dropdown only. Does not affect which Prism grammars are bundled. Adding a slug without a matching grammar import in `frontend.js` results in plain-text output.
+**`wzcbh_languages` filter** — controls the editor UI dropdown only. Does not affect which Prism grammars are bundled. Adding a slug without a matching grammar import in `frontend.js` results in plain-text output.
 
 **Editor canvas styling** — `enqueue_editor_canvas_styles()` extracts only `background` and `color` from the active Prism theme CSS and re-injects them with `.block-editor-block-list__layout` prepended to win the specificity race against the editor's own `pre` styles. Layout properties are intentionally excluded.
 
@@ -59,15 +59,15 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 ## Asset loading
 
-Prism assets load only on pages containing at least one `core/code` block (`Styles_Handler::enqueue_assets()`). Use `wz_cbh_force_load_assets` to override.
+Prism assets load only on pages containing at least one `core/code` block (`Styles_Handler::enqueue_assets()`). Use `wzcbh_force_load_assets` to override.
 
 ## Filters and routes
 
-- `wz_cbh_languages` — language picker UI list (`slug => label`); UI only, not grammar loader
-- `wz_cbh_color_scheme_css_url` — override the Prism theme CSS URL
-- `wz_cbh_force_load_assets` — force Prism assets to load on every page
-- REST route: `wz-cbh/v1/default-settings`
-- Settings key: `wz_cbh_settings`
+- `wzcbh_languages` — language picker UI list (`slug => label`); UI only, not grammar loader
+- `wzcbh_color_scheme_css_url` — override the Prism theme CSS URL
+- `wzcbh_force_load_assets` — force Prism assets to load on every page
+- REST route: `wzcbh/v1/default-settings`
+- Settings key: `wzcbh_settings`
 
 ## Adding a Prism theme
 
