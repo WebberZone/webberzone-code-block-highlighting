@@ -241,47 +241,47 @@ msgid "Font size for code blocks in pixels. Set to 0 to use the active theme def
 msgstr "Font size for code blocks in pixels. Set to 0 to use the active theme default."
 
 #: includes/admin/settings/sidebar.php:16
-#: includes/admin/sidebar.php:16
+#: includes/admin/sidebar.php:18
 msgid "Quick links"
 msgstr "Quick links"
 
 #: includes/admin/settings/sidebar.php:22
-#: includes/admin/sidebar.php:22
+#: includes/admin/sidebar.php:24
 msgid "WebberZone Code Block Highlighting homepage"
 msgstr "WebberZone Code Block Highlighting homepage"
 
 #: includes/admin/settings/sidebar.php:26
-#: includes/admin/sidebar.php:26
+#: includes/admin/sidebar.php:28
 msgid "Knowledge Base"
 msgstr "Knowledge Base"
 
 #: includes/admin/settings/sidebar.php:30
-#: includes/admin/sidebar.php:30
+#: includes/admin/sidebar.php:32
 msgid "Support"
 msgstr "Support"
 
 #: includes/admin/settings/sidebar.php:34
-#: includes/admin/sidebar.php:34
+#: includes/admin/sidebar.php:36
 msgid "Reviews"
 msgstr "Reviews"
 
 #: includes/admin/settings/sidebar.php:38
-#: includes/admin/sidebar.php:38
+#: includes/admin/sidebar.php:40
 msgid "Github repository"
 msgstr "Github repository"
 
 #: includes/admin/settings/sidebar.php:42
-#: includes/admin/sidebar.php:42
+#: includes/admin/sidebar.php:44
 msgid "Ajay's blog"
 msgstr "Ajay's blog"
 
 #: includes/admin/settings/sidebar.php:50
-#: includes/admin/sidebar.php:50
+#: includes/admin/sidebar.php:52
 msgid "WebberZone plugins"
 msgstr "WebberZone plugins"
 
 #: includes/admin/settings/sidebar.php:72
-#: includes/admin/sidebar.php:81
+#: includes/admin/sidebar.php:75
 msgid "Follow us"
 msgstr "Follow us"
 
@@ -381,15 +381,11 @@ msgstr "Error saving."
 msgid "Save as default"
 msgstr "Save as default"
 
+#: includes/admin/sidebar.php:15
+msgid "Support WebberZone Code Block Highlighting"
+msgstr ""
+
 #. Plugin URI of the plugin
 #: webberzone-code-block-highlighting.php
-msgid "https://webberzone.com/plugins/webberzone-code-block-highlighting/"
-msgstr ""
-
-#: includes/admin/sidebar.php:70
-msgid "Support the plugin"
-msgstr ""
-
-#: includes/admin/sidebar.php:73
-msgid "Support WebberZone Code Block Highlighting"
+msgid "https://webberzone.com/webberzone-code-block-highlighting-page/"
 msgstr ""
