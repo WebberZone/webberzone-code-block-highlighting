@@ -21,7 +21,7 @@
 		"languages",
 		"webberzone-code-block-highlighting.php",
 		"index.php",
-		"uninstall.php",
+		"uninstaller.php",
 		"readme.txt"
 	],
 	"dependencies": {
@@ -29,12 +29,12 @@
 		"prismjs": "^1.30.0"
 	},
 	"devDependencies": {
-		"@wordpress/prettier-config": "^4.41.0",
+		"@wordpress/prettier-config": "^4.43.0",
 		"@wordpress/scripts": "^31",
 		"babel-plugin-prismjs": "^2.1.0",
 		"clean-css-cli": "^5.6.3",
 		"rtlcss": "^4.3.0",
-		"terser": "^5.46.0"
+		"terser": "^5.46.1"
 	},
 	"prettier": "@wordpress/prettier-config"
 }
