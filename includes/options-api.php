@@ -23,7 +23,7 @@ if ( ! class_exists( '\WebberZone\Code_Block_Highlighting\Options_API' ) ) {
  * @since 1.0.0
  * @return array Settings
  */
-function wz_cbh_get_settings() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+function wzcbh_get_settings() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 	return \WebberZone\Code_Block_Highlighting\Options_API::get_settings();
 }
 
@@ -39,7 +39,7 @@ function wz_cbh_get_settings() { // phpcs:ignore WordPress.NamingConventions.Pre
  *
  * @return mixed The option value or the default value if the option does not exist.
  */
-function wz_cbh_get_option( $key = '', $default_value = null ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+function wzcbh_get_option( $key = '', $default_value = null ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 	return \WebberZone\Code_Block_Highlighting\Options_API::get_option( $key, $default_value );
 }
 
@@ -48,7 +48,7 @@ function wz_cbh_get_option( $key = '', $default_value = null ) { // phpcs:ignore
  *
  * Updates a setting value in both the db and the global variable.
  * Warning: Passing in an empty, false or null string value will remove
- *        the key from the wz_cbh_settings array.
+ *        the key from the wzcbh_settings array.
  *
  * @since 1.0.0
  *
@@ -56,7 +56,7 @@ function wz_cbh_get_option( $key = '', $default_value = null ) { // phpcs:ignore
  * @param  string|bool|int $value The value to set the key to.
  * @return boolean   True if updated, false if not.
  */
-function wz_cbh_update_option( $key = '', $value = false ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+function wzcbh_update_option( $key = '', $value = false ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 	return \WebberZone\Code_Block_Highlighting\Options_API::update_option( $key, $value );
 }
 
@@ -70,7 +70,7 @@ function wz_cbh_update_option( $key = '', $value = false ) { // phpcs:ignore Wor
  * @param  string $key The Key to update.
  * @return boolean   True if updated, false if not.
  */
-function wz_cbh_delete_option( $key = '' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+function wzcbh_delete_option( $key = '' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 	return \WebberZone\Code_Block_Highlighting\Options_API::delete_option( $key );
 }
 
@@ -81,7 +81,7 @@ function wz_cbh_delete_option( $key = '' ) { // phpcs:ignore WordPress.NamingCon
  *
  * @return array Default settings
  */
-function wz_cbh_settings_defaults() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+function wzcbh_settings_defaults() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 	return \WebberZone\Code_Block_Highlighting\Options_API::get_settings_defaults();
 }
 
@@ -93,7 +93,7 @@ function wz_cbh_settings_defaults() { // phpcs:ignore WordPress.NamingConvention
  * @param string $key Key of the option to fetch.
  * @return mixed
  */
-function wz_cbh_get_default_option( $key = '' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+function wzcbh_get_default_option( $key = '' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 	return \WebberZone\Code_Block_Highlighting\Options_API::get_default_option( $key );
 }
 
@@ -103,7 +103,7 @@ function wz_cbh_get_default_option( $key = '' ) { // phpcs:ignore WordPress.Nami
  * @since 1.0.0
  * @return bool Success status.
  */
-function wz_cbh_settings_reset() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+function wzcbh_settings_reset() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 	return \WebberZone\Code_Block_Highlighting\Options_API::reset_settings();
 }
 
@@ -117,6 +117,6 @@ function wz_cbh_settings_reset() { // phpcs:ignore WordPress.NamingConventions.P
  * @param bool  $autoload Whether to autoload the option. Default true.
  * @return bool True if settings were updated, false otherwise.
  */
-function wz_cbh_update_settings( array $settings, bool $merge = true, bool $autoload = true ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+function wzcbh_update_settings( array $settings, bool $merge = true, bool $autoload = true ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 	return \WebberZone\Code_Block_Highlighting\Options_API::update_settings( $settings, $merge, $autoload );
 }

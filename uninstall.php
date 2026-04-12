@@ -13,24 +13,24 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 /**
  * Deletes all per-site options and transients for a single site.
  */
-function wz_cbh_uninstall_site() {
+function wzcbh_uninstall_site() {
 	// Main settings.
-	delete_option( 'wz_cbh_settings' );
+	delete_option( 'wzcbh_settings' );
 
 	// Legacy options (pre-1.0).
-	delete_option( 'wz-cbh-color-scheme' );
-	delete_option( 'wz-cbh-default-lang' );
+	delete_option( 'wzcbh-color-scheme' );
+	delete_option( 'wzcbh-default-lang' );
 
 	// Setup wizard options.
-	delete_option( 'wz_cbh_show_wizard' );
-	delete_option( 'wz_cbh_wizard_completed' );
-	delete_option( 'wz_cbh_wizard_completed_date' );
-	delete_option( 'wz_cbh_wizard_current_step' );
-	delete_option( 'wz_cbh_wizard_notice_dismissed' );
+	delete_option( 'wzcbh_show_wizard' );
+	delete_option( 'wzcbh_wizard_completed' );
+	delete_option( 'wzcbh_wizard_completed_date' );
+	delete_option( 'wzcbh_wizard_current_step' );
+	delete_option( 'wzcbh_wizard_notice_dismissed' );
 
 	// Transients.
-	delete_transient( 'wz_cbh_show_wizard_activation_redirect' );
-	delete_transient( 'wz_cbh_notice_dismissed_wz_cbh_wizard_notice' );
+	delete_transient( 'wzcbh_show_wizard_activation_redirect' );
+	delete_transient( 'wzcbh_notice_dismissed_wzcbh_wizard_notice' );
 }
 
 if ( is_multisite() ) {
@@ -43,12 +43,12 @@ if ( is_multisite() ) {
 
 	foreach ( $site_ids as $site_id ) {
 		switch_to_blog( $site_id );
-		wz_cbh_uninstall_site();
+		wzcbh_uninstall_site();
 		restore_current_blog();
 	}
 } else {
-	wz_cbh_uninstall_site();
+	wzcbh_uninstall_site();
 }
 
 // Per-user dismissed notice meta (global — runs once regardless of multisite).
-delete_metadata( 'user', 0, 'wz_cbh_notice_dismissed_wz_cbh_wizard_notice', '', true );
+delete_metadata( 'user', 0, 'wzcbh_notice_dismissed_wzcbh_wizard_notice', '', true );

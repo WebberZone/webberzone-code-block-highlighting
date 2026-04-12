@@ -3,16 +3,16 @@
  */
 
 :root {
-	--wz-cbh-font-size: inherit;
-	--wz-cbh-toolbar-color: #fff;
-	--wz-cbh-toolbar-bg: rgba(0, 0, 0, 0.65);
-	--wz-cbh-toolbar-bg-hover: rgba(0, 0, 0, 0.85);
-	--wz-cbh-toolbar-outline: rgba(255, 255, 255, 0.6);
-	--wz-cbh-toolbar-radius: 0.3em;
-	--wz-cbh-toolbar-padding: 0.1em 0.5em;
+	--wzcbh-font-size: inherit;
+	--wzcbh-toolbar-color: #fff;
+	--wzcbh-toolbar-bg: rgba(0, 0, 0, 0.65);
+	--wzcbh-toolbar-bg-hover: rgba(0, 0, 0, 0.85);
+	--wzcbh-toolbar-outline: rgba(255, 255, 255, 0.6);
+	--wzcbh-toolbar-radius: 0.3em;
+	--wzcbh-toolbar-padding: 0.1em 0.5em;
 }
 
-#wz-cbh-copy-live-region {
+#wzcbh-copy-live-region {
 	border: 0;
 	clip: rect(1px, 1px, 1px, 1px);
 	clip-path: inset(50%);
@@ -27,7 +27,7 @@
 
 pre[class*='language-'],
 code[class*='language-'] {
-	font-size: var(--wz-cbh-font-size);
+	font-size: var(--wzcbh-font-size);
 }
 
 pre.word-wrap,
@@ -62,11 +62,11 @@ pre.word-wrap code[class*='language-'] {
 div.code-toolbar > .toolbar > .toolbar-item > a,
 div.code-toolbar > .toolbar > .toolbar-item > button,
 div.code-toolbar > .toolbar > .toolbar-item > span {
-	color: var(--wz-cbh-toolbar-color);
-	background: var(--wz-cbh-toolbar-bg);
+	color: var(--wzcbh-toolbar-color);
+	background: var(--wzcbh-toolbar-bg);
 	box-shadow: none;
-	border-radius: var(--wz-cbh-toolbar-radius);
-	padding: var(--wz-cbh-toolbar-padding);
+	border-radius: var(--wzcbh-toolbar-radius);
+	padding: var(--wzcbh-toolbar-padding);
 }
 
 div.code-toolbar > .toolbar > .toolbar-item > a:hover,
@@ -75,8 +75,8 @@ div.code-toolbar > .toolbar > .toolbar-item > button:hover,
 div.code-toolbar > .toolbar > .toolbar-item > button:focus,
 div.code-toolbar > .toolbar > .toolbar-item > span:hover,
 div.code-toolbar > .toolbar > .toolbar-item > span:focus {
-	color: var(--wz-cbh-toolbar-color);
-	background: var(--wz-cbh-toolbar-bg-hover);
-	outline: 2px solid var(--wz-cbh-toolbar-outline);
+	color: var(--wzcbh-toolbar-color);
+	background: var(--wzcbh-toolbar-bg-hover);
+	outline: 2px solid var(--wzcbh-toolbar-outline);
 	outline-offset: 1px;
 }

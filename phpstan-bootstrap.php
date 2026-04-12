@@ -7,18 +7,18 @@
 
 // phpcs:ignoreFile
 
-if ( ! defined( 'WZ_CBH_VERSION' ) ) {
-	define( 'WZ_CBH_VERSION', '0.0.0' );
+if ( ! defined( 'WZCBH_VERSION' ) ) {
+	define( 'WZCBH_VERSION', '0.0.0' );
 }
 
-if ( ! defined( 'WZ_CBH_PLUGIN_FILE' ) ) {
-	define( 'WZ_CBH_PLUGIN_FILE', '' );
+if ( ! defined( 'WZCBH_PLUGIN_FILE' ) ) {
+	define( 'WZCBH_PLUGIN_FILE', '' );
 }
 
-if ( ! defined( 'WZ_CBH_PLUGIN_DIR' ) ) {
-	define( 'WZ_CBH_PLUGIN_DIR', '' );
+if ( ! defined( 'WZCBH_PLUGIN_DIR' ) ) {
+	define( 'WZCBH_PLUGIN_DIR', '' );
 }
 
-if ( ! defined( 'WZ_CBH_PLUGIN_URL' ) ) {
-	define( 'WZ_CBH_PLUGIN_URL', '' );
+if ( ! defined( 'WZCBH_PLUGIN_URL' ) ) {
+	define( 'WZCBH_PLUGIN_URL', '' );
 }

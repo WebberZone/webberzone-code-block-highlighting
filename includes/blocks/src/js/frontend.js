@@ -81,14 +81,14 @@ import 'prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard';
 import '../css/frontend.css';
 
 const getLiveRegion = function () {
-	let liveRegion = document.getElementById('wz-cbh-copy-live-region');
+	let liveRegion = document.getElementById('wzcbh-copy-live-region');
 
 	if (liveRegion) {
 		return liveRegion;
 	}
 
 	liveRegion = document.createElement('span');
-	liveRegion.id = 'wz-cbh-copy-live-region';
+	liveRegion.id = 'wzcbh-copy-live-region';
 	liveRegion.setAttribute('aria-live', 'polite');
 	liveRegion.setAttribute('aria-atomic', 'true');
 	liveRegion.className = 'screen-reader-text';
@@ -168,7 +168,7 @@ Prism.hooks.add('before-highlightall', function () {
 });
 
 // ── Expand/collapse toolbar button (shown when max-height is set) ─────────────
-Prism.plugins.toolbar.registerButton('wz-cbh-expand', function (env) {
+Prism.plugins.toolbar.registerButton('wzcbh-expand', function (env) {
 	const pre = env.element.parentElement;
 	if (!pre || !pre.style.maxHeight) {
 		return;
@@ -180,7 +180,7 @@ Prism.plugins.toolbar.registerButton('wz-cbh-expand', function (env) {
 
 	const button = document.createElement('button');
 	button.type = 'button';
-	button.className = 'wz-cbh-expand-button';
+	button.className = 'wzcbh-expand-button';
 	button.setAttribute('aria-expanded', 'false');
 	button.textContent = __('Expand', 'webberzone-code-block-highlighting');
 
@@ -209,7 +209,7 @@ Prism.plugins.toolbar.registerButton('wz-cbh-expand', function (env) {
 });
 
 // ── Title/filename toolbar button ─────────────────────────────────────────────
-Prism.plugins.toolbar.registerButton('wz-cbh-title', function (env) {
+Prism.plugins.toolbar.registerButton('wzcbh-title', function (env) {
 	if (typeof cbhSettings !== 'undefined' && !cbhSettings.showFileName) {
 		return;
 	}
@@ -223,7 +223,7 @@ Prism.plugins.toolbar.registerButton('wz-cbh-title', function (env) {
 		return;
 	}
 	const span = document.createElement('span');
-	span.className = 'wz-cbh-toolbar-title';
+	span.className = 'wzcbh-toolbar-title';
 	span.textContent = title;
 	return span;
 });
@@ -238,7 +238,7 @@ Prism.hooks.add('complete', function (env) {
 		return;
 	}
 	codeToolbar
-		.querySelectorAll('.toolbar-item > span:not(.wz-cbh-toolbar-title)')
+		.querySelectorAll('.toolbar-item > span:not(.wzcbh-toolbar-title)')
 		.forEach(function (el) {
 			el.setAttribute('aria-hidden', 'true');
 		});
@@ -260,7 +260,7 @@ if (typeof cbhSettings !== 'undefined' && !cbhSettings.showLanguageLabel) {
 			return;
 		}
 		codeToolbar
-			.querySelectorAll('.toolbar-item > span:not(.wz-cbh-toolbar-title)')
+			.querySelectorAll('.toolbar-item > span:not(.wzcbh-toolbar-title)')
 			.forEach(function (el) {
 				const item = el.closest('.toolbar-item');
 				if (item) {

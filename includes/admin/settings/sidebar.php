@@ -72,8 +72,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<h2 class="metabox-holder"><span><?php esc_html_e( 'Follow us', 'webberzone-code-block-highlighting' ); ?></span></h2>
 
 		<div class="inside" style="text-align: center">
-			<a href="https://x.com/webberzone/" target="_blank"><img src="<?php echo esc_url( WZ_CBH_PLUGIN_URL . 'includes/admin/images/x.png' ); ?>" width="100" height="100" alt="X (Twitter)"></a>
-			<a href="https://facebook.com/webberzone/" target="_blank"><img src="<?php echo esc_url( WZ_CBH_PLUGIN_URL . 'includes/admin/images/fb.png' ); ?>" width="100" height="100" alt="Facebook"></a>
+			<a href="https://x.com/webberzone/" target="_blank"><img src="<?php echo esc_url( WZCBH_PLUGIN_URL . 'includes/admin/images/x.png' ); ?>" width="100" height="100" alt="X (Twitter)"></a>
+			<a href="https://facebook.com/webberzone/" target="_blank"><img src="<?php echo esc_url( WZCBH_PLUGIN_URL . 'includes/admin/images/fb.png' ); ?>" width="100" height="100" alt="Facebook"></a>
 		</div><!-- /.inside -->
 	</div><!-- /.postbox -->
 </div>

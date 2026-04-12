@@ -68,7 +68,7 @@ class Admin {
 		$this->settings_wizard   = new Settings_Wizard();
 		$this->admin_banner      = new Admin_Banner( $this->get_admin_banner_config() );
 
-		Hook_Registry::add_filter( 'plugin_action_links_' . plugin_basename( WZ_CBH_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
+		Hook_Registry::add_filter( 'plugin_action_links_' . plugin_basename( WZCBH_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
 	}
 
 	/**
@@ -82,7 +82,7 @@ class Admin {
 	public function plugin_action_links( array $links ): array {
 		$settings_link = sprintf(
 			'<a href="%s">%s</a>',
-			esc_url( admin_url( 'options-general.php?page=wz_cbh_settings' ) ),
+			esc_url( admin_url( 'options-general.php?page=wzcbh_settings' ) ),
 			esc_html__( 'Settings', 'webberzone-code-block-highlighting' )
 		);
 
@@ -101,12 +101,12 @@ class Admin {
 	private function get_admin_banner_config(): array {
 		return array(
 			'capability' => 'manage_options',
-			'prefix'     => 'wz-cbh',
+			'prefix'     => 'wzcbh',
 			'screen_ids' => array(
-				'settings_page_wz_cbh_settings',
+				'settings_page_wzcbh_settings',
 			),
 			'page_slugs' => array(
-				'wz_cbh_settings',
+				'wzcbh_settings',
 			),
 			'strings'    => array(
 				'region_label' => esc_html__( 'Code Block Highlighting quick links', 'webberzone-code-block-highlighting' ),
@@ -118,9 +118,9 @@ class Admin {
 			'sections'   => array(
 				'settings' => array(
 					'label'      => esc_html__( 'Settings', 'webberzone-code-block-highlighting' ),
-					'url'        => admin_url( 'admin.php?page=wz_cbh_settings' ),
-					'screen_ids' => array( 'settings_page_wz_cbh_settings' ),
-					'page_slugs' => array( 'wz_cbh_settings' ),
+					'url'        => admin_url( 'admin.php?page=wzcbh_settings' ),
+					'screen_ids' => array( 'settings_page_wzcbh_settings' ),
+					'page_slugs' => array( 'wzcbh_settings' ),
 				),
 				'plugins'  => array(
 					'label'  => esc_html__( 'WebberZone Plugins', 'webberzone-code-block-highlighting' ),

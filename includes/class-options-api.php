@@ -26,7 +26,7 @@ class Options_API {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	const SETTINGS_OPTION = 'wz_cbh_settings';
+	const SETTINGS_OPTION = 'wzcbh_settings';
 
 	/**
 	 * Filter prefix.
@@ -34,7 +34,7 @@ class Options_API {
 	 * @since 1.0.0
 	 * @var string
 	 */
-	const FILTER_PREFIX = 'wz_cbh';
+	const FILTER_PREFIX = 'wzcbh';
 
 	/**
 	 * Settings array.

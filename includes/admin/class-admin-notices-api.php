@@ -38,7 +38,7 @@ class Admin_Notices_API {
 	 *
 	 * @param string $prefix Plugin prefix for AJAX actions, nonces, and storage keys. Default 'wzkb'.
 	 */
-	public function __construct( string $prefix = 'wz_cbh' ) {
+	public function __construct( string $prefix = 'wzcbh' ) {
 		$this->prefix = $prefix;
 
 		Hook_Registry::add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -58,7 +58,7 @@ class Admin_Notices_API {
 			$handle,
 			plugins_url( "js/admin-notices{$minimize}.js", __FILE__ ),
 			array( 'jquery' ),
-			WZ_CBH_VERSION,
+			WZCBH_VERSION,
 			true
 		);
 

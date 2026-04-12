@@ -41,7 +41,7 @@ class Blocks {
 	 * @since 1.0.0
 	 */
 	public function enqueue_editor_assets(): void {
-		$asset_file = WZ_CBH_PLUGIN_DIR . 'includes/blocks/build/index.asset.php';
+		$asset_file = WZCBH_PLUGIN_DIR . 'includes/blocks/build/index.asset.php';
 
 		if ( ! file_exists( $asset_file ) ) {
 			return;
@@ -50,27 +50,27 @@ class Blocks {
 		$asset = require $asset_file;
 
 		wp_enqueue_script(
-			'wz-cbh-editor',
-			WZ_CBH_PLUGIN_URL . 'includes/blocks/build/index.js',
+			'wzcbh-editor',
+			WZCBH_PLUGIN_URL . 'includes/blocks/build/index.js',
 			$asset['dependencies'],
 			$asset['version'],
 			true
 		);
 
 		$languages    = self::get_languages();
-		$default_lang = wz_cbh_get_option( 'default-lang', '' );
+		$default_lang = wzcbh_get_option( 'default-lang', '' );
 
 		$default_settings = array(
 			'language'         => $default_lang,
-			'lineNumbers'      => (bool) wz_cbh_get_option( 'default-line-numbers', false ),
-			'lineNumbersStart' => (int) wz_cbh_get_option( 'default-line-numbers-start', 1 ),
-			'wordWrap'         => (bool) wz_cbh_get_option( 'default-word-wrap', false ),
-			'maxHeight'        => (int) wz_cbh_get_option( 'default-max-height', 0 ),
+			'lineNumbers'      => (bool) wzcbh_get_option( 'default-line-numbers', false ),
+			'lineNumbersStart' => (int) wzcbh_get_option( 'default-line-numbers-start', 1 ),
+			'wordWrap'         => (bool) wzcbh_get_option( 'default-word-wrap', false ),
+			'maxHeight'        => (int) wzcbh_get_option( 'default-max-height', 0 ),
 		);
 
 		$flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
 		wp_add_inline_script(
-			'wz-cbh-editor',
+			'wzcbh-editor',
 			implode(
 				"\n",
 				array(
@@ -109,7 +109,7 @@ class Blocks {
 			return;
 		}
 
-		$asset_file = WZ_CBH_PLUGIN_DIR . 'includes/blocks/build/index.asset.php';
+		$asset_file = WZCBH_PLUGIN_DIR . 'includes/blocks/build/index.asset.php';
 
 		if ( ! file_exists( $asset_file ) ) {
 			return;
@@ -117,11 +117,11 @@ class Blocks {
 
 		$asset = require $asset_file;
 
-		$editor_css = WZ_CBH_PLUGIN_DIR . 'includes/blocks/build/index.css';
+		$editor_css = WZCBH_PLUGIN_DIR . 'includes/blocks/build/index.css';
 		if ( file_exists( $editor_css ) ) {
 			wp_enqueue_style(
-				'wz-cbh-editor-canvas-style',
-				WZ_CBH_PLUGIN_URL . 'includes/blocks/build/index.css',
+				'wzcbh-editor-canvas-style',
+				WZCBH_PLUGIN_URL . 'includes/blocks/build/index.css',
 				array(),
 				$asset['version']
 			);
@@ -137,7 +137,7 @@ class Blocks {
 		// `code[class*="language-"], pre[class*="language-"]` block.
 		// Later declarations win, mirroring the CSS cascade.
 		$theme_path = Settings::get_color_scheme_css( true );
-		if ( file_exists( $theme_path ) && wp_style_is( 'wz-cbh-editor-canvas-style', 'enqueued' ) ) {
+		if ( file_exists( $theme_path ) && wp_style_is( 'wzcbh-editor-canvas-style', 'enqueued' ) ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 			$theme_css   = file_get_contents( $theme_path );
 			$bg_value    = '';
@@ -173,7 +173,7 @@ class Blocks {
 				$selectors = '.block-editor-block-list__layout pre[class*="language-"],' .
 							'.block-editor-block-list__layout code[class*="language-"]';
 				wp_add_inline_style(
-					'wz-cbh-editor-canvas-style',
+					'wzcbh-editor-canvas-style',
 					$selectors . '{' . implode( ' ', $props ) . '}'
 				);
 			}
@@ -187,7 +187,7 @@ class Blocks {
 	 */
 	public function register_rest_routes(): void {
 		register_rest_route(
-			'wz-cbh/v1',
+			'wzcbh/v1',
 			'/default-settings',
 			array(
 				'methods'             => \WP_REST_Server::CREATABLE,
@@ -231,27 +231,27 @@ class Blocks {
 		$updated = array();
 
 		if ( $request->has_param( 'language' ) ) {
-			wz_cbh_update_option( 'default-lang', $request->get_param( 'language' ) );
+			wzcbh_update_option( 'default-lang', $request->get_param( 'language' ) );
 			$updated[] = 'language';
 		}
 
 		if ( $request->has_param( 'lineNumbers' ) ) {
-			wz_cbh_update_option( 'default-line-numbers', (bool) $request->get_param( 'lineNumbers' ) );
+			wzcbh_update_option( 'default-line-numbers', (bool) $request->get_param( 'lineNumbers' ) );
 			$updated[] = 'lineNumbers';
 		}
 
 		if ( $request->has_param( 'lineNumbersStart' ) ) {
-			wz_cbh_update_option( 'default-line-numbers-start', (int) $request->get_param( 'lineNumbersStart' ) );
+			wzcbh_update_option( 'default-line-numbers-start', (int) $request->get_param( 'lineNumbersStart' ) );
 			$updated[] = 'lineNumbersStart';
 		}
 
 		if ( $request->has_param( 'wordWrap' ) ) {
-			wz_cbh_update_option( 'default-word-wrap', (bool) $request->get_param( 'wordWrap' ) );
+			wzcbh_update_option( 'default-word-wrap', (bool) $request->get_param( 'wordWrap' ) );
 			$updated[] = 'wordWrap';
 		}
 
 		if ( $request->has_param( 'maxHeight' ) ) {
-			wz_cbh_update_option( 'default-max-height', (int) $request->get_param( 'maxHeight' ) );
+			wzcbh_update_option( 'default-max-height', (int) $request->get_param( 'maxHeight' ) );
 			$updated[] = 'maxHeight';
 		}
 
@@ -424,6 +424,6 @@ class Blocks {
 		 *
 		 * @param array<string, string> $languages Language slug => display label.
 		 */
-		return apply_filters( 'wz_cbh_languages', $languages ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		return apply_filters( 'wzcbh_languages', $languages ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 }

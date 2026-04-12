@@ -87,7 +87,7 @@ final class Main {
 	 * @since 1.0.0
 	 */
 	private function init(): void {
-		require_once WZ_CBH_PLUGIN_DIR . 'includes/options-api.php';
+		require_once WZCBH_PLUGIN_DIR . 'includes/options-api.php';
 
 		$this->blocks = new Frontend\Blocks();
 		$this->styles = new Frontend\Styles_Handler();

@@ -1,7 +1,5 @@
 # WebberZone Code Block Highlighting
 
-[![WordPress Plugin Version](https://github.com/WebberZone/webberzone-code-block-highlighting/blob/main/wporg-assets/banner-1544x500.png)](https://wordpress.org/plugins/webberzone-code-block-highlighting/)
-
 [![WordPress Plugin Version](https://img.shields.io/wordpress/plugin/v/webberzone-code-block-highlighting.svg?style=flat-square)](https://wordpress.org/plugins/webberzone-code-block-highlighting/)
 [![License](https://img.shields.io/badge/license-GPL_v2%2B-orange.svg?style=flat-square)](http://opensource.org/licenses/GPL-2.0)
 [![WordPress Tested](https://img.shields.io/wordpress/v/webberzone-code-block-highlighting.svg?style=flat-square)](https://wordpress.org/plugins/webberzone-code-block-highlighting/)
@@ -36,7 +34,7 @@ Simply activate the plugin and your code blocks will instantly display beautiful
 
 ### Supported languages
 
-40 languages out of the box: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML. Use the `wz_cbh_languages` filter to add or remove entries from the language picker.
+40 languages out of the box: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML. Use the `wzcbh_languages` filter to add or remove entries from the language picker.
 
 ### Included themes (21)
 
@@ -63,18 +61,15 @@ A11y Dark, Coldark Cold (Light), Coldark Dark, Dracula, Duotone Dark, Duotone Li
 
 ### Developer filters
 
-* `wz_cbh_languages` — Filter the language list array (`slug => label`)
-* `wz_cbh_color_scheme_css_url` — Override the Prism theme CSS URL
-* `wz_cbh_force_load_assets` — Force Prism assets to load on every page
+* `wzcbh_languages` — Filter the language list array (`slug => label`)
+* `wzcbh_color_scheme_css_url` — Override the Prism theme CSS URL
+* `wzcbh_force_load_assets` — Force Prism assets to load on every page
 
 ### GDPR
 
 WebberZone Code Block Highlighting does not collect personal data, set cookies, or communicate with any external services.
 
 ## Screenshots
-
-![Code block in editor with highlighting options](https://raw.github.com/WebberZone/webberzone-code-block-highlighting/main/wporg-assets/screenshot-1.png)
-_Code block in editor with highlighting options_
 
 More screenshots are available on the [WordPress plugin page](https://wordpress.org/plugins/webberzone-code-block-highlighting/screenshots/).
 
@@ -102,10 +97,10 @@ __Does this plugin replace the core Code block?__
 No. The plugin uses JavaScript and PHP filters to extend `core/code`. Deactivating it leaves behind valid, standard WordPress blocks.
 
 __Which languages are supported?__
-40 out of the box. Use the `wz_cbh_languages` filter to add or remove entries from the language picker — note the corresponding Prism.js grammar must also be available on the frontend.
+40 out of the box. Use the `wzcbh_languages` filter to add or remove entries from the language picker — note the corresponding Prism.js grammar must also be available on the frontend.
 
 __Does Prism.js load on every page?__
-No. Assets are only enqueued on pages containing at least one code block. Use `wz_cbh_force_load_assets` to override.
+No. Assets are only enqueued on pages containing at least one code block. Use `wzcbh_force_load_assets` to override.
 
 __How do I highlight specific lines?__
 Enter a comma-separated list of lines or ranges in the __Highlight Lines__ field in the sidebar (e.g. `1,3-5,8`).

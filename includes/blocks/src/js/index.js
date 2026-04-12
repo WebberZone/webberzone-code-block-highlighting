@@ -73,7 +73,7 @@ const edit = ({ attributes, setAttributes }) => {
 		setSavedNotice('');
 		try {
 			await apiFetch({
-				path: '/wz-cbh/v1/default-settings',
+				path: '/wzcbh/v1/default-settings',
 				method: 'POST',
 				data: {
 					language: language || '',
@@ -239,7 +239,7 @@ const edit = ({ attributes, setAttributes }) => {
 						/>
 					</PanelRow>
 					<PanelRow>
-						<div className="wz-cbh-save-default">
+						<div className="wzcbh-save-default">
 							<Button
 								variant="secondary"
 								isBusy={isSaving}
@@ -251,7 +251,7 @@ const edit = ({ attributes, setAttributes }) => {
 								)}
 							</Button>
 							{savedNotice && (
-								<span className="wz-cbh-save-default__notice">
+								<span className="wzcbh-save-default__notice">
 									{savedNotice}
 								</span>
 							)}
@@ -261,34 +261,34 @@ const edit = ({ attributes, setAttributes }) => {
 			</InspectorControls>
 			<>
 				{(language || title || highlightLines || maxHeight) && (
-					<div className="wp-block wz-cbh-block__labels">
+					<div className="wp-block wzcbh-block__labels">
 						{title && (
-							<span className="wz-cbh-block__label-title">
+							<span className="wzcbh-block__label-title">
 								{title}
 							</span>
 						)}
 						{language && (
-							<span className="wz-cbh-block__label-lang">
+							<span className="wzcbh-block__label-lang">
 								&lt;{cbhLanguages[language]}&gt;
 							</span>
 						)}
 						{lineNumbers && (
-							<span className="wz-cbh-block__label-line-num">
+							<span className="wzcbh-block__label-line-num">
 								#
 							</span>
 						)}
 						{wordWrap && (
-							<span className="wz-cbh-block__label-word-wrap">
+							<span className="wzcbh-block__label-word-wrap">
 								&#8629;
 							</span>
 						)}
 						{highlightLines && (
-							<span className="wz-cbh-block__label-highlight">
+							<span className="wzcbh-block__label-highlight">
 								&#9776;
 							</span>
 						)}
 						{maxHeight && (
-							<span className="wz-cbh-block__label-max-height">
+							<span className="wzcbh-block__label-max-height">
 								&#8597;
 							</span>
 						)}
@@ -422,6 +422,6 @@ const addSyntaxToCodeBlock = (settings) => {
 
 addFilter(
 	'blocks.registerBlockType',
-	'wz-cbh/code-syntax-block',
+	'wzcbh/code-syntax-block',
 	addSyntaxToCodeBlock
 );

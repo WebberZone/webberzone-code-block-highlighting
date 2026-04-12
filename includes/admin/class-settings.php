@@ -57,21 +57,21 @@ class Settings {
 	 *
 	 * @var string
 	 */
-	public static string $prefix = 'wz_cbh';
+	public static string $prefix = 'wzcbh';
 
 	/**
 	 * Settings key (option name in the DB).
 	 *
 	 * @var string
 	 */
-	public static string $settings_key = 'wz_cbh_settings';
+	public static string $settings_key = 'wzcbh_settings';
 
 	/**
 	 * Menu slug for the settings page.
 	 *
 	 * @var string
 	 */
-	public static string $menu_slug = 'wz_cbh_settings';
+	public static string $menu_slug = 'wzcbh_settings';
 
 	/**
 	 * Settings API instance.
@@ -321,18 +321,18 @@ class Settings {
 	 * @return string
 	 */
 	public static function get_color_scheme_css( bool $return_path = false ): string {
-		$option = wz_cbh_get_option( 'color-scheme', 'prism-onedark' );
+		$option = wzcbh_get_option( 'color-scheme', 'prism-onedark' );
 		if ( ! array_key_exists( $option, self::$color_schemes ) ) {
 			$option = 'prism-onedark';
 		}
 		$rel_path = "includes/assets/{$option}.css";
 
-		if ( ! file_exists( WZ_CBH_PLUGIN_DIR . $rel_path ) ) {
+		if ( ! file_exists( WZCBH_PLUGIN_DIR . $rel_path ) ) {
 			$rel_path = 'includes/assets/prism-onedark.css';
 		}
 
 		if ( $return_path ) {
-			return WZ_CBH_PLUGIN_DIR . $rel_path;
+			return WZCBH_PLUGIN_DIR . $rel_path;
 		}
 
 		/**
@@ -342,6 +342,6 @@ class Settings {
 		 *
 		 * @param string $url Absolute URL of the CSS file to enqueue.
 		 */
-		return apply_filters( 'wz_cbh_color_scheme_css_url', WZ_CBH_PLUGIN_URL . $rel_path ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		return apply_filters( 'wzcbh_color_scheme_css_url', WZCBH_PLUGIN_URL . $rel_path ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 }

@@ -32,15 +32,15 @@ class Settings_Wizard extends Settings_Wizard_API {
 	 * @since 1.1.0
 	 */
 	public function __construct() {
-		$settings_key = 'wz_cbh_settings';
-		$prefix       = 'wz_cbh';
+		$settings_key = 'wzcbh_settings';
+		$prefix       = 'wzcbh';
 
 		$args = array(
 			'steps'               => $this->get_wizard_steps(),
 			'translation_strings' => $this->get_translation_strings(),
-			'page_slug'           => 'wz_cbh_wizard',
+			'page_slug'           => 'wzcbh_wizard',
 			'menu_args'           => array(
-				'parent'     => 'wz_cbh_settings',
+				'parent'     => 'wzcbh_settings',
 				'capability' => 'manage_options',
 			),
 		);
@@ -114,7 +114,7 @@ class Settings_Wizard extends Settings_Wizard_API {
 		 *
 		 * @param array $steps Wizard steps.
 		 */
-		return apply_filters( 'wz_cbh_wizard_steps', $steps ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		return apply_filters( 'wzcbh_wizard_steps', $steps ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 
 	/**
@@ -148,18 +148,18 @@ class Settings_Wizard extends Settings_Wizard_API {
 	 * @since 1.1.0
 	 */
 	public function register_wizard_notice() {
-		$wz_cbh = \WebberZone\Code_Block_Highlighting\Main::get_instance();
-		if ( ! isset( $wz_cbh->admin->admin_notices_api ) ) {
+		$wzcbh = \WebberZone\Code_Block_Highlighting\Main::get_instance();
+		if ( ! isset( $wzcbh->admin->admin_notices_api ) ) {
 			return;
 		}
 
-		$wz_cbh->admin->admin_notices_api->register_notice(
+		$wzcbh->admin->admin_notices_api->register_notice(
 			array(
-				'id'          => 'wz_cbh_wizard_notice',
+				'id'          => 'wzcbh_wizard_notice',
 				'message'     => sprintf(
 					'<p>%s</p><p><a href="%s" class="button button-primary">%s</a></p>',
 					esc_html__( 'Welcome to Code Block Highlighting! Would you like to run the setup wizard to configure the plugin?', 'webberzone-code-block-highlighting' ),
-					esc_url( admin_url( 'admin.php?page=wz_cbh_wizard' ) ),
+					esc_url( admin_url( 'admin.php?page=wzcbh_wizard' ) ),
 					esc_html__( 'Run Setup Wizard', 'webberzone-code-block-highlighting' )
 				),
 				'type'        => 'info',
@@ -170,9 +170,9 @@ class Settings_Wizard extends Settings_Wizard_API {
 						$page = sanitize_key( (string) filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS ) );
 
 						return ! $this->is_wizard_completed() &&
-							! get_option( 'wz_cbh_wizard_notice_dismissed', false ) &&
-							( get_transient( 'wz_cbh_show_wizard_activation_redirect' ) || get_option( 'wz_cbh_show_wizard', false ) ) &&
-							'wz_cbh_wizard' !== $page;
+							! get_option( 'wzcbh_wizard_notice_dismissed', false ) &&
+							( get_transient( 'wzcbh_show_wizard_activation_redirect' ) || get_option( 'wzcbh_show_wizard', false ) ) &&
+							'wzcbh_wizard' !== $page;
 					},
 				),
 			)
@@ -187,6 +187,6 @@ class Settings_Wizard extends Settings_Wizard_API {
 	 * @return string Redirect URL.
 	 */
 	protected function get_completion_redirect_url() {
-		return admin_url( 'admin.php?page=wz_cbh_settings' );
+		return admin_url( 'admin.php?page=wzcbh_settings' );
 	}
 }

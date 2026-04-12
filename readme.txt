@@ -27,7 +27,7 @@ Simply activate the plugin and your code blocks will instantly display beautiful
 
 ### Supported languages
 
-40 languages including: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, YAML. Use the `wz_cbh_languages` filter to add or remove entries from the language picker.
+40 languages including: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, YAML. Use the `wzcbh_languages` filter to add or remove entries from the language picker.
 
 ### Included themes (21)
 
@@ -54,9 +54,9 @@ A11y Dark, Coldark Cold (Light), Coldark Dark, Dracula, Duotone Dark, Duotone Li
 
 ### Developer filters
 
-* `wz_cbh_languages` — Filter the language list array (`slug => label`)
-* `wz_cbh_color_scheme_css_url` — Override the Prism theme CSS URL
-* `wz_cbh_force_load_assets` — Force Prism assets to load on every page
+* `wzcbh_languages` — Filter the language list array (`slug => label`)
+* `wzcbh_color_scheme_css_url` — Override the Prism theme CSS URL
+* `wzcbh_force_load_assets` — Force Prism assets to load on every page
 
 ### GDPR
 
@@ -118,7 +118,7 @@ No. Because the plugin extends `core/code` rather than replacing it, deactivatin
 
 40 languages out of the box: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML.
 
-Use the `wz_cbh_languages` filter to add or remove entries from the language picker. Note: adding a language to the filter only affects the UI dropdown — the corresponding Prism.js grammar must also be available on the frontend (either bundled in `frontend.js` or loaded separately).
+Use the `wzcbh_languages` filter to add or remove entries from the language picker. Note: adding a language to the filter only affects the UI dropdown — the corresponding Prism.js grammar must also be available on the frontend (either bundled in `frontend.js` or loaded separately).
 
 = How do I add a custom or additional Prism theme? =
 
@@ -127,11 +127,11 @@ Use the `wz_cbh_languages` filter to add or remove entries from the language pic
 3. Register the slug in `includes/admin/class-settings.php`.
 4. Run `npm run build:prism`.
 
-You can also use the `wz_cbh_color_scheme_css_url` filter to point to any CSS file without touching the plugin source.
+You can also use the `wzcbh_color_scheme_css_url` filter to point to any CSS file without touching the plugin source.
 
 = Does Prism.js load on every page? =
 
-No. Prism CSS and JS are only enqueued on pages that contain at least one code block. All other pages are unaffected. Use the `wz_cbh_force_load_assets` filter to override this behaviour if needed.
+No. Prism CSS and JS are only enqueued on pages that contain at least one code block. All other pages are unaffected. Use the `wzcbh_force_load_assets` filter to override this behaviour if needed.
 
 = How do I highlight specific lines in a code block? =
 
@@ -166,7 +166,7 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 * Smart asset loading — Prism CSS and JS only enqueued on pages containing code blocks.
 * Copy-to-clipboard and show-language toolbar buttons (configurable globally).
 * Global settings page for colour scheme, default language, and more.
-* Developer filters: `wz_cbh_languages`, `wz_cbh_color_scheme_css_url`, `wz_cbh_force_load_assets`.
+* Developer filters: `wzcbh_languages`, `wzcbh_color_scheme_css_url`, `wzcbh_force_load_assets`.
 * GDPR-friendly: no data collection, no external requests.
 
 == Upgrade Notice ==

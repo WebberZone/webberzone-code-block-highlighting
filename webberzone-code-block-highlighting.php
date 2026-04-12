@@ -12,7 +12,7 @@
  *
  * @wordpress-plugin
  * Plugin Name: WebberZone Code Block Highlighting
- * Plugin URI:  https://webberzone.com/plugins/webberzone-code-block-highlighting/
+ * Plugin URI:  https://github.com/WebberZone/webberzone-code-block-highlighting
  * Description: Extends the Gutenberg Code block with syntax highlighting powered by Prism.js.
  * Version:     1.0.0
  * Author:      WebberZone
@@ -34,8 +34,8 @@ if ( ! defined( 'WPINC' ) ) {
  *
  * @since 1.0.0
  */
-if ( ! defined( 'WZ_CBH_VERSION' ) ) {
-	define( 'WZ_CBH_VERSION', '1.0.0' );
+if ( ! defined( 'WZCBH_VERSION' ) ) {
+	define( 'WZCBH_VERSION', '1.0.0' );
 }
 
 /**
@@ -43,8 +43,8 @@ if ( ! defined( 'WZ_CBH_VERSION' ) ) {
  *
  * @since 1.0.0
  */
-if ( ! defined( 'WZ_CBH_PLUGIN_FILE' ) ) {
-	define( 'WZ_CBH_PLUGIN_FILE', __FILE__ );
+if ( ! defined( 'WZCBH_PLUGIN_FILE' ) ) {
+	define( 'WZCBH_PLUGIN_FILE', __FILE__ );
 }
 
 /**
@@ -52,8 +52,8 @@ if ( ! defined( 'WZ_CBH_PLUGIN_FILE' ) ) {
  *
  * @since 1.0.0
  */
-if ( ! defined( 'WZ_CBH_PLUGIN_DIR' ) ) {
-	define( 'WZ_CBH_PLUGIN_DIR', plugin_dir_path( WZ_CBH_PLUGIN_FILE ) );
+if ( ! defined( 'WZCBH_PLUGIN_DIR' ) ) {
+	define( 'WZCBH_PLUGIN_DIR', plugin_dir_path( WZCBH_PLUGIN_FILE ) );
 }
 
 /**
@@ -61,8 +61,8 @@ if ( ! defined( 'WZ_CBH_PLUGIN_DIR' ) ) {
  *
  * @since 1.0.0
  */
-if ( ! defined( 'WZ_CBH_PLUGIN_URL' ) ) {
-	define( 'WZ_CBH_PLUGIN_URL', plugin_dir_url( WZ_CBH_PLUGIN_FILE ) );
+if ( ! defined( 'WZCBH_PLUGIN_URL' ) ) {
+	define( 'WZCBH_PLUGIN_URL', plugin_dir_url( WZCBH_PLUGIN_FILE ) );
 }
 
 // Load custom autoloader.
@@ -70,7 +70,7 @@ if ( ! function_exists( __NAMESPACE__ . '\autoload' ) ) {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/autoloader.php';
 }
 
-if ( ! function_exists( __NAMESPACE__ . '\wz_cbh' ) ) {
+if ( ! function_exists( __NAMESPACE__ . '\wzcbh' ) ) {
 	/**
 	 * Returns the instance of the WebberZone Code Block Highlighting main class.
 	 *
@@ -78,7 +78,7 @@ if ( ! function_exists( __NAMESPACE__ . '\wz_cbh' ) ) {
 	 *
 	 * @return \WebberZone\Code_Block_Highlighting\Main
 	 */
-	function wz_cbh() {
+	function wzcbh() {
 		return \WebberZone\Code_Block_Highlighting\Main::get_instance();
 	}
 }
@@ -90,7 +90,7 @@ if ( ! function_exists( __NAMESPACE__ . '\load' ) ) {
 	 * @since 1.0.0
 	 */
 	function load(): void {
-		wz_cbh();
+		wzcbh();
 	}
 	add_action( 'plugins_loaded', __NAMESPACE__ . '\load' );
 }
