@@ -8,7 +8,7 @@
  * @author    Ajay D'Souza
  * @license   GPL-2.0+
  * @link      https://webberzone.com
- * @copyright 2024 Ajay D'Souza
+ * @copyright 2025 Ajay D'Souza
  *
  * @wordpress-plugin
  * Plugin Name: WebberZone Code Block Highlighting
