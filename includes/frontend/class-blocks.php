@@ -68,14 +68,15 @@ class Blocks {
 			'maxHeight'        => (int) wz_cbh_get_option( 'default-max-height', 0 ),
 		);
 
+		$flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
 		wp_add_inline_script(
 			'wz-cbh-editor',
 			implode(
 				"\n",
 				array(
-					'const cbhLanguages = ' . wp_json_encode( $languages ) . ';',
-					'const cbhDefaultLang = ' . wp_json_encode( $default_lang ) . ';',
-					'const cbhDefaultSettings = ' . wp_json_encode( $default_settings ) . ';',
+					'const cbhLanguages = ' . wp_json_encode( $languages, $flags ) . ';',
+					'const cbhDefaultLang = ' . wp_json_encode( $default_lang, $flags ) . ';',
+					'const cbhDefaultSettings = ' . wp_json_encode( $default_settings, $flags ) . ';',
 				)
 			),
 			'before'
