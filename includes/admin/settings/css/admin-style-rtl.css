@@ -274,7 +274,7 @@
 
 .ts-wrapper.single .clear-button {
 	position: absolute;
-	top: 30%;
+	top: 50%;
 	left: 8px;
 	transform: translateY(-50%);
 	font-size: 2em;
