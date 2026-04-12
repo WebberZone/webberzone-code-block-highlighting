@@ -21,7 +21,7 @@
 		"languages",
 		"webberzone-code-block-highlighting.php",
 		"index.php",
-		"uninstaller.php",
+		"uninstall.php",
 		"readme.txt"
 	],
 	"dependencies": {
