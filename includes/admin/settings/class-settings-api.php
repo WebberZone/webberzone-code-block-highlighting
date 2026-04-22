@@ -997,7 +997,7 @@ class Settings_API {
 
 		$html .= '</ul>';
 
-		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo wp_kses_post( $html );
 	}
 
 	/**
