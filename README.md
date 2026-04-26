@@ -8,7 +8,7 @@
 
 __Requires:__ 6.6
 
-__Tested up to:__ 6.9
+__Tested up to:__ 7.0
 
 __Requires PHP:__ 7.4
 
