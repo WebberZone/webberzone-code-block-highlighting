@@ -23,6 +23,7 @@ if ( ! defined( 'WPINC' ) ) {
  */
 class Blocks {
 
+
 	/**
 	 * Constructor.
 	 *
@@ -47,7 +48,7 @@ class Blocks {
 			return;
 		}
 
-		$asset = require $asset_file;
+		$asset = include $asset_file;
 
 		wp_enqueue_script(
 			'wzcbh-editor',
@@ -115,7 +116,7 @@ class Blocks {
 			return;
 		}
 
-		$asset = require $asset_file;
+		$asset = include $asset_file;
 
 		$editor_css = WZCBH_PLUGIN_DIR . 'includes/blocks/build/index.css';
 		if ( file_exists( $editor_css ) ) {
@@ -138,7 +139,7 @@ class Blocks {
 		// Later declarations win, mirroring the CSS cascade.
 		$theme_path = Settings::get_color_scheme_css( true );
 		if ( file_exists( $theme_path ) && wp_style_is( 'wzcbh-editor-canvas-style', 'enqueued' ) ) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+         // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 			$theme_css   = file_get_contents( $theme_path );
 			$bg_value    = '';
 			$color_value = '';
@@ -158,7 +159,7 @@ class Blocks {
 					}
 
 					foreach ( preg_split( '/[\n;]/', $declarations ) as $decl ) {
-						$decl = trim( $decl );
+							$decl = trim( $decl );
 						if ( preg_match( '/^background(?:-color)?:\s*.+$/i', $decl ) ) {
 							$bg_value = $decl . ';';
 						} elseif ( preg_match( '/^color:\s*.+$/i', $decl ) ) {
@@ -171,7 +172,7 @@ class Blocks {
 			$props = array_filter( array( $bg_value, $color_value ) );
 			if ( $props ) {
 				$selectors = '.block-editor-block-list__layout pre[class*="language-"],' .
-							'.block-editor-block-list__layout code[class*="language-"]';
+				'.block-editor-block-list__layout code[class*="language-"]';
 				wp_add_inline_style(
 					'wzcbh-editor-canvas-style',
 					$selectors . '{' . implode( ' ', $props ) . '}'
@@ -224,7 +225,7 @@ class Blocks {
 	 *
 	 * @since 1.1.0
 	 *
-	 * @param \WP_REST_Request $request The REST request.
+	 * @param  \WP_REST_Request $request The REST request.
 	 * @return \WP_REST_Response
 	 */
 	public function save_default_settings( \WP_REST_Request $request ): \WP_REST_Response {
@@ -269,14 +270,24 @@ class Blocks {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string               $block_content The rendered block HTML.
-	 * @param array<string, mixed> $block         The block data array.
+	 * @param  string               $block_content The rendered block HTML.
+	 * @param  array<string, mixed> $block         The block data array.
 	 * @return string
 	 */
 	public function render_code_block( string $block_content, array $block ): string {
 		$attrs = $block['attrs'] ?? array();
 
-		$language           = sanitize_key( $attrs['language'] ?? '' );
+		$language = sanitize_key( $attrs['language'] ?? '' );
+
+		// 'text' is stored as the block attribute value but Prism has no 'text'
+		// grammar. Map it to 'none' so Prism applies theme styling without
+		// highlighting. Replace in the saved HTML (which already carries
+		// language-text on both <pre> and <code>) rather than appending.
+		if ( 'text' === $language ) {
+			$block_content = str_replace( 'language-text', 'language-none', $block_content );
+			$language      = '';
+		}
+
 		$line_numbers       = ! empty( $attrs['lineNumbers'] );
 		$line_numbers_start = isset( $attrs['lineNumbersStart'] ) ? (int) $attrs['lineNumbersStart'] : 1;
 		$word_wrap          = ! empty( $attrs['wordWrap'] );
@@ -406,6 +417,7 @@ class Blocks {
 			'scala'      => 'Scala',
 			'sql'        => 'SQL',
 			'swift'      => 'Swift',
+			'text'       => 'Plain Text',
 			'toml'       => 'TOML',
 			'tsx'        => 'TSX',
 			'typescript' => 'TypeScript',
