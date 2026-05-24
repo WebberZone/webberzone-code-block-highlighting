@@ -4,7 +4,7 @@ Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code
 Requires at least: 6.6
 Tested up to: 7.0
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -155,6 +155,10 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 
 == Changelog ==
 
+= 1.1.0 =
+
+* New: Added "Plain Text" language option to the language picker. Renders with Prism theme styling but no syntax highlighting.
+
 = 1.0.0 =
 
 * Initial release.
@@ -170,6 +174,9 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 * GDPR-friendly: no data collection, no external requests.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Adds "Plain Text" to the language picker.
 
 = 1.0.0 =
 Initial release.
