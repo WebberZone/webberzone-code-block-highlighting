@@ -179,9 +179,20 @@ class Settings {
 		return array(
 			'general' => array(
 				array(
+					'id'      => 'highlighting-mode',
+					'name'    => __( 'Highlighting Mode', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Client-side: Prism.js runs in the browser (default, supports all block features). Server-side: highlight.php pre-renders syntax on the server — no JavaScript required.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'radio',
+					'default' => 'client',
+					'options' => array(
+						'client' => __( 'Client-side (Prism.js)', 'webberzone-code-block-highlighting' ),
+						'server' => __( 'Server-side (highlight.php)', 'webberzone-code-block-highlighting' ),
+					),
+				),
+				array(
 					'id'      => 'color-scheme',
 					'name'    => __( 'Color Scheme', 'webberzone-code-block-highlighting' ),
-					'desc'    => __( 'Choose the syntax highlighting theme for all code blocks. This styling is applied only on the frontend and not in the block editor.', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Choose the syntax highlighting theme. In client-side mode the Prism.js theme is used directly; in server-side mode the closest matching highlight.php theme is applied automatically.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'select',
 					'default' => 'prism-onedark',
 					'options' => self::$color_schemes,
@@ -310,17 +321,25 @@ class Settings {
 	/**
 	 * Get the URL (or filesystem path) to the active color scheme CSS file.
 	 *
-	 * Returns the plain unminified LTR path. Frontend enqueuing (with SCRIPT_DEBUG
-	 * and RTL awareness) is handled by Styles_Handler.
-	 *
-	 * Falls back to the default One Dark theme if the chosen file does not exist.
+	 * Delegates to the hljs helper when server-side mode is active.
+	 * Returns the plain unminified LTR path; enqueuing with SCRIPT_DEBUG and RTL
+	 * awareness is handled by Styles_Handler.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param bool $return_path When true, returns the filesystem path instead of the URL.
+	 * @param bool   $return_path When true, returns the filesystem path instead of the URL.
+	 * @param string $mode        Explicit mode override; reads the setting when empty.
 	 * @return string
 	 */
-	public static function get_color_scheme_css( bool $return_path = false ): string {
+	public static function get_color_scheme_css( bool $return_path = false, string $mode = '' ): string {
+		if ( '' === $mode ) {
+			$mode = wzcbh_get_option( 'highlighting-mode', 'client' );
+		}
+
+		if ( 'server' === $mode ) {
+			return self::get_hljs_color_scheme_css( $return_path );
+		}
+
 		$option = wzcbh_get_option( 'color-scheme', 'prism-onedark' );
 		if ( ! array_key_exists( $option, self::$color_schemes ) ) {
 			$option = 'prism-onedark';
@@ -343,5 +362,71 @@ class Settings {
 		 * @param string $url Absolute URL of the CSS file to enqueue.
 		 */
 		return apply_filters( 'wzcbh_color_scheme_css_url', WZCBH_PLUGIN_URL . $rel_path ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+	}
+
+	/**
+	 * Map a Prism theme slug to the closest matching highlight.php theme slug.
+	 *
+	 * Used by get_hljs_color_scheme_css() so that a single "color-scheme" setting
+	 * drives both client-side (Prism) and server-side (highlight.php) modes.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $prism_slug Prism theme slug (e.g. 'prism-onedark').
+	 * @return string hljs theme slug (e.g. 'hljs-atom-one-dark').
+	 */
+	public static function get_prism_to_hljs_theme( string $prism_slug ): string {
+		$map = array(
+			'prism-a11y-dark'           => 'hljs-a11y-dark',
+			'prism-coldark-cold'        => 'hljs-a11y-light',
+			'prism-coldark-dark'        => 'hljs-github-dark',
+			'prism-dracula'             => 'hljs-atom-one-dark',
+			'prism-duotone-dark'        => 'hljs-atom-one-dark',
+			'prism-duotone-light'       => 'hljs-atom-one-light',
+			'prism-ghcolors'            => 'hljs-github',
+			'prism-gruvbox-dark'        => 'hljs-monokai',
+			'prism-gruvbox-light'       => 'hljs-xcode',
+			'prism-lucario'             => 'hljs-atom-one-dark',
+			'prism-material-dark'       => 'hljs-atom-one-dark',
+			'prism-material-light'      => 'hljs-atom-one-light',
+			'prism-night-owl'           => 'hljs-night-owl',
+			'prism-nord'                => 'hljs-nord',
+			'prism-onedark'             => 'hljs-atom-one-dark',
+			'prism-one-light'           => 'hljs-atom-one-light',
+			'prism-shades-of-purple'    => 'hljs-shades-of-purple',
+			'prism-solarized-dark-atom' => 'hljs-stackoverflow-dark',
+			'prism-synthwave84'         => 'hljs-shades-of-purple',
+			'prism-vsc-dark-plus'       => 'hljs-vs2015',
+			'prism-xonokai'             => 'hljs-monokai',
+		);
+		return $map[ $prism_slug ] ?? 'hljs-atom-one-dark';
+	}
+
+	/**
+	 * Get the URL (or filesystem path) to the active hljs color scheme CSS file.
+	 *
+	 * Derives the hljs theme from the shared color-scheme option via
+	 * get_prism_to_hljs_theme(), so no separate "hljs-color-scheme" setting
+	 * is needed.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param bool $return_path When true, returns the filesystem path instead of the URL.
+	 * @return string
+	 */
+	private static function get_hljs_color_scheme_css( bool $return_path = false ): string {
+		$prism_slug = wzcbh_get_option( 'color-scheme', 'prism-onedark' );
+		$option     = self::get_prism_to_hljs_theme( $prism_slug );
+		$rel_path   = "includes/assets/{$option}.css";
+
+		if ( ! file_exists( WZCBH_PLUGIN_DIR . $rel_path ) ) {
+			$rel_path = 'includes/assets/hljs-atom-one-dark.css';
+		}
+
+		if ( $return_path ) {
+			return WZCBH_PLUGIN_DIR . $rel_path;
+		}
+
+		return WZCBH_PLUGIN_URL . $rel_path;
 	}
 }

@@ -1,0 +1,39 @@
+/*
+ * Server-mode (highlight.php) structural overrides.
+ * Supplements the active hljs theme CSS and Prism's frontend.css.
+ * frontend.css provides: toolbar, line-numbers, word-wrap, CSS variables.
+ * This file handles: hljs selector bridging, line-highlighting, padding fixes.
+ */
+
+/* ── Bridge: make hljs <pre> work with Prism's line-numbers CSS ─────────── */
+/* Prism's frontend.css targets pre[class*="language-"]; adding language-*   */
+/* to pre.hljs makes those selectors match. Remove code.hljs left padding    */
+/* when line numbers are active so the gutter aligns with the text.          */
+pre.hljs.line-numbers > code.hljs {
+	padding-right: 0;
+}
+
+/* ── Font size: apply CSS variable to hljs elements ────────────────────── */
+pre.hljs code.hljs {
+	font-size: var(--wzcbh-font-size, inherit);
+}
+
+/* ── Line highlighting ──────────────────────────────────────────────────── */
+/* Works with or without line numbers. Uses full-width background like       */
+/* Prism's line-highlight plugin (negative margin to span the full width).   */
+pre.hljs .wzcbh-highlighted-line {
+	display: block;
+	background: hsla(24, 20%, 50%, 0.3);
+	background: linear-gradient(
+		to left,
+		hsla(24, 20%, 50%, 0.35) 70%,
+		hsla(24, 20%, 50%, 0)
+	);
+	margin: 0 -1em;
+	padding: 0 1em;
+}
+
+pre.hljs.line-numbers .wzcbh-highlighted-line {
+	margin-right: -0.5em;
+	padding-right: 0.5em;
+}

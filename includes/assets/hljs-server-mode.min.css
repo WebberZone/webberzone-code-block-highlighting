@@ -1,0 +1,1 @@
+pre.hljs.line-numbers>code.hljs{padding-left:0}pre.hljs code.hljs{font-size:var( --wzcbh-font-size, inherit )}pre.hljs .wzcbh-highlighted-line{display:block;background:hsla(24,20%,50%,.3);background:linear-gradient(to right,hsla(24,20%,50%,.35) 70%,hsla(24,20%,50%,0));margin:0 -1em;padding:0 1em}pre.hljs.line-numbers .wzcbh-highlighted-line{margin-left:-.5em;padding-left:.5em}
