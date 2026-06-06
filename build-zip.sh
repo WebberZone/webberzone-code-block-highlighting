@@ -51,12 +51,21 @@ CLAUDE.md
 AGENTS.md
 EOF
 
-# Install production-only PHP dependencies into the build copy.
-# composer.json/lock are excluded from rsync, so copy them temporarily.
-echo "Installing production PHP dependencies..."
-cp composer.json composer.lock "$TEMP_DIR/"
-composer install --working-dir="$TEMP_DIR" --no-dev --quiet
-rm "$TEMP_DIR/composer.json" "$TEMP_DIR/composer.lock"
+# Copy required vendor dependencies (everything in vendor/ is excluded above,
+# so production runtime deps must be copied back in explicitly). Dev-only files
+# such as .github workflow folders are stripped from the copies.
+echo "Copying vendor dependencies..."
+mkdir -p "$TEMP_DIR/vendor"
+
+# highlight.php (server-side syntax highlighter; loaded via its own PSR-0
+# autoloader, not the Composer autoloader).
+if [ -d "vendor/scrivo/highlight.php" ]; then
+    mkdir -p "$TEMP_DIR/vendor/scrivo"
+    rsync -a --exclude='.github' --exclude='.git*' --exclude='README.md' --exclude='CONTRIBUTING.md' --exclude='AUTHORS.txt' --exclude='.php-cs-fixer.dist.php' vendor/scrivo/highlight.php "$TEMP_DIR/vendor/scrivo/"
+else
+    echo "Error: vendor/scrivo/highlight.php directory not found. Run 'composer install' first." >&2
+    exit 1
+fi
 
 # Create zip
 echo "Creating zip file..."

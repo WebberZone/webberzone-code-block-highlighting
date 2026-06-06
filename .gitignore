@@ -1,4 +1,6 @@
-/vendor/
+# Ignore entire vendor except bundled runtime packages
+/vendor/*
+!/vendor/scrivo/
 /node_modules/
 /phpcompat-tools/
 /build/

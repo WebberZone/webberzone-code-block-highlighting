@@ -433,6 +433,16 @@ class Blocks {
 		$highlight_lines    = $params['highlight_lines'];
 		$max_height         = $params['max_height'];
 
+		// 'text' is stored as the block attribute value but there is no 'text'
+		// grammar. Map it to 'none' so plain text blocks get consistent class
+		// names with the client-side mode. Replace in the saved HTML (which
+		// already carries language-text on both <pre> and <code>) rather than
+		// appending.
+		if ( 'text' === $language ) {
+			$block_content = str_replace( 'language-text', 'language-none', $block_content );
+			$language      = '';
+		}
+
 		// ── Extract raw code from saved HTML ──────────────────────────────────
 		if ( ! preg_match( '/<code[^>]*>([\s\S]*?)<\/code>/i', $block_content, $m ) ) {
 			return $block_content;
