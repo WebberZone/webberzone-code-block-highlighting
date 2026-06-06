@@ -179,9 +179,20 @@ class Settings {
 		return array(
 			'general' => array(
 				array(
+					'id'      => 'highlighting-mode',
+					'name'    => __( 'Highlighting Mode', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Client-side: Prism.js runs in the browser (default, supports all block features). Server-side: highlight.php pre-renders syntax on the server — no JavaScript required.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'radio',
+					'default' => 'client',
+					'options' => array(
+						'client' => __( 'Client-side (Prism.js)', 'webberzone-code-block-highlighting' ),
+						'server' => __( 'Server-side (highlight.php)', 'webberzone-code-block-highlighting' ),
+					),
+				),
+				array(
 					'id'      => 'color-scheme',
 					'name'    => __( 'Color Scheme', 'webberzone-code-block-highlighting' ),
-					'desc'    => __( 'Choose the syntax highlighting theme for all code blocks. This styling is applied only on the frontend and not in the block editor.', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Choose the syntax highlighting theme. The same Prism.js theme is used in both client-side and server-side modes.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'select',
 					'default' => 'prism-onedark',
 					'options' => self::$color_schemes,
@@ -310,10 +321,8 @@ class Settings {
 	/**
 	 * Get the URL (or filesystem path) to the active color scheme CSS file.
 	 *
-	 * Returns the plain unminified LTR path. Frontend enqueuing (with SCRIPT_DEBUG
-	 * and RTL awareness) is handled by Styles_Handler.
-	 *
-	 * Falls back to the default One Dark theme if the chosen file does not exist.
+	 * Returns the plain unminified LTR path; enqueuing with SCRIPT_DEBUG and RTL
+	 * awareness is handled by Styles_Handler.
 	 *
 	 * @since 1.0.0
 	 *

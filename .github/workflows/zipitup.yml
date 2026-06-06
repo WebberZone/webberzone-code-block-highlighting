@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Create artifact
-        run: composer zip build-prism.js
+        run: composer zip
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:

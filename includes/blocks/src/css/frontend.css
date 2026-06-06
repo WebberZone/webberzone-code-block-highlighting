@@ -44,12 +44,28 @@ pre.word-wrap code[class*='language-'] {
  * Prism's `padding: inherit 0` makes each stripe inherit the pre's top/bottom
  * padding, causing it to render taller than one line and appear misaligned.
  * Reset padding to zero so the stripe height matches exactly one line row.
+ *
+ * A saturated warm fill plus a solid left accent bar keeps the highlight
+ * legible across every Prism theme (dark and light) since no per-theme class
+ * is available to branch on. The accent bar guarantees contrast even where the
+ * translucent fill blends into a similarly-toned background.
  */
 .line-highlight {
 	padding-top: 0;
 	padding-bottom: 0;
-	background: hsla(24, 20%, 50%, 0.3);
-	background: linear-gradient(to right, hsla(24, 20%, 50%, 0.35) 70%, hsla(24, 20%, 50%, 0));
+	background: hsla(24, 85%, 55%, 0.22);
+	background: linear-gradient(to right, hsla(24, 85%, 55%, 0.28) 70%, hsla(24, 85%, 55%, 0.04));
+	box-shadow: inset 3px 0 0 hsla(24, 90%, 52%, 0.9);
+}
+
+/**
+ * Hide Prism's start/end line-number badges (`.line-highlight::before` /
+ * `::after`) shown when the line-numbers plugin is inactive. Prism only
+ * suppresses these automatically when line numbers are enabled.
+ */
+.line-highlight::before,
+.line-highlight[data-end]::after {
+	content: none;
 }
 
 /**

@@ -1,0 +1,27 @@
+/*
+ * Server-mode structural overrides.
+ * frontend.css covers font-size, line-numbers, word-wrap, toolbar, and CSS variables.
+ * This file only handles server-side line-highlighting (class applied by PHP).
+ */
+
+/* ── Line highlighting ──────────────────────────────────────────────────── */
+/* Mirrors the client-mode `.line-highlight` styling in frontend.css: a
+ * saturated warm fill plus a solid left accent bar keeps the highlight legible
+ * across every Prism theme (dark and light) since no per-theme class exists. */
+pre[class*="language-"] .wzcbh-highlighted-line {
+	display: block;
+	background: hsla(24, 85%, 55%, 0.22);
+	background: linear-gradient(
+		to left,
+		hsla(24, 85%, 55%, 0.28) 70%,
+		hsla(24, 85%, 55%, 0.04)
+	);
+	box-shadow: inset -3px 0 0 hsla(24, 90%, 52%, 0.9);
+	margin: 0 -1em;
+	padding: 0 1em;
+}
+
+pre[class*="language-"].line-numbers .wzcbh-highlighted-line {
+	margin-right: -0.5em;
+	padding-right: 0.5em;
+}

@@ -1,6 +1,10 @@
 # AGENTS.md
 
-WordPress plugin extending the native Gutenberg `core/code` block with Prism.js syntax highlighting via JS block filters and a `render_block_core/code` PHP filter. Does not replace the block — existing posts stay valid.
+WordPress plugin extending the native Gutenberg `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter. Does not replace the block — existing posts stay valid.
+
+Two highlighting modes:
+- **Client-side** (default): Prism.js runs in the browser. Loads the Prism JS bundle + theme CSS.
+- **Server-side**: highlight.php pre-renders token spans on the server. No JS loaded. Uses the same Prism theme CSS — token class remapping (`remap_token_classes()` in `class-blocks.php`) converts hljs-* span classes to Prism `token *` classes via `strtr`, giving exact visual parity across all 21 themes.
 
 ## Commands
 

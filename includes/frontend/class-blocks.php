@@ -260,13 +260,12 @@ class Blocks {
 	}
 
 	/**
-	 * Filter the rendered HTML of core/code blocks to inject Prism attributes.
+	 * Filter the rendered HTML of core/code blocks to inject highlighting attributes.
 	 *
-	 * - Adds `language-{lang}` class on `<code>`.
-	 * - Adds `line-numbers` class and `data-start` on `<pre>` when enabled.
-	 * - Adds `word-wrap` class on `<pre>` when enabled.
-	 * - Adds `data-title` attribute on `<pre>` for toolbar pickup.
-	 * - Adds `data-line` attribute on `<pre>` for line highlight plugin.
+	 * In client mode (Prism.js): injects language classes and data-attributes so the
+	 * Prism JS bundle can highlight in the browser.
+	 * In server mode (highlight.php): runs the highlighter server-side and replaces the
+	 * <code> innerHTML before the page is sent; no Prism JS is loaded.
 	 *
 	 * @since 1.0.0
 	 *
@@ -277,7 +276,52 @@ class Blocks {
 	public function render_code_block( string $block_content, array $block ): string {
 		$attrs = $block['attrs'] ?? array();
 
-		$language = sanitize_key( $attrs['language'] ?? '' );
+		// `language` and `title` are sourced from HTML attributes in the save
+		// function (lang= on <code>, data-title= on <pre>) and are not serialized
+		// to the block JSON comment. Extract both here before dispatching.
+		if ( empty( $attrs['language'] ) && preg_match( '/<code[^>]+\blang="([^"]+)"/', $block_content, $lm ) ) {
+			$attrs['language'] = sanitize_key( $lm[1] );
+		}
+		if ( empty( $attrs['title'] ) && preg_match( '/<pre[^>]+\bdata-title="([^"]*)"/', $block_content, $tm ) ) {
+			$attrs['title'] = html_entity_decode( $tm[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		}
+
+		$params = array(
+			'language'           => sanitize_key( $attrs['language'] ?? '' ),
+			'line_numbers'       => ! empty( $attrs['lineNumbers'] ),
+			'line_numbers_start' => max( 1, (int) ( $attrs['lineNumbersStart'] ?? 1 ) ),
+			'word_wrap'          => ! empty( $attrs['wordWrap'] ),
+			'title'              => sanitize_text_field( $attrs['title'] ?? '' ),
+			'highlight_lines'    => sanitize_text_field( $attrs['highlightLines'] ?? '' ),
+			'max_height'         => max( 0, (int) ( $attrs['maxHeight'] ?? 0 ) ),
+		);
+
+		if ( 'server' === wzcbh_get_option( 'highlighting-mode', 'client' ) ) {
+			return $this->render_code_block_server( $block_content, $params );
+		}
+
+		return $this->render_code_block_client( $block_content, $params );
+	}
+
+	/**
+	 * Render a code block in client mode (Prism.js).
+	 *
+	 * Injects language classes and data-attributes into the existing saved HTML
+	 * so the Prism JS bundle can highlight in the browser.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string              $block_content The rendered block HTML.
+	 * @param  array<string,mixed> $params Normalised block parameters.
+	 * @return string
+	 */
+	protected function render_code_block_client( string $block_content, array $params ): string {
+		$language           = $params['language'];
+		$line_numbers       = $params['line_numbers'];
+		$line_numbers_start = $params['line_numbers_start'];
+		$word_wrap          = $params['word_wrap'];
+		$title              = $params['title'];
+		$highlight_lines    = $params['highlight_lines'];
 
 		// 'text' is stored as the block attribute value but Prism has no 'text'
 		// grammar. Map it to 'none' so Prism applies theme styling without
@@ -288,30 +332,26 @@ class Blocks {
 			$language      = '';
 		}
 
-		$line_numbers       = ! empty( $attrs['lineNumbers'] );
-		$line_numbers_start = isset( $attrs['lineNumbersStart'] ) ? (int) $attrs['lineNumbersStart'] : 1;
-		$word_wrap          = ! empty( $attrs['wordWrap'] );
-		$title              = isset( $attrs['title'] ) ? sanitize_text_field( $attrs['title'] ) : '';
-		$highlight_lines    = isset( $attrs['highlightLines'] ) ? sanitize_text_field( $attrs['highlightLines'] ) : '';
-
-		// ── Apply language class to <code> ────────────────────────────────────
+		// ── Apply language class to <code> (skip if already present) ─────────
 		if ( $language ) {
 			$lang_class = 'language-' . $language;
 
-			if ( preg_match( '/<code[^>]+class="[^"]*"/', $block_content ) ) {
-				$block_content = preg_replace(
-					'/(<code[^>]+class=")([^"]*)(")/i',
-					'$1$2 ' . $lang_class . '$3',
-					$block_content,
-					1
-				);
-			} else {
-				$block_content = preg_replace(
-					'/<code(?=[^>]*>)/i',
-					'<code class="' . $lang_class . '"',
-					$block_content,
-					1
-				);
+			if ( ! preg_match( '/<code[^>]+class="[^"]*' . preg_quote( $lang_class, '/' ) . '[^"]*"/', $block_content ) ) {
+				if ( preg_match( '/<code[^>]+class="[^"]*"/', $block_content ) ) {
+					$block_content = preg_replace(
+						'/(<code[^>]+class=")([^"]*)(")/i',
+						'$1$2 ' . $lang_class . '$3',
+						$block_content,
+						1
+					);
+				} else {
+					$block_content = preg_replace(
+						'/<code(?=[^>]*>)/i',
+						'<code class="' . $lang_class . '"',
+						$block_content,
+						1
+					);
+				}
 			}
 		}
 
@@ -369,6 +409,446 @@ class Blocks {
 		}
 
 		return $block_content;
+	}
+
+	/**
+	 * Render a code block using server-side highlight.php highlighting.
+	 *
+	 * Replaces the <code> element innerHTML with pre-highlighted HTML spans,
+	 * and injects toolbar overlays (language label, file name, copy button)
+	 * as PHP-rendered HTML so no Prism JS is required.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string              $block_content The rendered block HTML.
+	 * @param  array<string,mixed> $params        Normalised block parameters.
+	 * @return string
+	 */
+	protected function render_code_block_server( string $block_content, array $params ): string {
+		$language           = $params['language'];
+		$line_numbers       = $params['line_numbers'];
+		$line_numbers_start = $params['line_numbers_start'];
+		$word_wrap          = $params['word_wrap'];
+		$title              = $params['title'];
+		$highlight_lines    = $params['highlight_lines'];
+		$max_height         = $params['max_height'];
+
+		// ── Extract raw code from saved HTML ──────────────────────────────────
+		if ( ! preg_match( '/<code[^>]*>([\s\S]*?)<\/code>/i', $block_content, $m ) ) {
+			return $block_content;
+		}
+		$inner_html = $m[1];
+		$plain_code = html_entity_decode( $inner_html, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+
+		// ── Map Prism slug → hljs slug ────────────────────────────────────────
+		$hljs_lang = self::get_hljs_language( $language );
+
+		// ── Run highlight.php ──────────────────────────────────────────────────
+		$highlighted = '';
+		if ( $hljs_lang ) {
+			self::load_highlighter();
+			try {
+				$hl          = new \Highlight\Highlighter();
+				$result      = $hl->highlight( $hljs_lang, $plain_code );
+				$highlighted = self::remap_token_classes( $result->value );
+			} catch ( \Throwable $e ) {
+				$highlighted = esc_html( $plain_code );
+			}
+		} else {
+			$highlighted = esc_html( $plain_code );
+		}
+
+		// ── Line count (for line-numbers-rows) ────────────────────────────────
+		$line_count = max( 1, substr_count( rtrim( $plain_code, "\n" ), "\n" ) + 1 );
+
+		// ── Wrap lines for line highlighting (and line numbers) ───────────────
+		// Run wrap_lines() whenever line numbers OR line highlighting is active
+		// so that line highlighting works independently of line numbers.
+		$target_lines = array();
+		if ( $highlight_lines ) {
+			$target_lines = self::parse_line_ranges( $highlight_lines );
+		}
+
+		if ( $line_numbers || $target_lines ) {
+			$highlighted = self::wrap_lines( $highlighted, $line_numbers_start, $target_lines );
+		}
+
+		// ── Line-numbers gutter ───────────────────────────────────────────────
+		// Generate the same DOM structure as Prism's line-numbers plugin so the
+		// bundled frontend.css renders the gutter identically. Prism appends the
+		// .line-numbers-rows span inside the <code> element (env.element), where
+		// it anchors to `pre.line-numbers > code { position: relative }`. Placing
+		// it inside <pre> instead would anchor it to the <pre> padding box, so the
+		// gutter's `left: -3.8em` would fall outside the content area and be
+		// clipped by `pre { overflow: auto }` — making line numbers invisible.
+		$line_numbers_html = '';
+		if ( $line_numbers ) {
+			$rows_inner        = str_repeat( '<span></span>', $line_count );
+			$line_numbers_html = '<span aria-hidden="true" class="line-numbers-rows">'
+				. $rows_inner . '</span>';
+		}
+
+		// ── Rebuild <code> element ─────────────────────────────────────────────
+		$code_classes = $language ? 'language-' . esc_attr( $language ) : '';
+		$new_code     = '<code' . ( $code_classes ? ' class="' . $code_classes . '"' : '' ) . '>'
+			. $highlighted . $line_numbers_html . '</code>';
+
+		$block_content = preg_replace_callback(
+			'/<code[^>]*>[\s\S]*?<\/code>/i',
+			static function () use ( $new_code ): string {
+				return $new_code;
+			},
+			$block_content,
+			1
+		);
+
+		// ── Apply classes to <pre> ────────────────────────────────────────────
+		$pre_classes = array();
+		if ( $language ) {
+			$pre_classes[] = 'language-' . esc_attr( $language );
+		}
+		if ( $line_numbers ) {
+			$pre_classes[] = 'line-numbers';
+		}
+		if ( $word_wrap ) {
+			$pre_classes[] = 'word-wrap';
+		}
+
+		$classes_str = implode( ' ', $pre_classes );
+		if ( preg_match( '/<pre[^>]+class="[^"]*"/', $block_content ) ) {
+			$block_content = preg_replace(
+				'/(<pre[^>]+class=")([^"]*)(")/i',
+				'$1$2 ' . $classes_str . '$3',
+				$block_content,
+				1
+			);
+		} else {
+			$block_content = preg_replace(
+				'/<pre(?=[^>]*>)/i',
+				'<pre class="' . $classes_str . '"',
+				$block_content,
+				1
+			);
+		}
+
+		// ── Set counter-reset on <pre> for lineNumbersStart > 1 ───────────────
+		// Mirrors what Prism JS does at runtime by reading data-start.
+		if ( $line_numbers && $line_numbers_start > 1 ) {
+			$counter_val  = $line_numbers_start - 1;
+			$counter_decl = 'counter-reset: linenumber ' . $counter_val . ';';
+			if ( preg_match( '/(<pre\b[^>]*)\sstyle="([^"]*)"/', $block_content ) ) {
+				$block_content = preg_replace(
+					'/(<pre\b[^>]*)\sstyle="([^"]*)"/',
+					'$1 style="$2 ' . $counter_decl . '"',
+					$block_content,
+					1
+				);
+			} else {
+				$block_content = preg_replace(
+					'/(<pre\b)/i',
+					'$1 style="' . $counter_decl . '"',
+					$block_content,
+					1
+				);
+			}
+		}
+
+		// ── Toolbar: same HTML structure as Prism's toolbar plugin ────────────
+		$show_copy  = (bool) wzcbh_get_option( 'copy-to-clipboard', true );
+		$show_label = (bool) wzcbh_get_option( 'show-language-label', true );
+		$show_title = (bool) wzcbh_get_option( 'show-file-name', true );
+
+		$toolbar_items = '';
+
+		// Expand/collapse button (shown when maxHeight inline style is set).
+		if ( $max_height > 0 ) {
+			$toolbar_items .= '<div class="toolbar-item">'
+				. '<button type="button" class="wzcbh-expand-button" aria-expanded="false">'
+				. esc_html__( 'Expand', 'webberzone-code-block-highlighting' )
+				. '</button></div>';
+		}
+
+		// Language label (aria-hidden decorative span, same as Prism show-language).
+		if ( $show_label && $hljs_lang ) {
+			$languages      = self::get_languages();
+			$label          = $languages[ $language ] ?? strtoupper( $hljs_lang );
+			$toolbar_items .= '<div class="toolbar-item">'
+				. '<span aria-hidden="true">' . esc_html( $label ) . '</span></div>';
+		}
+
+		// File name / title (wzcbh-toolbar-title span, same as Prism wzcbh-title button).
+		if ( $show_title && $title ) {
+			$toolbar_items .= '<div class="toolbar-item">'
+				. '<span class="wzcbh-toolbar-title">' . esc_html( $title ) . '</span></div>';
+		}
+
+		// Copy button (same class/structure as Prism copy-to-clipboard plugin).
+		if ( $show_copy ) {
+			$toolbar_items .= '<div class="toolbar-item">'
+				. '<button class="copy-to-clipboard-button" type="button" data-copy-state="copy">'
+				. '<span>' . esc_html__( 'Copy', 'webberzone-code-block-highlighting' ) . '</span>'
+				. '</button></div>';
+		}
+
+		if ( $toolbar_items ) {
+			$block_content = '<div class="code-toolbar">'
+				. $block_content
+				. '<div class="toolbar">' . $toolbar_items . '</div>'
+				. '</div>';
+		}
+
+		return $block_content;
+	}
+
+	/**
+	 * Remap highlight.php's hljs-* token class names to Prism's token class names.
+	 *
+	 * Highlight.php emits single-class spans (e.g. <span class="hljs-keyword">).
+	 * Remapping to Prism's token classes (e.g. <span class="token keyword">) lets
+	 * server mode reuse the Prism theme CSS directly, giving exact theme parity
+	 * across all 21 themes with no per-theme hljs CSS files needed.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string $html Highlighted HTML from highlight.php.
+	 * @return string HTML with hljs class names replaced by Prism token class names.
+	 */
+	protected static function remap_token_classes( string $html ): string {
+		static $map = null;
+
+		if ( null === $map ) {
+			$map = array(
+				'class="hljs-keyword"'           => 'class="token keyword"',
+				'class="hljs-string"'            => 'class="token string"',
+				'class="hljs-comment"'           => 'class="token comment"',
+				'class="hljs-number"'            => 'class="token number"',
+				'class="hljs-operator"'          => 'class="token operator"',
+				'class="hljs-punctuation"'       => 'class="token punctuation"',
+				'class="hljs-variable"'          => 'class="token variable"',
+				'class="hljs-template-variable"' => 'class="token variable"',
+				'class="hljs-attr"'              => 'class="token attr-name"',
+				'class="hljs-attribute"'         => 'class="token attr-name"',
+				'class="hljs-symbol"'            => 'class="token symbol"',
+				'class="hljs-built_in"'          => 'class="token builtin"',
+				'class="hljs-type"'              => 'class="token class-name"',
+				'class="hljs-class"'             => 'class="token class-name"',
+				'class="hljs-title"'             => 'class="token function"',
+				'class="hljs-section"'           => 'class="token function"',
+				'class="hljs-params"'            => 'class="token parameter"',
+				'class="hljs-literal"'           => 'class="token boolean"',
+				'class="hljs-regexp"'            => 'class="token regex"',
+				'class="hljs-meta"'              => 'class="token decorator"',
+				'class="hljs-tag"'               => 'class="token tag"',
+				'class="hljs-name"'              => 'class="token tag"',
+				'class="hljs-selector-tag"'      => 'class="token selector"',
+				'class="hljs-selector-id"'       => 'class="token selector"',
+				'class="hljs-selector-class"'    => 'class="token selector"',
+				'class="hljs-selector-attr"'     => 'class="token attr-name"',
+				'class="hljs-selector-pseudo"'   => 'class="token selector"',
+				'class="hljs-addition"'          => 'class="token inserted"',
+				'class="hljs-deletion"'          => 'class="token deleted"',
+				'class="hljs-emphasis"'          => 'class="token italic"',
+				'class="hljs-strong"'            => 'class="token bold"',
+				'class="hljs-link"'              => 'class="token url"',
+				'class="hljs-quote"'             => 'class="token comment"',
+				'class="hljs-doctag"'            => 'class="token doctype"',
+				'class="hljs-formula"'           => 'class="token keyword"',
+				'class="hljs-bullet"'            => 'class="token punctuation"',
+				'class="hljs-subst"'             => 'class="token interpolation"',
+				'class="hljs-function"'          => 'class="token"',
+				'class="hljs-meta-keyword"'      => 'class="token keyword"',
+				'class="hljs-meta-string"'       => 'class="token string"',
+			);
+		}
+
+		return strtr( $html, $map );
+	}
+
+	/**
+	 * Load the highlight.php library.
+	 *
+	 * The highlight.php library is a multi-file PSR-0 library bundled under
+	 * vendor/, so it cannot be pulled in with a single require_once. It ships its
+	 * own autoloader for projects that don't boot Composer's autoloader; we
+	 * register that rather than the global vendor/autoload.php to avoid leaking
+	 * unrelated dependencies into the WordPress runtime. Runs once per request.
+	 *
+	 * @since 1.2.0
+	 */
+	protected static function load_highlighter(): void {
+		static $loaded = false;
+
+		if ( $loaded ) {
+			return;
+		}
+		$loaded = true;
+
+		$autoloader = WZCBH_PLUGIN_DIR . 'vendor/scrivo/highlight.php/Highlight/Autoloader.php';
+		if ( is_file( $autoloader ) ) {
+			require_once $autoloader;
+			spl_autoload_register(
+				static function ( string $class_name ): void {
+					\Highlight\Autoloader::load( $class_name );
+				}
+			);
+		}
+	}
+
+	/**
+	 * Map a Prism language slug to the equivalent highlight.php slug.
+	 *
+	 * Languages not in the map are passed through unchanged; an empty string
+	 * means "no highlighting" (plain text).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string $prism_slug Prism language slug from the block attribute.
+	 * @return string hljs language slug, or empty string for plain text.
+	 */
+	protected static function get_hljs_language( string $prism_slug ): string {
+		$map = array(
+			'markup'     => 'xml',
+			'text'       => '',
+			'none'       => '',
+			'jsx'        => 'javascript',
+			'tsx'        => 'typescript',
+			'sass'       => 'scss',
+			'docker'     => 'dockerfile',
+			'apacheconf' => 'apache',
+			'toml'       => 'ini',
+			'fsharp'     => 'fsharp',
+			'objectivec' => 'objectivec',
+			'powershell' => 'powershell',
+		);
+
+		if ( array_key_exists( $prism_slug, $map ) ) {
+			return $map[ $prism_slug ];
+		}
+
+		return $prism_slug;
+	}
+
+	/**
+	 * Wrap each line of highlighted HTML in a <span> for line numbers and
+	 * line highlighting. Properly closes and reopens inline <span> elements
+	 * at line boundaries so the output remains valid HTML.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string $html        Highlighted HTML from highlight.php.
+	 * @param  int    $start       First line number.
+	 * @param  int[]  $target_lines Line numbers that should be highlighted.
+	 * @return string
+	 */
+	protected static function wrap_lines( string $html, int $start, array $target_lines ): string {
+		$result    = '';
+		$open_tags = array(); // Stack of opening tag strings.
+		$line_buf  = '';
+		$line_num  = $start;
+		$i         = 0;
+		$len       = strlen( $html );
+
+		while ( $i < $len ) {
+			$ch = $html[ $i ];
+
+			if ( '<' === $ch ) {
+				$j = strpos( $html, '>', $i );
+				if ( false === $j ) {
+					$line_buf .= substr( $html, $i );
+					break;
+				}
+				$tag = substr( $html, $i, $j - $i + 1 );
+
+				if ( 0 === strncmp( $tag, '</', 2 ) ) {
+					array_pop( $open_tags );
+				} elseif ( '/' !== $tag[ strlen( $tag ) - 2 ] ) {
+					$open_tags[] = $tag;
+				}
+
+				$line_buf .= $tag;
+				$i         = $j + 1;
+			} elseif ( "\n" === $ch ) {
+				$close_str  = '';
+				$reopen_str = '';
+				foreach ( array_reverse( $open_tags ) as $open_tag ) {
+					preg_match( '/<([a-zA-Z][a-zA-Z0-9]*)/', $open_tag, $tm );
+					$close_str .= '</' . ( $tm[1] ?? 'span' ) . '>';
+				}
+				foreach ( $open_tags as $open_tag ) {
+					$reopen_str .= $open_tag;
+				}
+
+				$result  .= self::make_line_span( $line_num, $target_lines, $line_buf . $close_str . "\n" );
+				$line_buf = $reopen_str;
+				++$line_num;
+				++$i;
+			} else {
+				$line_buf .= $ch;
+				++$i;
+			}
+		}
+
+		// Emit the final line (common when code has no trailing newline).
+		if ( '' !== $line_buf ) {
+			$close_str = '';
+			foreach ( array_reverse( $open_tags ) as $open_tag ) {
+				preg_match( '/<([a-zA-Z][a-zA-Z0-9]*)/', $open_tag, $tm );
+				$close_str .= '</' . ( $tm[1] ?? 'span' ) . '>';
+			}
+			$result .= self::make_line_span( $line_num, $target_lines, $line_buf . $close_str );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Build a single <span class="wzcbh-line"> wrapper for one line.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param int    $line_num     Current line number.
+	 * @param int[]  $target_lines Line numbers that should be highlighted.
+	 * @param string $content      Inner HTML content for this line.
+	 * @return string
+	 */
+	protected static function make_line_span( int $line_num, array $target_lines, string $content ): string {
+		$classes = 'wzcbh-line';
+		if ( in_array( $line_num, $target_lines, true ) ) {
+			$classes .= ' wzcbh-highlighted-line';
+		}
+		return '<span class="' . $classes . '" data-line-number="' . $line_num . '">'
+			. $content . '</span>';
+	}
+
+	/**
+	 * Parse a Prism-style line range string into an array of line numbers.
+	 *
+	 * Accepts e.g. "1,3-5,7" → [1, 3, 4, 5, 7].
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string $spec The line range specification.
+	 * @return int[]
+	 */
+	protected static function parse_line_ranges( string $spec ): array {
+		$lines = array();
+		foreach ( explode( ',', $spec ) as $part ) {
+			$part = trim( $part );
+			if ( '' === $part ) {
+				continue;
+			}
+			if ( strpos( $part, '-' ) !== false ) {
+				list( $from, $to ) = explode( '-', $part, 2 );
+				$from              = (int) trim( $from );
+				$to                = (int) trim( $to );
+				for ( $n = $from; $n <= $to; $n++ ) {
+					$lines[] = $n;
+				}
+			} else {
+				$lines[] = (int) $part;
+			}
+		}
+		return array_unique( $lines );
 	}
 
 	/**

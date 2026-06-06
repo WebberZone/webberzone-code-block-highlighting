@@ -1,7 +1,7 @@
 {
     "name": "webberzone/webberzone-code-block-highlighting",
     "description": "Extends the Gutenberg Code block with syntax highlighting powered by Prism.js.",
-    "version": "1.0.0",
+    "version": "1.2.0",
     "type": "wordpress-plugin",
     "keywords": [
         "code block",
@@ -19,7 +19,8 @@
         }
     ],
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "scrivo/highlight.php": "^9.18"
     },
     "require-dev": {
         "szepeviktor/phpstan-wordpress": "^1",

@@ -42,6 +42,7 @@ package-lock.json
 phpstan-bootstrap.php
 build-zip.sh
 build-prism.js
+build-prism.min.js
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
 ISSUE_TEMPLATE.md
@@ -49,6 +50,13 @@ PULL_REQUEST_TEMPLATE.md
 CLAUDE.md
 AGENTS.md
 EOF
+
+# Install production-only PHP dependencies into the build copy.
+# composer.json/lock are excluded from rsync, so copy them temporarily.
+echo "Installing production PHP dependencies..."
+cp composer.json composer.lock "$TEMP_DIR/"
+composer install --working-dir="$TEMP_DIR" --no-dev --quiet
+rm "$TEMP_DIR/composer.json" "$TEMP_DIR/composer.lock"
 
 # Create zip
 echo "Creating zip file..."
