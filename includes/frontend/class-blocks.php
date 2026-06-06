@@ -440,7 +440,7 @@ class Blocks {
 		// appending.
 		if ( 'text' === $language ) {
 			$block_content = str_replace( 'language-text', 'language-none', $block_content );
-			$language      = '';
+			$language      = 'none';
 		}
 
 		// ── Extract raw code from saved HTML ──────────────────────────────────
