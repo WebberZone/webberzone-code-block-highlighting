@@ -618,7 +618,7 @@ class Blocks {
 	 * server mode reuse the Prism theme CSS directly, giving exact theme parity
 	 * across all 21 themes with no per-theme hljs CSS files needed.
 	 *
-	 * @since 1.3.0
+	 * @since 1.1.0
 	 *
 	 * @param string $html Highlighted HTML from highlight.php.
 	 * @return string HTML with hljs class names replaced by Prism token class names.
