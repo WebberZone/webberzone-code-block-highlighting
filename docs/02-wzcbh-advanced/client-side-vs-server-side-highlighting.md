@@ -1,0 +1,41 @@
+---
+slug: client-side-vs-server-side-highlighting
+title: "Client-Side vs Server-Side Highlighting"
+products: [code-block-highlighting]
+sections: [02-wzcbh-advanced]
+tags: [code-block-highlighting, server-side, prism, highlight.php]
+status: publish
+order: 0
+---
+
+[WebberZone Code Block Highlighting](https://webberzone.com/plugins/webberzone-code-block-highlighting/) supports two rendering modes: client-side (Prism.js in the browser) and server-side (highlight.php on the server). The mode is set globally and applies to all code blocks on the site.
+
+[kbtoc]
+
+## Client-side mode (default)
+
+<a href="https://prismjs.com/" target="_blank" rel="noopener">Prism.js</a> loads in the visitor's browser and highlights the code on page load. The Prism JS bundle (containing all bundled grammars and plugins) and the active theme CSS are enqueued on pages that contain at least one code block. Interactive toolbar features — copy-to-clipboard, expand/collapse, and the language label — are all available in this mode.
+
+## Server-side mode
+
+<a href="https://github.com/scrivo/highlight.php" target="_blank" rel="noopener">highlight.php</a> runs during WordPress page rendering and pre-bakes the highlighted token spans directly into the HTML. No Prism JS is loaded on the frontend. Only the active Prism theme CSS and a small helper stylesheet (`hljs-server-mode.css`) are enqueued.
+
+This mode is suitable for:
+
+- Sites where JavaScript is disabled or restricted by a content-security policy
+- Performance-focused setups that want fewer frontend scripts
+- AMP-compatible pages
+
+In server-side mode, the copy-to-clipboard and expand/collapse toolbar buttons are not available. The **Highlight Lines** per-block control has no effect.
+
+## Visual output
+
+Both modes load the same 21 Prism themes and produce visually identical output. The plugin remaps the token class names emitted by highlight.php to match Prism's class conventions, so the same theme CSS applies correctly in both modes. You can switch modes at any time from **Settings > Code Block Highlighting** without any visible change to your code blocks.
+
+## Asset loading
+
+In both modes, assets are only enqueued on pages that contain at least one `core/code` block. Pages without code blocks are not affected. Use the `wzcbh_force_load_assets` filter to override this behavior if needed.
+
+## Switching modes
+
+Go to **Settings > Code Block Highlighting** and change **Highlighting Mode** to either **Client-side (Prism.js)** or **Server-side (highlight.php)**. No other configuration is required.

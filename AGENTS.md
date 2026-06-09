@@ -3,6 +3,7 @@
 **WebberZone Code Block Highlighting** v1.1.0. WordPress plugin extending the native Gutenberg `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter. Does not replace the block — existing posts stay valid. Namespace: `WebberZone\Code_Block_Highlighting`. Requires WordPress 6.6+, PHP 7.4+. No Freemius.
 
 Two highlighting modes:
+
 - **Client-side** (default): Prism.js runs in the browser. Loads the Prism JS bundle + theme CSS.
 - **Server-side**: highlight.php pre-renders token spans on the server. No JS loaded. Uses the same Prism theme CSS — token class remapping (`remap_token_classes()` in `class-blocks.php`) converts hljs-* span classes to Prism `token *` classes via `strtr`, giving exact visual parity across all 21 themes.
 
@@ -31,6 +32,7 @@ npm run zip            # Plugin zip
 Bootstrap: `wzcbh()` singleton on `plugins_loaded` → instantiates `Frontend\Blocks`, `Frontend\Styles_Handler` → `Admin\Admin` on `init` (admin only).
 
 Key files:
+
 - `includes/class-main.php` — bootstrap and object wiring
 - `includes/frontend/class-blocks.php` — editor assets, REST route, `render_block_core/code` filter; `render_code_block_server()` for server mode; `remap_token_classes()` for hljs→Prism class mapping
 - `includes/frontend/class-styles-handler.php` — conditional asset loading for both modes: client (Prism JS + theme CSS) and server (theme CSS + `hljs-server-mode.css`, no JS)
@@ -39,22 +41,6 @@ Key files:
 - `includes/blocks/src/js/frontend.js` — Prism grammars + plugins
 
 Always `require` the generated `.asset.php` manifest before enqueueing block scripts.
-
-## Non-obvious implementation details
-
-**`_legacyTitle` attribute** — read-only migration attribute; copies `title` from old `code-syntax-block` format on first load, then clears itself.
-
-**`maxHeight`** — CSS-only: serialized as inline `style` by the block save function, not touched by the PHP render filter.
-
-**`wzcbh_languages` filter** — controls the editor UI dropdown only. Does not affect which Prism grammars are bundled. Adding a slug without a matching grammar import in `frontend.js` results in plain-text output.
-
-**Editor canvas styling** — `enqueue_editor_canvas_styles()` extracts only `background` and `color` from the active Prism theme CSS and re-injects them with `.block-editor-block-list__layout` prepended to win the specificity race against the editor's own `pre` styles. Layout properties are intentionally excluded.
-
-**Themes (21):** A11y Dark, Coldark Cold, Coldark Dark, Dracula, Duotone Dark, Duotone Light, GitHub Light, Gruvbox Dark, Gruvbox Light, Lucario, Material Dark, Material Light, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS Code Dark+, Xonokai (Monokai).
-
-**Default color scheme:** `prism-onedark`
-
-**If you change block attributes in JS**, update `render_code_block()` in `class-blocks.php` and the defaults flow as well.
 
 ## Non-obvious implementation details
 
