@@ -83,7 +83,7 @@ class Styles_Handler {
 	/**
 	 * Enqueue assets for client-side (Prism.js) mode.
 	 *
-	 * @since 1.2.0
+	 * @since 1.1.0
 	 */
 	private function enqueue_client_mode_assets(): void {
 		$asset_file = WZCBH_PLUGIN_DIR . 'includes/blocks/build/frontend.asset.php';
@@ -144,7 +144,7 @@ class Styles_Handler {
 	/**
 	 * Enqueue assets for server-side (highlight.php) mode.
 	 *
-	 * @since 1.2.0
+	 * @since 1.1.0
 	 */
 	private function enqueue_server_mode_assets(): void {
 		$asset_file = WZCBH_PLUGIN_DIR . 'includes/blocks/build/frontend.asset.php';

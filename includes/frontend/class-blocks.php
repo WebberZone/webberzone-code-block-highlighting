@@ -103,7 +103,7 @@ class Blocks {
 	 * Only runs in the admin context to avoid duplicating the frontend enqueue
 	 * that `Styles_Handler` already handles via `wp_enqueue_scripts`.
 	 *
-	 * @since 1.2.0
+	 * @since 1.1.0
 	 */
 	public function enqueue_editor_canvas_styles(): void {
 		if ( ! is_admin() ) {
@@ -309,7 +309,7 @@ class Blocks {
 	 * Injects language classes and data-attributes into the existing saved HTML
 	 * so the Prism JS bundle can highlight in the browser.
 	 *
-	 * @since 1.2.0
+	 * @since 1.1.0
 	 *
 	 * @param  string              $block_content The rendered block HTML.
 	 * @param  array<string,mixed> $params Normalised block parameters.
@@ -418,7 +418,7 @@ class Blocks {
 	 * and injects toolbar overlays (language label, file name, copy button)
 	 * as PHP-rendered HTML so no Prism JS is required.
 	 *
-	 * @since 1.2.0
+	 * @since 1.1.0
 	 *
 	 * @param  string              $block_content The rendered block HTML.
 	 * @param  array<string,mixed> $params        Normalised block parameters.
@@ -683,7 +683,7 @@ class Blocks {
 	 * register that rather than the global vendor/autoload.php to avoid leaking
 	 * unrelated dependencies into the WordPress runtime. Runs once per request.
 	 *
-	 * @since 1.2.0
+	 * @since 1.1.0
 	 */
 	protected static function load_highlighter(): void {
 		static $loaded = false;
@@ -710,7 +710,7 @@ class Blocks {
 	 * Languages not in the map are passed through unchanged; an empty string
 	 * means "no highlighting" (plain text).
 	 *
-	 * @since 1.2.0
+	 * @since 1.1.0
 	 *
 	 * @param  string $prism_slug Prism language slug from the block attribute.
 	 * @return string hljs language slug, or empty string for plain text.
@@ -743,7 +743,7 @@ class Blocks {
 	 * line highlighting. Properly closes and reopens inline <span> elements
 	 * at line boundaries so the output remains valid HTML.
 	 *
-	 * @since 1.2.0
+	 * @since 1.1.0
 	 *
 	 * @param  string $html        Highlighted HTML from highlight.php.
 	 * @param  int    $start       First line number.
@@ -814,7 +814,7 @@ class Blocks {
 	/**
 	 * Build a single <span class="wzcbh-line"> wrapper for one line.
 	 *
-	 * @since 1.2.0
+	 * @since 1.1.0
 	 *
 	 * @param int    $line_num     Current line number.
 	 * @param int[]  $target_lines Line numbers that should be highlighted.
@@ -835,7 +835,7 @@ class Blocks {
 	 *
 	 * Accepts e.g. "1,3-5,7" → [1, 3, 4, 5, 7].
 	 *
-	 * @since 1.2.0
+	 * @since 1.1.0
 	 *
 	 * @param  string $spec The line range specification.
 	 * @return int[]

@@ -1,6 +1,6 @@
 {
 	"name": "@webberzone/webberzone-code-block-highlighting",
-	"version": "1.2.0",
+	"version": "1.1.0",
 	"description": "Extends the Gutenberg Code block with syntax highlighting powered by Prism.js.",
 	"author": "WebberZone",
 	"license": "GPL-2.0-or-later",

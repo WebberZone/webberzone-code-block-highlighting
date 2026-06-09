@@ -4,7 +4,7 @@ Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code highlighting
 Requires at least: 6.6
 Tested up to: 7.0
-Stable tag: 1.2.0
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -176,15 +176,12 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 
 == Changelog ==
 
-= 1.2.0 =
+= 1.1.0 =
 
 * New: Server-side highlighting mode powered by highlight.php — syntax is pre-rendered on the server with no JavaScript required on the frontend.
 * New: All 21 Prism themes work identically in both client-side and server-side modes. Server mode now outputs Prism-compatible token classes and loads the same theme CSS, so switching modes produces no visual difference.
-* Fix: Duplicate `language-*` class on `<code>` elements in client mode when the saved block HTML already carried the class.
-
-= 1.1.0 =
-
 * New: Added "Plain Text" language option to the language picker. Renders with Prism theme styling but no syntax highlighting.
+* Fix: Duplicate `language-*` class on `<code>` elements in client mode when the saved block HTML already carried the class.
 
 = 1.0.0 =
 
@@ -202,11 +199,8 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 
 == Upgrade Notice ==
 
-= 1.2.0 =
-Adds server-side highlighting mode (highlight.php) with full theme parity across all 21 Prism themes.
-
 = 1.1.0 =
-Adds "Plain Text" to the language picker.
+Adds server-side highlighting mode (highlight.php) with full theme parity across all 21 Prism themes, plus a "Plain Text" language picker option.
 
 = 1.0.0 =
 Initial release.
