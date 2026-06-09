@@ -18,15 +18,15 @@ order: 0
 
 ## Server-side mode
 
-<a href="https://github.com/scrivo/highlight.php" target="_blank" rel="noopener">highlight.php</a> runs during WordPress page rendering and pre-bakes the highlighted token spans directly into the HTML. No Prism JS is loaded on the frontend. Only the active Prism theme CSS and a small helper stylesheet (`hljs-server-mode.css`) are enqueued.
+<a href="https://github.com/scrivo/highlight.php" target="_blank" rel="noopener">highlight.php</a> runs during WordPress page rendering and pre-bakes the highlighted token spans directly into the HTML. No Prism.js is loaded — syntax highlighting runs entirely on the server. The active Prism theme CSS, `frontend.css`, `hljs-server-mode.css`, and a lightweight script (`hljs-clipboard.js`) for copy-to-clipboard and expand/collapse are enqueued.
 
 This mode is suitable for:
 
-- Sites where JavaScript is disabled or restricted by a content-security policy
-- Performance-focused setups that want fewer frontend scripts
+- Performance-focused setups that want to avoid loading Prism.js
+- Sites with strict content-security policies that restrict inline scripts
 - AMP-compatible pages
 
-In server-side mode, the copy-to-clipboard and expand/collapse toolbar buttons are not available. The **Highlight Lines** per-block control has no effect.
+The **Highlight Lines** per-block control has no effect in server-side mode.
 
 ## Visual output
 
@@ -35,6 +35,9 @@ Both modes load the same 21 Prism themes and produce visually identical output. 
 ## Asset loading
 
 In both modes, assets are only enqueued on pages that contain at least one `core/code` block. Pages without code blocks are not affected. Use the `wzcbh_force_load_assets` filter to override this behavior if needed.
+
+- **Client mode**: `frontend.css` + Prism theme CSS + `wzcbh-prism-js` (Prism bundle with all grammars and plugins)
+- **Server mode**: `frontend.css` + Prism theme CSS + `hljs-server-mode.css` + `hljs-clipboard.js` (copy-to-clipboard and expand/collapse)
 
 ## Switching modes
 

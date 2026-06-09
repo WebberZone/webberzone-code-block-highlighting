@@ -29,8 +29,6 @@ Selects the syntax highlighting theme applied to all code blocks. The same Prism
 
 When enabled, a **Copy** button appears in the code block toolbar. Visitors can copy the entire code snippet with one click. Setting key: `copy-to-clipboard`. Default: enabled.
 
-This feature is available in client-side mode only. It has no effect when **Highlighting Mode** is set to server-side.
-
 ## Show Language Label
 
 When enabled, the programming language name is displayed in the toolbar above each code block. Setting key: `show-language-label`. Default: enabled.

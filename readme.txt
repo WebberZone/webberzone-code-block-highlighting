@@ -9,7 +9,7 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Syntax highlighting for the Gutenberg Code block — Prism.js, 21 themes, 40+ languages, plus an optional no-JavaScript server-side mode.
+Syntax highlighting for the Gutenberg Code block — Prism.js, 21 themes, 40+ languages, plus an optional server-side highlighting mode.
 
 == Description ==
 
@@ -22,7 +22,7 @@ Simply activate the plugin and your code blocks will instantly display beautiful
 Pick the rendering mode that best fits your site from the settings page:
 
 * **Client-side (default)** — [Prism.js](https://prismjs.com/) highlights your code in the browser. Best for interactive features such as copy-to-clipboard and expand/collapse.
-* **Server-side (no JavaScript)** — Code is pre-highlighted on the server with [highlight.php](https://github.com/scrivo/highlight.php), so no JavaScript is loaded on the frontend. Ideal for performance, Core Web Vitals, AMP-style setups, and strict content-security policies.
+* **Server-side (highlight.php)** — Code is pre-highlighted on the server with [highlight.php](https://github.com/scrivo/highlight.php), so no Prism.js or any other JavaScript is loaded for highlighting. Ideal for performance, Core Web Vitals, AMP-style setups, and strict content-security policies.
 
 Both modes use the same 21 Prism themes and produce visually identical output, so you can switch between client-side and server-side rendering at any time without changing how your code blocks look.
 
@@ -30,7 +30,7 @@ Both modes use the same 21 Prism themes and produce visually identical output, s
 
 * **Safe by design** — Works as a filter on top of `core/code`. Existing posts are never invalidated. Deactivate the plugin and your blocks are still valid standard WordPress code blocks.
 * **Zero configuration** — Activate and start writing. No setup wizard, no shortcodes.
-* **JavaScript-free option** — Server-side highlighting renders syntax colours without loading any frontend JavaScript, keeping your pages lean and fast.
+* **No highlighting JavaScript in server mode** — Server-side mode pre-renders syntax colours on the server. No Prism.js or any other JavaScript is enqueued for highlighting.
 * **Smart asset loading** — Theme CSS (and, in client mode, Prism JS) only load on pages that actually contain code blocks. Pages without code stay fast.
 * **Per-block controls** — Set language, theme, line numbers, word wrap, title, highlighted lines, and max height individually for each block.
 * **Developer-friendly** — Filters to add languages, override themes, and force asset loading.
@@ -54,7 +54,7 @@ A11y Dark, Coldark Cold (Light), Coldark Dark, Dracula, Duotone Dark, Duotone Li
 
 ### Global settings
 
-* Highlighting mode — client-side (Prism.js) or server-side (highlight.php, no JavaScript)
+* Highlighting mode — client-side (Prism.js) or server-side (highlight.php)
 * Default colour scheme (theme)
 * Default language
 * Default line numbers toggle and start value
@@ -144,11 +144,11 @@ You can also use the `wzcbh_color_scheme_css_url` filter to point to any CSS fil
 
 In **client-side** mode (the default), [Prism.js](https://prismjs.com/) runs in the visitor's browser and highlights your code on page load. This mode enables interactive toolbar features such as copy-to-clipboard and expand/collapse.
 
-In **server-side** mode, the plugin uses [highlight.php](https://github.com/scrivo/highlight.php) to pre-render the highlighted markup on the server. No JavaScript is loaded on the frontend, which is great for performance, Core Web Vitals, and sites with strict content-security policies. Both modes share the same 21 Prism themes and produce visually identical results, so you can switch freely from **Settings > Code Block Highlighting**.
+In **server-side** mode, the plugin uses [highlight.php](https://github.com/scrivo/highlight.php) to pre-render the highlighted markup on the server. No JavaScript is loaded for highlighting, which is great for performance, Core Web Vitals, and sites with strict content-security policies. Both modes share the same 21 Prism themes and produce visually identical results, so you can switch freely from **Settings > Code Block Highlighting**.
 
 = Does server-side highlighting work without JavaScript? =
 
-Yes. When server-side mode is enabled, syntax colours are baked into the HTML on the server and only the theme stylesheet is loaded on the frontend — no Prism.js or any other JavaScript is enqueued for highlighting.
+Yes. When server-side mode is enabled, syntax colours are baked into the HTML on the server — no Prism.js or any other JavaScript is enqueued for highlighting.
 
 = Does Prism.js load on every page? =
 
@@ -178,7 +178,7 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 
 = 1.1.0 =
 
-* New: Server-side highlighting mode powered by highlight.php — syntax is pre-rendered on the server with no JavaScript required on the frontend.
+* New: Server-side highlighting mode powered by highlight.php — syntax is pre-rendered on the server with no JavaScript required for highlighting.
 * New: All 21 Prism themes work identically in both client-side and server-side modes. Server mode now outputs Prism-compatible token classes and loads the same theme CSS, so switching modes produces no visual difference.
 * New: Added "Plain Text" language option to the language picker. Renders with Prism theme styling but no syntax highlighting.
 * Fix: Duplicate `language-*` class on `<code>` elements in client mode when the saved block HTML already carried the class.
