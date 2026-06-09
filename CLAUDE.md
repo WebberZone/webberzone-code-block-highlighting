@@ -103,6 +103,14 @@ Assets load only on pages containing at least one `core/code` block (`Styles_Han
 
 Toolbar language labels are `aria-hidden`. Expand/collapse button uses `aria-expanded`. When extending toolbar behaviour, preserve keyboard access and screen reader support.
 
+## Docs
+
+KB articles live in `docs/` using the standard WebberZone structure. Frontmatter values:
+- `products: [code-block-highlighting]`
+- Section prefixes: `01-wzcbh-getting-started`, `02-wzcbh-advanced`, `03-wzcbh-developer-docs`
+
+Run `/docs-style --audit webberzone-code-block-highlighting` to check style compliance before committing docs.
+
 ## Before adding new per-block controls
 
 Verify: JS attribute schema → save output → `render_code_block()` in PHP → frontend Prism plugin support.
