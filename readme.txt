@@ -176,14 +176,22 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 
 == Changelog ==
 
-= 1.1.0 =
+= 1.1.0 (10 June 2026) =
+
+*Release Date - 10 June 2026*
+
+Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-1-0/](https://webberzone.com/announcements/code-block-highlighting-v1-1-0/)
 
 * New: Server-side highlighting mode powered by highlight.php — syntax is pre-rendered on the server with no JavaScript required for highlighting.
 * New: All 21 Prism themes work identically in both client-side and server-side modes. Server mode now outputs Prism-compatible token classes and loads the same theme CSS, so switching modes produces no visual difference.
 * New: Added "Plain Text" language option to the language picker. Renders with Prism theme styling but no syntax highlighting.
 * Fix: Duplicate `language-*` class on `<code>` elements in client mode when the saved block HTML already carried the class.
 
-= 1.0.0 =
+= 1.0.0 (3 May 2026) =
+
+*Release Date - 3 May 2026*
+
+Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-0-0/](https://webberzone.com/announcements/code-block-highlighting-v1-0-0/)
 
 * Initial release.
 * Extends `core/code` with Prism.js syntax highlighting — no block replacement, no block validation errors.
