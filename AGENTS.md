@@ -5,7 +5,7 @@
 Two highlighting modes:
 
 - **Client-side** (default): Prism.js runs in the browser. Loads the Prism JS bundle + theme CSS.
-- **Server-side**: highlight.php pre-renders token spans on the server. No JS loaded. Uses the same Prism theme CSS — token class remapping (`remap_token_classes()` in `class-blocks.php`) converts hljs-* span classes to Prism `token *` classes via `strtr`, giving exact visual parity across all 21 themes.
+- **Server-side**: highlight.php pre-renders token spans on the server. Loads only `hljs-clipboard.js` for the copy-to-clipboard and expand/collapse toolbar buttons (no Prism JS). Uses the same Prism theme CSS — token class remapping (`remap_token_classes()` in `class-blocks.php`) converts hljs-* span classes to Prism `token *` classes via `strtr`, giving exact visual parity across all 21 themes.
 
 ## Commands
 
@@ -35,7 +35,7 @@ Key files:
 
 - `includes/class-main.php` — bootstrap and object wiring
 - `includes/frontend/class-blocks.php` — editor assets, REST route, `render_block_core/code` filter; `render_code_block_server()` for server mode; `remap_token_classes()` for hljs→Prism class mapping
-- `includes/frontend/class-styles-handler.php` — conditional asset loading for both modes: client (Prism JS + theme CSS) and server (theme CSS + `hljs-server-mode.css`, no JS)
+- `includes/frontend/class-styles-handler.php` — conditional asset loading for both modes: client (Prism JS + theme CSS) and server (theme CSS + `hljs-server-mode.css` + `hljs-clipboard.js`)
 - `includes/admin/class-settings.php` — settings registration; `get_color_scheme_css()` always returns Prism CSS URL (no per-mode branch)
 - `includes/blocks/src/js/index.js` — block filter, Inspector Controls
 - `includes/blocks/src/js/frontend.js` — Prism grammars + plugins
@@ -67,7 +67,7 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 Assets load only on pages containing at least one `core/code` block (`Styles_Handler::enqueue_assets()`). Use `wzcbh_force_load_assets` to override.
 
 - **Client mode**: `frontend.css` + Prism theme CSS + `wzcbh-prism-js` script bundle
-- **Server mode**: `frontend.css` + Prism theme CSS + `hljs-server-mode.css` (no JS; syntax already pre-rendered in HTML)
+- **Server mode**: `frontend.css` + Prism theme CSS + `hljs-server-mode.css` + `hljs-clipboard.js` (syntax pre-rendered in HTML; `hljs-clipboard.js` provides copy-to-clipboard and expand/collapse only, no Prism)
 
 ## Filters and routes
 
