@@ -5,7 +5,7 @@
  * Functions to register, read, write and update settings.
  * Portions of this code have been inspired by Easy Digital Downloads, WordPress Settings Sandbox, WordPress Settings API class, etc.
  *
- * @package    WebberZone\Code_Block_Highlighting
+ * @package WebberZone\Code_Block_Highlighting
  */
 
 namespace WebberZone\Code_Block_Highlighting\Admin\Settings;
