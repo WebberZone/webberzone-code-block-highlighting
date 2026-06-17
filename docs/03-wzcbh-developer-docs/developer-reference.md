@@ -161,6 +161,62 @@ add_filter( 'wzcbh_force_load_assets', '__return_true' );
 
 ---
 
+## JavaScript objects
+
+The plugin exposes several JavaScript globals via `wp_add_inline_script()`. They are read by the editor bundle and the frontend bundles.
+
+### `cbhLanguages`
+
+Available in the block editor. Maps language slugs to display labels.
+
+```js
+cbhLanguages.javascript // "JavaScript"
+cbhLanguages.php        // "PHP"
+```
+
+The same array is exposed through the `wzcbh_languages` filter.
+
+### `cbhDefaultLang`
+
+Available in the block editor. The slug pre-selected on new code blocks, from the `default-lang` setting. Empty string when no default is configured.
+
+### `cbhDefaultSettings`
+
+Available in the block editor. Object containing the per-block defaults applied to a fresh code block:
+
+```js
+cbhDefaultSettings.language         // Default language slug.
+cbhDefaultSettings.lineNumbers      // Whether line numbers are on by default.
+cbhDefaultSettings.lineNumbersStart // Default starting line number (1).
+cbhDefaultSettings.wordWrap         // Whether soft word wrap is on by default.
+cbhDefaultSettings.maxHeight        // Default max height in pixels (0 = unlimited).
+```
+
+### `cbhSettings`
+
+Available on the frontend in client-side mode (inlined before the `wzcbh-prism-js` script). Toggles the toolbar features that the frontend bundle reads at runtime:
+
+```js
+cbhSettings.copyToClipboard   // Show the Copy button.
+cbhSettings.showLanguageLabel // Show the language label in the toolbar.
+cbhSettings.showFileName      // Show the file-name label in the toolbar.
+```
+
+### `wzcbhI18n`
+
+Available on the frontend in server-side mode (inlined before the `wzcbh-hljs-clipboard` script). Translation strings used by the toolbar:
+
+```js
+wzcbhI18n.copy        // "Copy"
+wzcbhI18n.copied      // "Copied!"
+wzcbhI18n.copySuccess // "Copied code to clipboard."
+wzcbhI18n.copyError   // "Unable to copy code to clipboard."
+wzcbhI18n.expand      // "Expand"
+wzcbhI18n.collapse    // "Collapse"
+```
+
+---
+
 ## Adding a language
 
 To add a custom language to the block editor picker and to the Prism frontend bundle:

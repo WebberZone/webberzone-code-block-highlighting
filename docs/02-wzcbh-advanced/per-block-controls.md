@@ -8,7 +8,7 @@ status: publish
 order: 0
 ---
 
-Each code block has its own highlighting settings, available in the **Code Highlighting** panel of the Inspector Controls sidebar. These override the global defaults set on the [Code Block Highlighting settings page](https://webberzone.com/plugins/webberzone-code-block-highlighting/).
+Each code block has its own highlighting settings, available in the **Syntax Highlighting** panel of the Inspector Controls sidebar. These override the global defaults set on the [Code Block Highlighting settings page](https://webberzone.com/plugins/webberzone-code-block-highlighting/).
 
 [kbtoc]
 
@@ -37,3 +37,9 @@ Set a maximum visible height in pixels. When the code block content exceeds this
 ## Word Wrap
 
 Toggle soft word wrapping for long lines. When disabled (the default), long lines scroll horizontally.
+
+## Save as Default
+
+After configuring the controls above, click **Save as default** at the bottom of the **Syntax Highlighting** panel to copy the current block's settings (language, line numbers, line numbers start, word wrap, max height) into the global `default-lang` setting and the equivalent global defaults. Future code blocks inserted via the editor will inherit these values.
+
+The button calls the `POST /wzcbh/v1/default-settings` REST endpoint under the `wzcbh/v1` namespace. Only users with the `manage_options` capability can call it. See the [Developer Reference](https://webberzone.com/support/knowledgebase/code-block-highlighting-developer-reference/) for the full route schema.
