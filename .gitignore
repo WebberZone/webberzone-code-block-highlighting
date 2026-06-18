@@ -18,3 +18,6 @@ assets/prism-*.css
 .commandcode/
 
 .devin/
+
+# Testing
+/.playwright-mcp
