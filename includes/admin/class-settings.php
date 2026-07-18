@@ -123,7 +123,10 @@ class Settings {
 			'save_changes'         => __( 'Save Changes', 'webberzone-code-block-highlighting' ),
 			'reset_settings'       => __( 'Reset all settings', 'webberzone-code-block-highlighting' ),
 			'reset_button_confirm' => __( 'Do you really want to reset all these settings to their default values?', 'webberzone-code-block-highlighting' ),
-			'checkbox_modified'    => __( 'Modified from default setting', 'webberzone-code-block-highlighting' ),
+			'modified_field'       => esc_html__( 'Modified from default setting', 'webberzone-code-block-highlighting' ),
+			'modified_legend'      => esc_html__( 'Setting modified from its default value', 'webberzone-code-block-highlighting' ),
+			'default_label'        => esc_html__( 'Default', 'webberzone-code-block-highlighting' ),
+			'default_none'         => esc_html__( 'None', 'webberzone-code-block-highlighting' ),
 		);
 	}
 

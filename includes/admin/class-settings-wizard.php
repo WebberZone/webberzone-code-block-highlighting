@@ -189,4 +189,15 @@ class Settings_Wizard extends Settings_Wizard_API {
 	protected function get_completion_redirect_url() {
 		return admin_url( 'admin.php?page=wzcbh_settings' );
 	}
+
+	/**
+	 * Get the version for cache busting.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @return string Version number.
+	 */
+	protected function get_version() {
+		return WZCBH_VERSION;
+	}
 }

@@ -102,6 +102,9 @@ class Admin {
 		return array(
 			'capability' => 'manage_options',
 			'prefix'     => 'wzcbh',
+			'style'      => array(
+				'version' => WZCBH_VERSION,
+			),
 			'screen_ids' => array(
 				'settings_page_wzcbh_settings',
 			),
