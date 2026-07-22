@@ -114,3 +114,21 @@ Run `/docs-style --audit webberzone-code-block-highlighting` to check style comp
 ## Before adding new per-block controls
 
 Verify: JS attribute schema → save output → `render_code_block()` in PHP → frontend Prism plugin support.
+
+## Shared framework files: `@since` convention
+
+The Settings API (`includes/admin/settings/*.php`) and the Admin Banner (`includes/admin/class-admin-banner.php`) are copy-pasted, shared framework files whose canonical source is the `Settings_API` repo. To keep `@since` tags meaningful and stable across syncs, these files follow special rules:
+
+- Each file carries **exactly one** `@since` tag, on its **class docblock**, set to the plugin version at which that class was **first introduced into this plugin**. This is per-file (the wizard, metabox and banner classes were generally added later than the core Settings API classes).
+- **Do not** add `@since` to methods, functions or properties in these files.
+- When syncing/updating these files from another plugin or the canonical `Settings_API` repo, **do not overwrite the class-level `@since`** — it is plugin-specific. Re-apply the values below after any sync.
+
+| File | `@since` |
+|---|---|
+| `includes/admin/settings/class-settings-api.php` | 1.0.0 |
+| `includes/admin/settings/class-settings-form.php` | 1.0.0 |
+| `includes/admin/settings/class-settings-sanitize.php` | 1.0.0 |
+| `includes/admin/settings/class-settings-wizard-api.php` | 1.0.0 |
+| `includes/admin/settings/class-metabox-api.php` | 1.0.0 |
+| `includes/admin/class-admin-banner.php` | 1.0.0 |
+
