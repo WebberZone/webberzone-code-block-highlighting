@@ -69,6 +69,7 @@ const config = {
 	excludePatterns: [
 		/-rtl\.css$/,
 		/^build-assets\.js$/,
+		/^build-prism\.js$/,
 	],
 
 	// CSS files to combine - order matters!
