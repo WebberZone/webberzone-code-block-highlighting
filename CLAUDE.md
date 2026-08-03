@@ -9,6 +9,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - No suggestions outside the scope of what was asked
 - Skip preamble and trailing summaries
 
+## Links
+
+- GitHub: <https://github.com/WebberZone/webberzone-code-block-highlighting>
+- WordPress.org: <https://wordpress.org/plugins/webberzone-code-block-highlighting/>
+- Documentation: <https://webberzone.com/support/product/code-block-highlighting/>
+- webberzone.com: <https://webberzone.com/plugins/webberzone-code-block-highlighting/>
+
 ## Plugin Overview
 
 **WebberZone Code Block Highlighting** v1.1.0 (plugin slug: `webberzone-code-block-highlighting`) extends the native Gutenberg `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter. Does not replace the block — existing posts stay valid. Namespace: `WebberZone\Code_Block_Highlighting`. Requires WordPress 6.6+, PHP 7.4+. No Freemius.
@@ -16,9 +23,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Two highlighting modes:
 - **Client-side** (default): Prism.js runs in the browser. Loads the Prism JS bundle + theme CSS.
 - **Server-side**: highlight.php pre-renders token spans on the server. No Prism.js loaded. Loads Prism theme CSS + `hljs-server-mode.css` + `hljs-clipboard.js` (copy-to-clipboard + expand/collapse). Token class remapping (`remap_token_classes()` in `class-blocks.php`) converts hljs-* span classes to Prism `token *` classes via `strtr`, giving exact visual parity across all 21 themes.
-
-WordPress.org: https://wordpress.org/plugins/webberzone-code-block-highlighting/
-webberzone.com: https://webberzone.com/plugins/webberzone-code-block-highlighting/
 
 ## Commands
 
