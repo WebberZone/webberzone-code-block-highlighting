@@ -108,7 +108,7 @@ Saves a full settings array to the database.
 
 ## Filter hooks
 
-### `wzcbh_languages`
+### [`wzcbh_languages`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_languages/)
 
 Filters the list of languages shown in the block editor language picker. The array maps language slugs to display labels.
 
@@ -127,7 +127,7 @@ Adding a language to this filter only affects the editor dropdown. The correspon
 
 ---
 
-### `wzcbh_color_scheme_css_url`
+### [`wzcbh_color_scheme_css_url`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_color_scheme_css_url/)
 
 Filters the URL of the Prism theme CSS file enqueued on the frontend.
 
@@ -145,7 +145,7 @@ add_filter( 'wzcbh_color_scheme_css_url', function( string $url ): string {
 
 ---
 
-### `wzcbh_force_load_assets`
+### [`wzcbh_force_load_assets`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_force_load_assets/)
 
 Filters whether Prism assets should load on every page, regardless of whether a code block is present.
 
@@ -260,3 +260,9 @@ To use a custom theme without modifying the plugin, use the `wzcbh_color_scheme_
 ### Editor
 
 - `wzcbh-editor` — block editor JS (Inspector Controls, language picker).
+
+## See also
+
+- [`wzcbh_languages`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_languages/)
+- [`wzcbh_color_scheme_css_url`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_color_scheme_css_url/)
+- [`wzcbh_force_load_assets`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_force_load_assets/)

@@ -34,7 +34,7 @@ Both modes load the same 21 Prism themes and produce visually identical output. 
 
 ## Asset loading
 
-In both modes, assets are only enqueued on pages that contain at least one `core/code` block. Pages without code blocks are not affected. Use the `wzcbh_force_load_assets` filter to override this behavior if needed.
+In both modes, assets are only enqueued on pages that contain at least one `core/code` block. Pages without code blocks are not affected. Use the [`wzcbh_force_load_assets`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_force_load_assets/) filter to override this behavior if needed.
 
 - **Client mode**: `frontend.css` + Prism theme CSS + `wzcbh-prism-js` (Prism bundle with all grammars and plugins)
 - **Server mode**: `frontend.css` + Prism theme CSS + `hljs-server-mode.css` + `hljs-clipboard.js` (copy-to-clipboard and expand/collapse)
@@ -42,3 +42,7 @@ In both modes, assets are only enqueued on pages that contain at least one `core
 ## Switching modes
 
 Go to **Settings > Code Block Highlighting** and change **Highlighting Mode** to either **Client-side (Prism.js)** or **Server-side (highlight.php)**. No other configuration is required.
+
+## See also
+
+- [`wzcbh_force_load_assets`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_force_load_assets/)

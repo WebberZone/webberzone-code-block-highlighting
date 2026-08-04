@@ -16,7 +16,7 @@ Each code block has its own highlighting settings, available in the **Syntax Hig
 
 A dropdown listing 40+ supported languages. Selecting a language applies the correct Prism grammar (or highlight.php language in server-side mode). Choosing **Plain Text** renders the code with the active theme's styling but no syntax highlighting.
 
-The `wzcbh_languages` filter can be used to add or remove entries from the dropdown. Adding a language to the filter only affects the UI dropdown; the corresponding Prism.js grammar must also be available in `frontend.js` for the language to highlight correctly in client-side mode.
+The [`wzcbh_languages`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_languages/) filter can be used to add or remove entries from the dropdown. Adding a language to the filter only affects the UI dropdown; the corresponding Prism.js grammar must also be available in `frontend.js` for the language to highlight correctly in client-side mode.
 
 ## Line Numbers
 
@@ -43,3 +43,7 @@ Toggle soft word wrapping for long lines. When disabled (the default), long line
 After configuring the controls above, click **Save as default** at the bottom of the **Syntax Highlighting** panel to copy the current block's settings (language, line numbers, line numbers start, word wrap, max height) into the global `default-lang` setting and the equivalent global defaults. Future code blocks inserted via the editor will inherit these values.
 
 The button calls the `POST /wzcbh/v1/default-settings` REST endpoint under the `wzcbh/v1` namespace. Only users with the `manage_options` capability can call it. See the [Developer Reference](https://webberzone.com/support/knowledgebase/code-block-highlighting-developer-reference/) for the full route schema.
+
+## See also
+
+- [`wzcbh_languages`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_languages/)
