@@ -29,12 +29,12 @@
 		"prismjs": "^1.30.0"
 	},
 	"devDependencies": {
-		"@wordpress/prettier-config": "^4.48.0",
-		"@wordpress/scripts": "^32",
+		"@wordpress/prettier-config": "^4.52.0",
+		"@wordpress/scripts": "^34",
 		"babel-plugin-prismjs": "^2.1.0",
 		"clean-css-cli": "^5.6.3",
 		"rtlcss": "^4.3.0",
-		"terser": "^5.48.0"
+		"terser": "^5.49.1"
 	},
 	"prettier": "@wordpress/prettier-config"
 }
