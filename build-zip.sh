@@ -39,6 +39,8 @@ composer.json
 composer.lock
 package.json
 package-lock.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
 phpstan-bootstrap.php
 build-zip.sh
 build-prism.js
