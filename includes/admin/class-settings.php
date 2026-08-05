@@ -208,6 +208,13 @@ class Settings {
 					'default' => true,
 				),
 				array(
+					'id'      => 'download-button',
+					'name'    => __( 'Download Snippet', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Show a "Download" button on code blocks, allowing visitors to save the code as a file. Individual blocks can override this.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'checkbox',
+					'default' => true,
+				),
+				array(
 					'id'      => 'show-language-label',
 					'name'    => __( 'Show Language Label', 'webberzone-code-block-highlighting' ),
 					'desc'    => __( 'Display the programming language name in the toolbar above each code block.', 'webberzone-code-block-highlighting' ),

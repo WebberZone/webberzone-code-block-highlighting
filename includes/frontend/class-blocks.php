@@ -276,6 +276,12 @@ class Blocks {
 			'max_height'         => max( 0, (int) ( $attrs['maxHeight'] ?? 0 ) ),
 		);
 
+		// Resolved before either render path runs: both mutate `language` ('' in
+		// client mode, 'none' in server mode) for plain-text blocks, which would
+		// lose the .txt extension if the filename were derived afterwards.
+		$params['download']          = self::is_download_enabled( (string) ( $attrs['downloadButton'] ?? '' ) );
+		$params['download_filename'] = self::get_download_filename( $params['title'], $params['language'] );
+
 		if ( 'server' === wzcbh_get_option( 'highlighting-mode', 'client' ) ) {
 			$block_content = $this->render_code_block_server( $block_content, $params );
 		} else {
@@ -295,6 +301,131 @@ class Blocks {
 	protected static function is_file_tab_style(): bool {
 		return (bool) wzcbh_get_option( 'show-file-name', true )
 			&& 'tab' === wzcbh_get_option( 'file-name-style', 'tab' );
+	}
+
+	/**
+	 * Whether the download button should render for a block.
+	 *
+	 * The per-block attribute is a tri-state string: an empty value inherits the
+	 * global setting, `show` and `hide` override it.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string $override Per-block `downloadButton` attribute value.
+	 * @return bool
+	 */
+	protected static function is_download_enabled( string $override ): bool {
+		if ( 'show' === $override ) {
+			return true;
+		}
+		if ( 'hide' === $override ) {
+			return false;
+		}
+
+		return (bool) wzcbh_get_option( 'download-button', true );
+	}
+
+	/**
+	 * Build the file name offered when a snippet is downloaded.
+	 *
+	 * Uses the block's file name / title when one is set, otherwise falls back to
+	 * `snippet.{ext}` derived from the language slug.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string $title    The block file name / title.
+	 * @param  string $language The block language slug.
+	 * @return string
+	 */
+	protected static function get_download_filename( string $title, string $language ): string {
+		if ( '' !== $title ) {
+			$filename = sanitize_file_name( $title );
+
+			if ( '' !== $filename ) {
+				return $filename;
+			}
+		}
+
+		$extension = self::get_language_extension( $language );
+
+		if ( '' === $extension ) {
+			return 'snippet.txt';
+		}
+
+		// A value without a leading dot is already a complete file name (Dockerfile).
+		return 0 === strpos( $extension, '.' ) ? 'snippet' . $extension : $extension;
+	}
+
+	/**
+	 * Map a language slug to the file extension used for downloads.
+	 *
+	 * Values starting with a dot are appended to `snippet`; a value without a dot
+	 * is used as the complete file name (`Dockerfile`).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string $language The block language slug.
+	 * @return string Extension including the leading dot, a bare file name, or an empty string.
+	 */
+	protected static function get_language_extension( string $language ): string {
+		$extensions = array(
+			'apacheconf' => '.conf',
+			'bash'       => '.sh',
+			'c'          => '.c',
+			'cpp'        => '.cpp',
+			'csharp'     => '.cs',
+			'css'        => '.css',
+			'dart'       => '.dart',
+			'docker'     => 'Dockerfile',
+			'fsharp'     => '.fs',
+			'go'         => '.go',
+			'graphql'    => '.graphql',
+			'groovy'     => '.groovy',
+			'haskell'    => '.hs',
+			'markup'     => '.html',
+			'java'       => '.java',
+			'javascript' => '.js',
+			'json'       => '.json',
+			'jsx'        => '.jsx',
+			'kotlin'     => '.kt',
+			'lua'        => '.lua',
+			'markdown'   => '.md',
+			'nginx'      => '.conf',
+			'objectivec' => '.m',
+			'perl'       => '.pl',
+			'php'        => '.php',
+			'powershell' => '.ps1',
+			'python'     => '.py',
+			'r'          => '.r',
+			'ruby'       => '.rb',
+			'rust'       => '.rs',
+			'sass'       => '.scss',
+			'scala'      => '.scala',
+			'sql'        => '.sql',
+			'swift'      => '.swift',
+			'text'       => '.txt',
+			'toml'       => '.toml',
+			'tsx'        => '.tsx',
+			'typescript' => '.ts',
+			'vim'        => '.vim',
+			'xml'        => '.xml',
+			'yaml'       => '.yml',
+		);
+
+		/**
+		 * Filter the language slug to download file extension map.
+		 *
+		 * Values starting with a dot are appended to `snippet`; a value without a
+		 * dot is used as the complete file name.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param array<string, string> $extensions Language slug => extension.
+		 * @param string                $language   The language slug being resolved.
+		 */
+		$extensions = (array) apply_filters( 'wzcbh_download_extensions', $extensions, $language ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+		return (string) ( $extensions[ $language ] ?? '' );
 	}
 
 	/**
@@ -412,6 +543,12 @@ class Blocks {
 
 		if ( $highlight_lines ) {
 			$pre_attrs[] = 'data-line="' . esc_attr( $highlight_lines ) . '"';
+		}
+
+		// The global setting and the per-block override are already resolved, so
+		// the toolbar button only has to check for the attribute's presence.
+		if ( ! empty( $params['download'] ) ) {
+			$pre_attrs[] = 'data-wzcbh-download="' . esc_attr( (string) $params['download_filename'] ) . '"';
 		}
 
 		if ( $pre_classes ) {
@@ -634,6 +771,23 @@ class Blocks {
 			$toolbar_items .= '<div class="toolbar-item">'
 				. '<button class="copy-to-clipboard-button" type="button" data-copy-state="copy">'
 				. '<span>' . esc_html__( 'Copy', 'webberzone-code-block-highlighting' ) . '</span>'
+				. '</button></div>';
+		}
+
+		// Download button, rendered next to Copy in both modes.
+		if ( ! empty( $params['download'] ) ) {
+			$filename       = (string) $params['download_filename'];
+			$toolbar_items .= '<div class="toolbar-item">'
+				. '<button class="wzcbh-download-button" type="button"'
+				. ' data-wzcbh-download="' . esc_attr( $filename ) . '"'
+				. ' aria-label="' . esc_attr(
+					sprintf(
+						/* translators: %s: file name of the downloaded snippet */
+						__( 'Download code as %s', 'webberzone-code-block-highlighting' ),
+						$filename
+					)
+				) . '">'
+				. '<span>' . esc_html__( 'Download', 'webberzone-code-block-highlighting' ) . '</span>'
 				. '</button></div>';
 		}
 

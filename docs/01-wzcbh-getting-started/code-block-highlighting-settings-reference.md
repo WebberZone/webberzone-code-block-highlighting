@@ -29,6 +29,14 @@ Selects the syntax highlighting theme applied to all code blocks. The same Prism
 
 When enabled, a **Copy** button appears in the code block toolbar. Visitors can copy the entire code snippet with one click. Setting key: `copy-to-clipboard`. Default: enabled.
 
+## Download Snippet
+
+When enabled, a **Download** button appears next to **Copy** in the code block toolbar. Clicking it saves the snippet as a file. Setting key: `download-button`. Default: enabled.
+
+The file is named after the block's **File name or title** when one is set; otherwise it falls back to `snippet.{ext}`, where the extension comes from the block's language (`snippet.js`, `snippet.py`, `snippet.txt` for plain text). Docker blocks download as `Dockerfile`.
+
+Individual blocks can override this setting from the **Download button** control in the block sidebar.
+
 ## Show Language Label
 
 When enabled, the programming language name is displayed in the toolbar above each code block. Setting key: `show-language-label`. Default: enabled.

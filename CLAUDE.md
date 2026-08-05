@@ -73,6 +73,8 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **File name tab** — `maybe_add_file_tab()` wraps the block in `.wzcbh-code-wrapper` with a `.wzcbh-file-tab` ahead of it, in both modes, so the markup is identical. In client mode Prism's toolbar plugin wraps the `<pre>` in `.code-toolbar` at runtime, landing inside our wrapper. Gated on `file-name-style` = `tab`; when set, the server-mode toolbar title and the `wzcbh-title` Prism toolbar button are both suppressed so the name never renders twice. The seam-removal CSS deliberately uses an unqualified `> pre` — a block with no language never gets a `language-*` class.
 
+**Download button** — the global `download-button` setting and the block's tri-state `downloadButton` attribute (`''` inherit / `'show'` / `'hide'`) are resolved in `render_code_block()` into one `data-wzcbh-download="{filename}"` attribute, so neither JS surface repeats the logic. Two ordering traps: the filename must be derived from `$params['language']` *before* either render path mutates it (client sets `''` for `text`, server sets `'none'`), and the code text must be read from a clone with `.line-numbers-rows` removed — the gutter lives inside `<code>` and its rows are `display:block`, so a direct read appends one blank line per row. `get_language_extension()` values starting with a dot are appended to `snippet`; a value without one is the whole file name (`docker` → `Dockerfile`).
+
 **Themes (21):** A11y Dark, Coldark Cold, Coldark Dark, Dracula, Duotone Dark, Duotone Light, GitHub Light, Gruvbox Dark, Gruvbox Light, Lucario, Material Dark, Material Light, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS Code Dark+, Xonokai (Monokai).
 
 **Default color scheme:** `prism-onedark`
@@ -100,6 +102,7 @@ Assets load only on pages containing at least one `core/code` block (`Styles_Han
 - `wzcbh_color_scheme_css_url` — override the Prism theme CSS URL
 - `wzcbh_force_load_assets` — force Prism assets to load on every page
 - `wzcbh_file_tab_html` — override the file name tab markup (`$tab, $title, $language`)
+- `wzcbh_download_extensions` — language slug => download file extension map (`$extensions, $language`)
 - REST route: `wzcbh/v1/default-settings`
 - Settings key: `wzcbh_settings`
 - `file-name-style` setting: `tab` (default) | `toolbar` — how the block's file name is displayed

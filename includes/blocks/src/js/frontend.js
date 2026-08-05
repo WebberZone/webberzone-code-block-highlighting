@@ -8,7 +8,7 @@
  */
 
 import Prism from 'prismjs';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 // ── Base layers (no dependencies) ────────────────────────────────────────────
 import 'prismjs/components/prism-clike';
@@ -137,6 +137,97 @@ const setupCopyAnnouncements = function (codeToolbar) {
 			});
 		});
 };
+
+// ── Download snippet toolbar button ───────────────────────────────────────────
+// Registered immediately after Prism's copy-to-clipboard plugin (imported above)
+// so the two buttons sit next to each other in the toolbar. PHP resolves the
+// global setting and the per-block override into the data-wzcbh-download
+// attribute, so its presence alone decides whether the button renders.
+
+/**
+ * Read the plain code text of a <code> element.
+ *
+ * The line-numbers gutter lives inside <code> and its rows are display:block, so
+ * reading the element directly would append one blank line per row. It is
+ * stripped from a clone before the text is taken.
+ *
+ * @param {HTMLElement} code The <code> element.
+ * @return {string} The plain code text.
+ */
+const getCodeText = function (code) {
+	const clone = code.cloneNode(true);
+
+	clone.querySelectorAll('.line-numbers-rows').forEach(function (el) {
+		el.remove();
+	});
+
+	return clone.textContent;
+};
+
+/**
+ * Trigger a download of the given code as a file.
+ *
+ * @param {HTMLElement} code     The <code> element.
+ * @param {string}      fileName The file name to save as.
+ */
+const downloadCode = function (code, fileName) {
+	const blob = new Blob([getCodeText(code)], {
+		type: 'text/plain;charset=utf-8',
+	});
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement('a');
+
+	link.href = url;
+	link.download = fileName;
+	link.style.display = 'none';
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	window.setTimeout(function () {
+		URL.revokeObjectURL(url);
+	}, 0);
+
+	announceMessage(
+		sprintf(
+			/* translators: %s: file name of the downloaded snippet */
+			__('Downloaded code as %s.', 'webberzone-code-block-highlighting'),
+			fileName
+		)
+	);
+};
+
+Prism.plugins.toolbar.registerButton('wzcbh-download', function (env) {
+	const pre = env.element.parentElement;
+	const fileName = pre && pre.getAttribute('data-wzcbh-download');
+
+	if (!fileName) {
+		return;
+	}
+
+	const button = document.createElement('button');
+	button.type = 'button';
+	button.className = 'wzcbh-download-button';
+	button.setAttribute(
+		'aria-label',
+		sprintf(
+			/* translators: %s: file name of the downloaded snippet */
+			__('Download code as %s', 'webberzone-code-block-highlighting'),
+			fileName
+		)
+	);
+
+	// Nested in a <span> so the toolbar's aria-hidden hook, which targets direct
+	// span children of .toolbar-item, leaves the accessible name intact.
+	const label = document.createElement('span');
+	label.textContent = __('Download', 'webberzone-code-block-highlighting');
+	button.appendChild(label);
+
+	button.addEventListener('click', function () {
+		downloadCode(env.element, fileName);
+	});
+
+	return button;
+});
 
 // ── Compatibility shim for code-syntax-block (mkaz) HTML structure ───────────
 // The old code-syntax-block plugin (mkaz/code-block-highlighting) stored

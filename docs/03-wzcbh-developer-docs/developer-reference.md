@@ -182,6 +182,29 @@ add_filter( 'wzcbh_file_tab_html', function( string $tab, string $title, string 
 
 ---
 
+### `wzcbh_download_extensions`
+
+Filters the map of language slugs to the file extension used when a snippet is downloaded. Applies in both highlighting modes, and only when the block has no **File name or title** set — a title always wins over the derived name.
+
+Values starting with a dot are appended to `snippet` (`.py` becomes `snippet.py`); a value without a leading dot is used as the complete file name, which is how `docker` yields `Dockerfile`. A language missing from the map falls back to `snippet.txt`.
+
+```php
+add_filter( 'wzcbh_download_extensions', function( array $extensions, string $language ): array {
+    $extensions['yaml']   = '.yaml';
+    $extensions['nginx']  = 'nginx.conf';
+    return $extensions;
+}, 10, 2 );
+```
+
+**Parameters:**
+
+- `$extensions` *(array)* — Language slug => extension (or complete file name).
+- `$language` *(string)* — The language slug being resolved.
+
+**Returns:** `array`
+
+---
+
 ## JavaScript objects
 
 The plugin exposes several JavaScript globals via `wp_add_inline_script()`. They are read by the editor bundle and the frontend bundles.
@@ -221,7 +244,10 @@ Available on the frontend in client-side mode (inlined before the `wzcbh-prism-j
 cbhSettings.copyToClipboard   // Show the Copy button.
 cbhSettings.showLanguageLabel // Show the language label in the toolbar.
 cbhSettings.showFileName      // Show the file-name label in the toolbar.
+cbhSettings.fileNameStyle     // "tab" or "toolbar".
 ```
+
+The download button is not listed here. PHP resolves the global **Download Snippet** setting and the block's own override into a single `data-wzcbh-download` attribute on the `<pre>` element, whose value is the file name to save as. The frontend bundle renders the button when the attribute is present. In server-side mode the same value is carried on the button itself, since PHP emits the toolbar directly.
 
 ### `wzcbhI18n`
 
@@ -234,6 +260,7 @@ wzcbhI18n.copySuccess // "Copied code to clipboard."
 wzcbhI18n.copyError   // "Unable to copy code to clipboard."
 wzcbhI18n.expand      // "Expand"
 wzcbhI18n.collapse    // "Collapse"
+wzcbhI18n.downloaded  // "Downloaded code as %s." (%s is the file name)
 ```
 
 ---

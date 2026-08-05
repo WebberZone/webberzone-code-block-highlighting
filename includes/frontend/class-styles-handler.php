@@ -233,6 +233,8 @@ class Styles_Handler {
 					'copyError'   => __( 'Unable to copy code to clipboard.', 'webberzone-code-block-highlighting' ),
 					'expand'      => __( 'Expand', 'webberzone-code-block-highlighting' ),
 					'collapse'    => __( 'Collapse', 'webberzone-code-block-highlighting' ),
+					/* translators: %s: file name of the downloaded snippet */
+					'downloaded'  => __( 'Downloaded code as %s.', 'webberzone-code-block-highlighting' ),
 				)
 			) . ';',
 			'before'

@@ -69,6 +69,8 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **Editor canvas styling** — `enqueue_editor_canvas_styles()` extracts only `background` and `color` from the active Prism theme CSS and re-injects them with `.block-editor-block-list__layout` prepended to win the specificity race against the editor's own `pre` styles. Layout properties are intentionally excluded.
 
+**Download button** — the global `download-button` setting and the block's tri-state `downloadButton` attribute (`''` inherit / `'show'` / `'hide'`) are resolved in `render_code_block()` into one `data-wzcbh-download="{filename}"` attribute, so neither JS surface repeats the logic. Two ordering traps: the filename must be derived from `$params['language']` *before* either render path mutates it (client sets `''` for `text`, server sets `'none'`), and the code text must be read from a clone with `.line-numbers-rows` removed — the gutter lives inside `<code>` and its rows are `display:block`, so a direct read appends one blank line per row. `get_language_extension()` values starting with a dot are appended to `snippet`; a value without one is the whole file name (`docker` → `Dockerfile`).
+
 **Themes (21):** A11y Dark, Coldark Cold, Coldark Dark, Dracula, Duotone Dark, Duotone Light, GitHub Light, Gruvbox Dark, Gruvbox Light, Lucario, Material Dark, Material Light, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS Code Dark+, Xonokai (Monokai).
 
 **Default color scheme:** `prism-onedark`
@@ -95,6 +97,7 @@ Assets load only on pages containing at least one `core/code` block (`Styles_Han
 - `wzcbh_languages` — language picker UI list (`slug => label`); UI only, not grammar loader
 - `wzcbh_color_scheme_css_url` — override the Prism theme CSS URL
 - `wzcbh_force_load_assets` — force Prism assets to load on every page
+- `wzcbh_download_extensions` — language slug => download file extension map (`$extensions, $language`)
 - REST route: `wzcbh/v1/default-settings`
 - Settings key: `wzcbh_settings`
 

@@ -181,6 +181,8 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 * New: File name tab. The file name set on a block now renders as an editor-style tab above the code block, coloured to match the active Prism theme. Works identically in client-side and server-side modes.
 * New: "File Name Style" setting to choose between the new tab and the previous toolbar label.
 * New: `wzcbh_file_tab_html` filter to customise the file name tab markup.
+* New: Download snippet button. A "Download" button now appears next to "Copy" in the code block toolbar, saving the snippet as a file named after the block's file name, or `snippet.{ext}` derived from its language. Enabled by default; it can be turned off globally with the new "Download Snippet" setting, or per block from the "Download button" control in the block sidebar.
+* New: `wzcbh_download_extensions` filter to customise the language-to-file-extension map used for downloads.
 * Fix: File names saved by the older Code Syntax Block plugin (stored as a `title` attribute on the `<pre>`) are now displayed on the frontend without needing the post to be re-saved.
 * Fix: The block editor canvas no longer picked up `background: window` from the forced-colors media query in several themes, which left the editor code block unstyled.
 

@@ -39,6 +39,7 @@ const edit = ({ attributes, setAttributes }) => {
 		_legacyTitle,
 		highlightLines,
 		maxHeight,
+		downloadButton,
 	} = attributes;
 	const [isSaving, setIsSaving] = useState(false);
 	const [savedNotice, setSavedNotice] = useState('');
@@ -239,6 +240,47 @@ const edit = ({ attributes, setAttributes }) => {
 						/>
 					</PanelRow>
 					<PanelRow>
+						<SelectControl
+							label={__(
+								'Download button',
+								'webberzone-code-block-highlighting'
+							)}
+							help={__(
+								'Override the global "Download Snippet" setting for this block.',
+								'webberzone-code-block-highlighting'
+							)}
+							value={downloadButton || ''}
+							options={[
+								{
+									label: __(
+										'Use global setting',
+										'webberzone-code-block-highlighting'
+									),
+									value: '',
+								},
+								{
+									label: __(
+										'Show',
+										'webberzone-code-block-highlighting'
+									),
+									value: 'show',
+								},
+								{
+									label: __(
+										'Hide',
+										'webberzone-code-block-highlighting'
+									),
+									value: 'hide',
+								},
+							]}
+							onChange={(val) =>
+								setAttributes({
+									downloadButton: val || undefined,
+								})
+							}
+						/>
+					</PanelRow>
+					<PanelRow>
 						<div className="wzcbh-save-default">
 							<Button
 								variant="secondary"
@@ -398,6 +440,12 @@ const addSyntaxToCodeBlock = (settings) => {
 			},
 			maxHeight: {
 				type: 'number',
+			},
+			// Tri-state override of the global download setting: undefined
+			// inherits it, 'show' and 'hide' force it. Not sourced from the
+			// saved HTML, so PHP reads it from the block comment attributes.
+			downloadButton: {
+				type: 'string',
 			},
 			title: {
 				type: 'string',

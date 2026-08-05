@@ -23,6 +23,7 @@
 	var strCopyError   = i18n.copyError   || 'Unable to copy code to clipboard.';
 	var strExpand      = i18n.expand      || 'Expand';
 	var strCollapse    = i18n.collapse    || 'Collapse';
+	var strDownloaded  = i18n.downloaded  || 'Downloaded code as %s.';
 
 	function announce( message ) {
 		var region = getLiveRegion();
@@ -83,6 +84,46 @@
 		}
 	}
 
+	// ── Download button (mirrors wzcbh-download in frontend.js) ──────────────
+	// The line-numbers gutter lives inside <code> and its rows are display:block,
+	// so it is stripped from a clone before the text is read — otherwise the
+	// downloaded file gains one blank line per row.
+	function getCodeText( code ) {
+		var clone = code.cloneNode( true );
+		clone.querySelectorAll( '.line-numbers-rows' ).forEach( function ( el ) {
+			el.remove();
+		} );
+		return clone.textContent;
+	}
+
+	function handleDownload( btn ) {
+		var toolbar = btn.closest( '.code-toolbar' );
+		var pre = toolbar ? toolbar.querySelector( 'pre' ) : null;
+		var code = pre ? pre.querySelector( 'code' ) : null;
+		if ( ! code ) {
+			return;
+		}
+
+		var fileName = btn.getAttribute( 'data-wzcbh-download' ) || 'snippet.txt';
+		var blob = new Blob( [ getCodeText( code ) ], {
+			type: 'text/plain;charset=utf-8',
+		} );
+		var url = URL.createObjectURL( blob );
+		var link = document.createElement( 'a' );
+
+		link.href = url;
+		link.download = fileName;
+		link.style.display = 'none';
+		document.body.appendChild( link );
+		link.click();
+		document.body.removeChild( link );
+		setTimeout( function () {
+			URL.revokeObjectURL( url );
+		}, 0 );
+
+		announce( strDownloaded.replace( '%s', fileName ) );
+	}
+
 	// ── Expand/collapse button (mirrors wzcbh-expand in frontend.js) ─────────
 	function setupExpandButton( btn ) {
 		var pre = btn.closest( '.code-toolbar' );
@@ -110,11 +151,17 @@
 		} );
 	}
 
-	// ── Event delegation for copy buttons ────────────────────────────────────
+	// ── Event delegation for copy and download buttons ───────────────────────
 	document.addEventListener( 'click', function ( e ) {
 		var btn = e.target.closest( '.copy-to-clipboard-button' );
 		if ( btn ) {
 			handleCopy( btn );
+			return;
+		}
+
+		btn = e.target.closest( '.wzcbh-download-button' );
+		if ( btn ) {
+			handleDownload( btn );
 		}
 	} );
 

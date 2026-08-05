@@ -47,6 +47,16 @@ Set a maximum visible height in pixels. When the code block content exceeds this
 
 Toggle soft word wrapping for long lines. When disabled (the default), long lines scroll horizontally.
 
+## Download Button
+
+A dropdown that overrides the global **Download Snippet** setting for this block:
+
+- **Use global setting** (default) — follow whatever the settings page says.
+- **Show** — always show the **Download** button on this block, even when the global setting is off.
+- **Hide** — never show it on this block, even when the global setting is on.
+
+The downloaded file is named after **File name or title** when one is set; otherwise it is `snippet.{ext}`, with the extension derived from the block's language. The button works identically in client-side and server-side modes, and the line-numbers gutter is excluded from the saved file.
+
 ## Save as Default
 
 After configuring the controls above, click **Save as default** at the bottom of the **Syntax Highlighting** panel to copy the current block's settings (language, line numbers, line numbers start, word wrap, max height) into the global `default-lang` setting and the equivalent global defaults. Future code blocks inserted via the editor will inherit these values.
