@@ -161,6 +161,27 @@ add_filter( 'wzcbh_force_load_assets', '__return_true' );
 
 ---
 
+### [`wzcbh_file_tab_html`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_file_tab_html/)
+
+Filters the file name tab markup rendered above a code block. Applies in both highlighting modes, and only when **File Name Style** is set to *Tab above the code block*.
+
+```php
+add_filter( 'wzcbh_file_tab_html', function( string $tab, string $title, string $language ): string {
+    return '<div class="wzcbh-file-tab"><span class="wzcbh-file-tab__name">'
+        . esc_html( strtoupper( $title ) ) . '</span></div>';
+}, 10, 3 );
+```
+
+**Parameters:**
+
+- `$tab` *(string)* — The tab HTML.
+- `$title` *(string)* — The file name or title set on the block.
+- `$language` *(string)* — The block's language slug.
+
+**Returns:** `string`
+
+---
+
 ## JavaScript objects
 
 The plugin exposes several JavaScript globals via `wp_add_inline_script()`. They are read by the editor bundle and the frontend bundles.

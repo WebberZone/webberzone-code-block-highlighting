@@ -35,7 +35,14 @@ When enabled, the programming language name is displayed in the toolbar above ea
 
 ## Show File Name
 
-When enabled, the file name or title is displayed in the toolbar above each code block, provided a title has been set on the block. Setting key: `show-file-name`. Default: enabled.
+When enabled, the file name or title is displayed above each code block, provided a title has been set on the block. Setting key: `show-file-name`. Default: enabled.
+
+## File Name Style
+
+Controls how the file name is displayed when **Show File Name** is enabled. Setting key: `file-name-style`. Default: `tab`.
+
+- **Tab above the code block** (`tab`) — an editor-style tab sits flush on top of the block. Its background and text colour are taken from the active Prism theme, so the tab matches the block below it across all 21 themes. The markup is rendered by PHP in both highlighting modes.
+- **Toolbar label** (`toolbar`) — the file name appears as a label in the hover toolbar, next to the language label and copy button.
 
 ## Default Language
 

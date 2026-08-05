@@ -139,35 +139,9 @@ class Blocks {
 		// Later declarations win, mirroring the CSS cascade.
 		$theme_path = Settings::get_color_scheme_css( true );
 		if ( file_exists( $theme_path ) && wp_style_is( 'wzcbh-editor-canvas-style', 'enqueued' ) ) {
-         // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			$theme_css   = file_get_contents( $theme_path );
-			$bg_value    = '';
-			$color_value = '';
-
-			if ( preg_match_all( '/([^{}]+)\{([^}]+)\}/', $theme_css, $all_rules, PREG_SET_ORDER ) ) {
-				foreach ( $all_rules as $rule ) {
-					$selector     = $rule[1];
-					$declarations = $rule[2];
-
-					if ( ! preg_match( '/(?:code|pre)\[class\*=["\']language-["\']\]/i', $selector ) ) {
-						continue;
-					}
-
-					// Skip pseudo-element (::selection) and :not(pre) rules.
-					if ( preg_match( '/::/i', $selector ) || preg_match( '/:not\(/i', $selector ) ) {
-						continue;
-					}
-
-					foreach ( preg_split( '/[\n;]/', $declarations ) as $decl ) {
-							$decl = trim( $decl );
-						if ( preg_match( '/^background(?:-color)?:\s*.+$/i', $decl ) ) {
-							$bg_value = $decl . ';';
-						} elseif ( preg_match( '/^color:\s*.+$/i', $decl ) ) {
-							$color_value = $decl . ';';
-						}
-					}
-				}
-			}
+			$colors      = Settings::extract_theme_colors( $theme_path );
+			$bg_value    = $colors['background'] ? 'background: ' . $colors['background'] . ';' : '';
+			$color_value = $colors['color'] ? 'color: ' . $colors['color'] . ';' : '';
 
 			$props = array_filter( array( $bg_value, $color_value ) );
 			if ( $props ) {
@@ -285,6 +259,12 @@ class Blocks {
 		if ( empty( $attrs['title'] ) && preg_match( '/<pre[^>]+\bdata-title="([^"]*)"/', $block_content, $tm ) ) {
 			$attrs['title'] = html_entity_decode( $tm[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 		}
+		// Fallback for posts saved by the old code-syntax-block plugin, which
+		// stored the file name in pre[title] and was never re-saved. Mirrors the
+		// `data-title || title` lookup in the client-side toolbar button.
+		if ( empty( $attrs['title'] ) && preg_match( '/<pre[^>]*\stitle="([^"]*)"/', $block_content, $ltm ) ) {
+			$attrs['title'] = html_entity_decode( $ltm[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		}
 
 		$params = array(
 			'language'           => sanitize_key( $attrs['language'] ?? '' ),
@@ -297,10 +277,66 @@ class Blocks {
 		);
 
 		if ( 'server' === wzcbh_get_option( 'highlighting-mode', 'client' ) ) {
-			return $this->render_code_block_server( $block_content, $params );
+			$block_content = $this->render_code_block_server( $block_content, $params );
+		} else {
+			$block_content = $this->render_code_block_client( $block_content, $params );
 		}
 
-		return $this->render_code_block_client( $block_content, $params );
+		return $this->maybe_add_file_tab( $block_content, $params );
+	}
+
+	/**
+	 * Whether the file name should render as a tab above the code block.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return bool
+	 */
+	protected static function is_file_tab_style(): bool {
+		return (bool) wzcbh_get_option( 'show-file-name', true )
+			&& 'tab' === wzcbh_get_option( 'file-name-style', 'tab' );
+	}
+
+	/**
+	 * Wrap the rendered block in a file-name tab header.
+	 *
+	 * Emitted by PHP in both highlighting modes so the markup is identical. In
+	 * client mode Prism's toolbar plugin wraps the `<pre>` in `.code-toolbar`
+	 * at runtime, which lands inside this wrapper; in server mode PHP has
+	 * already added that wrapper. Both therefore converge on:
+	 * `.wzcbh-code-wrapper > .wzcbh-file-tab + (.code-toolbar >) pre`.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string              $block_content The rendered block HTML.
+	 * @param  array<string,mixed> $params        Normalised block parameters.
+	 * @return string
+	 */
+	protected function maybe_add_file_tab( string $block_content, array $params ): string {
+		$title = (string) $params['title'];
+
+		if ( '' === $title || ! self::is_file_tab_style() ) {
+			return $block_content;
+		}
+
+		$language = (string) $params['language'];
+		$classes  = 'wzcbh-code-wrapper' . ( $language ? ' wzcbh-code-wrapper--' . sanitize_html_class( $language ) : '' );
+
+		$tab = '<div class="wzcbh-file-tab"><span class="wzcbh-file-tab__name">'
+			. esc_html( $title ) . '</span></div>';
+
+		/**
+		 * Filter the file name tab HTML rendered above a code block.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @param string $tab      The tab HTML.
+		 * @param string $title    The file name / title.
+		 * @param string $language The block language slug.
+		 */
+		$tab = (string) apply_filters( 'wzcbh_file_tab_html', $tab, $title, $language ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+		return '<div class="' . esc_attr( $classes ) . '">' . $tab . $block_content . '</div>';
 	}
 
 	/**
@@ -566,7 +602,8 @@ class Blocks {
 		// ── Toolbar: same HTML structure as Prism's toolbar plugin ────────────
 		$show_copy  = (bool) wzcbh_get_option( 'copy-to-clipboard', true );
 		$show_label = (bool) wzcbh_get_option( 'show-language-label', true );
-		$show_title = (bool) wzcbh_get_option( 'show-file-name', true );
+		// Suppressed when the file name renders as a tab, so it is not shown twice.
+		$show_title = (bool) wzcbh_get_option( 'show-file-name', true ) && ! self::is_file_tab_style();
 
 		$toolbar_items = '';
 

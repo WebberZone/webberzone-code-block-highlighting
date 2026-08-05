@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Plugin Overview
 
-**WebberZone Code Block Highlighting** v1.1.0 (plugin slug: `webberzone-code-block-highlighting`) extends the native Gutenberg `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter. Does not replace the block — existing posts stay valid. Namespace: `WebberZone\Code_Block_Highlighting`. Requires WordPress 6.6+, PHP 7.4+. No Freemius.
+**WebberZone Code Block Highlighting** v1.2.0 (plugin slug: `webberzone-code-block-highlighting`) extends the native Gutenberg `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter. Does not replace the block — existing posts stay valid. Namespace: `WebberZone\Code_Block_Highlighting`. Requires WordPress 6.6+, PHP 7.4+. No Freemius.
 
 Two highlighting modes:
 - **Client-side** (default): Prism.js runs in the browser. Loads the Prism JS bundle + theme CSS.
@@ -68,6 +68,10 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **Editor canvas styling** — `enqueue_editor_canvas_styles()` extracts only `background` and `color` from the active Prism theme CSS and re-injects them with `.block-editor-block-list__layout` prepended to win the specificity race against the editor's own `pre` styles. Layout properties are intentionally excluded.
 
+**Theme colour extraction** — `Settings::extract_theme_colors()` is the single parser for a theme's base `background`/`color`; used by both `enqueue_editor_canvas_styles()` (unminified path) and `Styles_Handler::add_root_css_vars()` (minified + RTL path). Two non-obvious requirements, both load-bearing across the 21 themes: `@media`/`@supports` blocks must be stripped first (several themes end with a forced-colors block declaring `background: window`), and selector lists must be evaluated per comma-separated part (Gruvbox et al. declare the background on `:not(pre)>code[class*="language-"], pre[class*="language-"]`). Transparent backgrounds resolve to an empty string so callers fall back to their own default — Synthwave '84 is the only theme that does this.
+
+**File name tab** — `maybe_add_file_tab()` wraps the block in `.wzcbh-code-wrapper` with a `.wzcbh-file-tab` ahead of it, in both modes, so the markup is identical. In client mode Prism's toolbar plugin wraps the `<pre>` in `.code-toolbar` at runtime, landing inside our wrapper. Gated on `file-name-style` = `tab`; when set, the server-mode toolbar title and the `wzcbh-title` Prism toolbar button are both suppressed so the name never renders twice. The seam-removal CSS deliberately uses an unqualified `> pre` — a block with no language never gets a `language-*` class.
+
 **Themes (21):** A11y Dark, Coldark Cold, Coldark Dark, Dracula, Duotone Dark, Duotone Light, GitHub Light, Gruvbox Dark, Gruvbox Light, Lucario, Material Dark, Material Light, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS Code Dark+, Xonokai (Monokai).
 
 **Default color scheme:** `prism-onedark`
@@ -94,8 +98,10 @@ Assets load only on pages containing at least one `core/code` block (`Styles_Han
 - `wzcbh_languages` — language picker UI list (`slug => label`); UI only, not grammar loader
 - `wzcbh_color_scheme_css_url` — override the Prism theme CSS URL
 - `wzcbh_force_load_assets` — force Prism assets to load on every page
+- `wzcbh_file_tab_html` — override the file name tab markup (`$tab, $title, $language`)
 - REST route: `wzcbh/v1/default-settings`
 - Settings key: `wzcbh_settings`
+- `file-name-style` setting: `tab` (default) | `toolbar` — how the block's file name is displayed
 
 ## Adding a Prism theme
 

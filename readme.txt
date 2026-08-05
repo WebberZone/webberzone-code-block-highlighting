@@ -4,7 +4,7 @@ Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code highlighting
 Requires at least: 6.6
 Tested up to: 7.0
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -176,6 +176,14 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 
 == Changelog ==
 
+= 1.2.0 =
+
+* New: File name tab. The file name set on a block now renders as an editor-style tab above the code block, coloured to match the active Prism theme. Works identically in client-side and server-side modes.
+* New: "File Name Style" setting to choose between the new tab and the previous toolbar label.
+* New: `wzcbh_file_tab_html` filter to customise the file name tab markup.
+* Fix: File names saved by the older Code Syntax Block plugin (stored as a `title` attribute on the `<pre>`) are now displayed on the frontend without needing the post to be re-saved.
+* Fix: The block editor canvas no longer picked up `background: window` from the forced-colors media query in several themes, which left the editor code block unstyled.
+
 = 1.1.0 (10 June 2026) =
 
 *Release Date - 10 June 2026*
@@ -206,6 +214,9 @@ Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-0
 * GDPR-friendly: no data collection, no external requests.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+File names now render as an editor-style tab above the code block, themed to match your chosen colour scheme. Adds a "File Name Style" setting to switch back to the toolbar label.
 
 = 1.1.0 =
 Adds server-side highlighting mode (highlight.php) with full theme parity across all 21 Prism themes, plus a "Plain Text" language picker option.

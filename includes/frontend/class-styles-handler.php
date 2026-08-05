@@ -9,6 +9,7 @@
 
 namespace WebberZone\Code_Block_Highlighting\Frontend;
 
+use WebberZone\Code_Block_Highlighting\Admin\Settings;
 use WebberZone\Code_Block_Highlighting\Util\Hook_Registry;
 
 if ( ! defined( 'WPINC' ) ) {
@@ -124,6 +125,7 @@ class Styles_Handler {
 			'copyToClipboard'   => (bool) wzcbh_get_option( 'copy-to-clipboard', true ),
 			'showLanguageLabel' => (bool) wzcbh_get_option( 'show-language-label', true ),
 			'showFileName'      => (bool) wzcbh_get_option( 'show-file-name', true ),
+			'fileNameStyle'     => (string) wzcbh_get_option( 'file-name-style', 'tab' ),
 		);
 
 		wp_add_inline_script(
@@ -132,13 +134,45 @@ class Styles_Handler {
 			'before'
 		);
 
+		self::add_root_css_vars();
+	}
+
+	/**
+	 * Inject the runtime CSS custom properties onto the frontend stylesheet.
+	 *
+	 * Sets the configured font size, plus the file-name tab colours pulled from
+	 * the active Prism theme so the tab matches the code block it sits above.
+	 * `frontend.css` declares fallbacks for all of these, so a theme whose
+	 * colours cannot be parsed degrades to a readable tab rather than an
+	 * invisible one.
+	 *
+	 * @since 1.2.0
+	 */
+	private static function add_root_css_vars(): void {
+		$vars = array();
+
 		$font_size = (int) wzcbh_get_option( 'font-size', 0 );
 		if ( $font_size > 0 ) {
-			wp_add_inline_style(
-				'wzcbh-prism-css',
-				':root { --wzcbh-font-size: ' . $font_size . 'px; }'
-			);
+			$vars[] = '--wzcbh-font-size: ' . $font_size . 'px;';
 		}
+
+		$colors = Settings::extract_theme_colors( self::get_prism_theme_css_path() );
+
+		if ( '' !== $colors['background'] ) {
+			$vars[] = '--wzcbh-tab-bg: ' . $colors['background'] . ';';
+		}
+		if ( '' !== $colors['color'] ) {
+			$vars[] = '--wzcbh-tab-color: ' . $colors['color'] . ';';
+		}
+
+		if ( ! $vars ) {
+			return;
+		}
+
+		wp_add_inline_style(
+			'wzcbh-prism-css',
+			':root {' . implode( ' ', $vars ) . '}'
+		);
 	}
 
 	/**
@@ -178,13 +212,7 @@ class Styles_Handler {
 			WZCBH_VERSION
 		);
 
-		$font_size = (int) wzcbh_get_option( 'font-size', 0 );
-		if ( $font_size > 0 ) {
-			wp_add_inline_style(
-				'wzcbh-prism-css',
-				':root { --wzcbh-font-size: ' . $font_size . 'px; }'
-			);
-		}
+		self::add_root_css_vars();
 
 		// Copy-to-clipboard + expand/collapse script.
 		wp_enqueue_script(

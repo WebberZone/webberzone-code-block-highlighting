@@ -10,6 +10,18 @@
 	--wzcbh-toolbar-outline: rgba(255, 255, 255, 0.6);
 	--wzcbh-toolbar-radius: 0.3em;
 	--wzcbh-toolbar-padding: 0.1em 0.5em;
+
+	/**
+	 * File name tab. The bg/color values are overridden at runtime with the
+	 * active Prism theme's own background and foreground (see
+	 * Styles_Handler::add_root_css_vars()). These fallbacks keep the tab
+	 * readable if that extraction finds nothing.
+	 */
+	--wzcbh-tab-bg: #2d2d2d;
+	--wzcbh-tab-color: #ccc;
+	--wzcbh-tab-font-size: 0.8em;
+	--wzcbh-tab-padding: 0.4em 0.9em;
+	--wzcbh-tab-radius: 0.3em;
 }
 
 #wzcbh-copy-live-region {
@@ -83,6 +95,60 @@ div.code-toolbar > .toolbar > .toolbar-item > span {
 	box-shadow: none;
 	border-radius: var(--wzcbh-toolbar-radius);
 	padding: var(--wzcbh-toolbar-padding);
+}
+
+/**
+ * File name tab.
+ *
+ * PHP wraps the block in `.wzcbh-code-wrapper` and emits `.wzcbh-file-tab`
+ * ahead of it in both highlighting modes. In client mode Prism's toolbar
+ * plugin wraps the `<pre>` in `.code-toolbar` at runtime, so the `<pre>` is
+ * one level deeper — both shapes are matched below.
+ *
+ * The wrapper takes over the block's outer vertical margin and the `<pre>`
+ * loses its own top margin and top-left radius, so the tab sits flush against
+ * the code block with no visible seam.
+ */
+.wzcbh-code-wrapper {
+	margin: 0.5em 0;
+}
+
+.wzcbh-file-tab {
+	display: flex;
+	line-height: 1;
+}
+
+.wzcbh-file-tab__name {
+	display: inline-block;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: var(--wzcbh-tab-font-size);
+	padding: var(--wzcbh-tab-padding);
+	color: var(--wzcbh-tab-color);
+
+	/**
+	 * The tab shares the code block's own background so the two read as one
+	 * surface, as in an editor tab strip. The translucent overlay lifts it a
+	 * shade off the block on dark themes without washing out light ones.
+	 */
+	background:
+		linear-gradient(
+			rgba(127, 127, 127, 0.16),
+			rgba(127, 127, 127, 0.16)
+		),
+		var(--wzcbh-tab-bg);
+	border-radius: var(--wzcbh-tab-radius) var(--wzcbh-tab-radius) 0 0;
+}
+
+/* Unqualified `pre` on purpose: a block with no language set never receives a
+   `language-*` class, and the wrapper only ever holds the tab and the block. */
+.wzcbh-code-wrapper > pre,
+.wzcbh-code-wrapper > .code-toolbar > pre {
+	margin-top: 0;
+	border-top-left-radius: 0;
 }
 
 div.code-toolbar > .toolbar > .toolbar-item > a:hover,

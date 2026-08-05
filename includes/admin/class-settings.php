@@ -217,9 +217,20 @@ class Settings {
 				array(
 					'id'      => 'show-file-name',
 					'name'    => __( 'Show File Name', 'webberzone-code-block-highlighting' ),
-					'desc'    => __( 'Display the file name or title in the toolbar above each code block, when one is set.', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Display the file name or title above each code block, when one is set.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'checkbox',
 					'default' => true,
+				),
+				array(
+					'id'      => 'file-name-style',
+					'name'    => __( 'File Name Style', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'How the file name is displayed. Tab renders a GitHub-style header tab above the code block, coloured to match the active theme. Toolbar renders it as a label in the toolbar overlay.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'radio',
+					'default' => 'tab',
+					'options' => array(
+						'tab'     => __( 'Tab above the code block', 'webberzone-code-block-highlighting' ),
+						'toolbar' => __( 'Toolbar label', 'webberzone-code-block-highlighting' ),
+					),
 				),
 				array(
 					'id'               => 'default-lang',
@@ -355,5 +366,163 @@ class Settings {
 		 * @param string $url Absolute URL of the CSS file to enqueue.
 		 */
 		return apply_filters( 'wzcbh_color_scheme_css_url', WZCBH_PLUGIN_URL . $rel_path ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+	}
+
+	/**
+	 * Extract the base background and foreground colours from a Prism theme CSS file.
+	 *
+	 * Scans every rule whose selector targets `code[class*="language-"]` or
+	 * `pre[class*="language-"]`, skipping pseudo-element (`::selection`) and
+	 * `:not(pre)` selectors. Later declarations win, mirroring the CSS cascade,
+	 * so themes that place `background` in a separate `pre[class*="language-"]`
+	 * rule are handled correctly.
+	 *
+	 * Two details matter for correctness across all bundled themes:
+	 *
+	 * - At-rule blocks (`@media`, `@supports`) are stripped first. Several
+	 *   themes end with a forced-colors block declaring `background: window`,
+	 *   which would otherwise win as the last matching rule.
+	 * - Selector lists are evaluated per comma-separated part, not as a whole.
+	 *   Gruvbox and others declare the background on
+	 *   `:not(pre)>code[class*="language-"], pre[class*="language-"]`; rejecting
+	 *   the whole list because one part contains `:not(` would lose it.
+	 *
+	 * Transparent backgrounds (`none`, `transparent`, the minified `0 0`) are
+	 * treated as absent so callers fall back to their own default.
+	 *
+	 * Works against both the unminified and minified builds of each theme.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string $css_path Absolute filesystem path to the theme CSS file.
+	 * @return array{background: string, color: string} Raw CSS values; empty strings when not found.
+	 */
+	public static function extract_theme_colors( string $css_path ): array {
+		$colors = array(
+			'background' => '',
+			'color'      => '',
+		);
+
+		if ( ! file_exists( $css_path ) ) {
+			return $colors;
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$theme_css = self::strip_at_rule_blocks( (string) file_get_contents( $css_path ) );
+
+		if ( ! preg_match_all( '/([^{}]+)\{([^}]*)\}/', $theme_css, $all_rules, PREG_SET_ORDER ) ) {
+			return $colors;
+		}
+
+		foreach ( $all_rules as $rule ) {
+			if ( ! self::selector_targets_code_block( $rule[1] ) ) {
+				continue;
+			}
+
+			foreach ( preg_split( '/[\n;]/', $rule[2] ) as $decl ) {
+				$decl = trim( (string) $decl );
+
+				if ( preg_match( '/^background(?:-color)?:\s*(.+)$/i', $decl, $bm ) ) {
+					$value = self::normalise_css_value( $bm[1] );
+
+					if ( ! in_array( strtolower( $value ), array( 'none', 'transparent', '0 0' ), true ) ) {
+						$colors['background'] = $value;
+					}
+				} elseif ( preg_match( '/^color:\s*(.+)$/i', $decl, $cm ) ) {
+					$colors['color'] = self::normalise_css_value( $cm[1] );
+				}
+			}
+		}
+
+		return $colors;
+	}
+
+	/**
+	 * Trim a CSS declaration value and drop any `!important` flag.
+	 *
+	 * The values are re-emitted as custom properties, where `!important` would
+	 * change how the declaration itself cascades rather than the value.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string $value Raw declaration value.
+	 * @return string
+	 */
+	private static function normalise_css_value( string $value ): string {
+		return trim( (string) preg_replace( '/\s*!\s*important\s*$/i', '', trim( $value ) ) );
+	}
+
+	/**
+	 * Whether any part of a selector list targets a highlighted code block.
+	 *
+	 * Each comma-separated part is checked independently so a list mixing
+	 * usable and unusable selectors still contributes its declarations.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string $selector The full selector text of a CSS rule.
+	 * @return bool
+	 */
+	private static function selector_targets_code_block( string $selector ): bool {
+		foreach ( explode( ',', $selector ) as $part ) {
+			// Skip pseudo-element (::selection) and :not(pre) selectors.
+			if ( preg_match( '/::/', $part ) || preg_match( '/:not\(/i', $part ) ) {
+				continue;
+			}
+
+			if ( preg_match( '/(?:code|pre)\[class\*=["\']?language-["\']?\]/i', $part ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Remove `@media` / `@supports` blocks (and their contents) from CSS.
+	 *
+	 * Scans brace by brace so nested blocks are removed as a unit. At-rules
+	 * without a block (`@charset`, `@import`) are left alone — they carry no
+	 * declarations for the caller to pick up.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param  string $css The CSS source.
+	 * @return string
+	 */
+	private static function strip_at_rule_blocks( string $css ): string {
+		$result = '';
+		$offset = 0;
+
+		while ( preg_match( '/@(?:media|supports|document)\b/i', $css, $m, PREG_OFFSET_CAPTURE, $offset ) ) {
+			$start = (int) $m[0][1];
+			$open  = strpos( $css, '{', $start );
+
+			if ( false === $open ) {
+				break;
+			}
+
+			$result .= substr( $css, $offset, $start - $offset );
+
+			// Walk to the brace that closes this at-rule block.
+			$depth = 0;
+			$i     = $open;
+			$len   = strlen( $css );
+
+			for ( ; $i < $len; $i++ ) {
+				if ( '{' === $css[ $i ] ) {
+					++$depth;
+				} elseif ( '}' === $css[ $i ] ) {
+					--$depth;
+					if ( 0 === $depth ) {
+						break;
+					}
+				}
+			}
+
+			$offset = min( $i + 1, $len );
+		}
+
+		return $result . substr( $css, $offset );
 	}
 }

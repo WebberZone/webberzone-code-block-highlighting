@@ -22,9 +22,18 @@ The [`wzcbh_languages`](https://webberzone.dev/webberzone-code-block-highlightin
 
 Toggle to show or hide line numbers on this block. When enabled, a **Start Line** field appears. Set this to any integer to begin numbering from that value — useful when showing a code excerpt that starts partway through a file.
 
-## Title
+## File Name or Title
 
-A text field for an optional filename or label (e.g. `config.yml`). When **Show File Name** is enabled in global settings, the title appears in the toolbar above the block. If **Show File Name** is disabled globally, the title field is still saved but not displayed.
+A text field for an optional filename or label (e.g. `config.yml`). When **Show File Name** is enabled in global settings, the value is displayed above the block.
+
+**File Name Style** in the global settings controls how it is displayed:
+
+- **Tab above the code block** (default) — an editor-style tab sits flush on top of the block, coloured to match the active theme's own background and foreground. Rendered by PHP, so it looks the same in client-side and server-side modes.
+- **Toolbar label** — the value appears as a label in the hover toolbar, alongside the language label and copy button.
+
+If **Show File Name** is disabled globally, the field is still saved but not displayed.
+
+Code blocks saved by the older *Code Syntax Block* plugin stored the filename in a `title` attribute on the `<pre>` element. These are read and displayed without needing the post to be re-saved.
 
 ## Highlight Lines
 

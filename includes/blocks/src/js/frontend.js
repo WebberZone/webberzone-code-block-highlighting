@@ -209,8 +209,13 @@ Prism.plugins.toolbar.registerButton('wzcbh-expand', function (env) {
 });
 
 // ── Title/filename toolbar button ─────────────────────────────────────────────
+// Skipped entirely when the file name is rendered as a tab — PHP emits that
+// markup before the block, so registering it here too would duplicate it.
 Prism.plugins.toolbar.registerButton('wzcbh-title', function (env) {
-	if (typeof cbhSettings !== 'undefined' && !cbhSettings.showFileName) {
+	if (
+		typeof cbhSettings !== 'undefined' &&
+		(!cbhSettings.showFileName || 'toolbar' !== cbhSettings.fileNameStyle)
+	) {
 		return;
 	}
 	const title =
