@@ -34,12 +34,13 @@ composer phpcs
 composer phpstan
 
 # JS
-npm install
-npm run build          # Production build -> includes/blocks/build/
-npm run build:prism    # Copy Prism themes -> includes/assets/
-npm run build:assets   # Minify generated CSS/JS assets
-npm run start          # Watch mode for block/editor/frontend bundles
-npm run zip            # Plugin zip
+pnpm install
+ncu -u && pnpm install  # Update dependencies to latest and reinstall
+pnpm run build          # Production build -> includes/blocks/build/
+pnpm run build:prism    # Copy Prism themes -> includes/assets/
+pnpm run build:assets   # Minify generated CSS/JS assets
+pnpm run start          # Watch mode for block/editor/frontend bundles
+pnpm run zip            # Plugin zip
 ```
 
 ## Architecture
@@ -102,13 +103,13 @@ Assets load only on pages containing at least one `core/code` block (`Styles_Han
 1. Add the theme mapping in `build-prism.js`
 2. Copy the CSS to `includes/assets/`
 3. Register the slug in `includes/admin/class-settings.php`
-4. Run `npm run build:prism`
+4. Run `pnpm run build:prism`
 
 ## Adding a language
 
 1. Add `import 'prismjs/components/prism-{slug}'` to `frontend.js` (respect dependency order)
 2. Add `'slug' => 'Label'` to `get_languages()` in `class-blocks.php`
-3. Run `npm run build`
+3. Run `pnpm run build`
 
 ## Accessibility
 
