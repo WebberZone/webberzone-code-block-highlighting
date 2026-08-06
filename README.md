@@ -20,7 +20,7 @@ Syntax highlighting for the Gutenberg Code block — Prism.js, 21 themes, 40+ la
 
 ## Description
 
-__WebberZone Code Block Highlighting__ is the easiest way to add syntax highlighting to your WordPress site. It extends the native Gutenberg `core/code` block with [Prism.js](https://prismjs.com/) highlighting — no shortcodes, no block replacement, no risk of breaking existing posts.
+__WebberZone Code Block Highlighting__ is the easiest way to add syntax highlighting to your WordPress site. It extends the native Gutenberg `core/code` block with [Prism.js](https://prismjs.com/) highlighting in the browser, or optional server-side highlighting with [highlight.php](https://github.com/scrivo/highlight.php) — no shortcodes, no block replacement, no risk of breaking existing posts.
 
 Simply activate the plugin and your code blocks will instantly display beautiful, readable syntax highlighting on the frontend. Choose from 40+ programming languages and 21 colour themes, all controlled from the block editor's Inspector Controls sidebar.
 
@@ -145,7 +145,7 @@ Bug reports are [welcomed on GitHub Issues](https://github.com/WebberZone/webber
 
 ## Security
 
-Report security vulnerabilities through the [Patchstack Vulnerability Disclosure Program](https://patchstack.com/database/vdp/webberzone-code-block-highlighting). The Patchstack team will validate, triage, and handle any reported vulnerabilities.
+Please report security bugs found in the source code of the WebberZone Code Block Highlighting plugin through the [Patchstack Vulnerability Disclosure Program](https://patchstack.com/database/vdp/d9673655-4a25-4c42-8908-9737ab36602a). The Patchstack team will assist you with verification, CVE assignment, and notify the developers of this plugin.
 
 ## Translations
 

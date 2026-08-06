@@ -13,7 +13,7 @@ Syntax highlighting for the Gutenberg Code block — Prism.js, 21 themes, 40+ la
 
 == Description ==
 
-**WebberZone Code Block Highlighting** is the easiest way to add syntax highlighting to your WordPress site. It extends the native Gutenberg `core/code` block with [Prism.js](https://prismjs.com/) highlighting — no shortcodes, no block replacement, no risk of breaking existing posts.
+**WebberZone Code Block Highlighting** is the easiest way to add syntax highlighting to your WordPress site. It extends the native Gutenberg `core/code` block with [Prism.js](https://prismjs.com/) highlighting in the browser, or optional server-side highlighting with [highlight.php](https://github.com/scrivo/highlight.php) — no shortcodes, no block replacement, no risk of breaking existing posts.
 
 Simply activate the plugin and your code blocks will instantly display beautiful, readable syntax highlighting on the frontend. Choose from 40+ programming languages and 21 colour themes, all controlled from the block editor's Inspector Controls sidebar.
 
@@ -170,9 +170,9 @@ The plugin ships with 21 Prism themes. The active theme is selected globally on 
 
 Yes. The plugin is built specifically for the Gutenberg block editor (WordPress 6.6+) and uses the native block filter APIs. It does not support the Classic Editor.
 
-= How can I report security vulnerabilities? =
+= Where do I report security bugs found in this plugin? =
 
-Report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team will validate, triage, and handle any reported vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/webberzone-code-block-highlighting)
+Please report security bugs found in the source code of the WebberZone Code Block Highlighting plugin through the [Patchstack Vulnerability Disclosure Program](https://patchstack.com/database/vdp/d9673655-4a25-4c42-8908-9737ab36602a). The Patchstack team will assist you with verification, CVE assignment, and notify the developers of this plugin.
 
 == Changelog ==
 
