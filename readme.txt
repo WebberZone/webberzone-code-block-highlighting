@@ -176,7 +176,11 @@ Report security bugs through the Patchstack Vulnerability Disclosure Program. Th
 
 == Changelog ==
 
-= 1.2.0 =
+= 1.2.0 (6 August 2026) =
+
+*Release Date - 6 August 2026*
+
+Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-2-0/](https://webberzone.com/announcements/code-block-highlighting-v1-2-0/)
 
 * New: File name tab. The file name set on a block now renders as an editor-style tab above the code block, coloured to match the active Prism theme. Works identically in client-side and server-side modes.
 * New: "File Name Style" setting to choose between the new tab and the previous toolbar label.
