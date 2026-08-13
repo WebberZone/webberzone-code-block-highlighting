@@ -3,7 +3,7 @@ Contributors: webberzone, ajay
 Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code highlighting
 Requires at least: 6.6
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 1.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
