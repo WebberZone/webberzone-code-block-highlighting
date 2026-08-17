@@ -176,6 +176,10 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 == Changelog ==
 
+= 1.2.1 =
+
+* Improvement: Setting defaults are now resolved from a single lightweight list instead of building every settings field, so reading an option early in the page load no longer risks a "translation loading triggered too early" notice.
+
 = 1.2.0 (6 August 2026) =
 
 *Release Date - 6 August 2026*
