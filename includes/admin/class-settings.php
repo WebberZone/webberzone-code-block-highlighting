@@ -172,6 +172,39 @@ class Settings {
 	}
 
 	/**
+	 * Raw default values for every setting, keyed by option ID.
+	 *
+	 * Single source of truth for field defaults. Deliberately contains no
+	 * translation calls so it is safe to invoke before `init` without triggering a
+	 * "translation loading triggered too early" notice. `get_registered_settings()`
+	 * references this array instead of duplicating literals.
+	 *
+	 * Values are pre-normalised: checkbox defaults use 1/0 rather than true/false
+	 * so that they match what `settings_defaults()` produces after its
+	 * `(int) (bool)` cast. This array is deliberately unfiltered — the
+	 * `wzcbh_settings_defaults` filter is applied by the consumers
+	 * (`settings_defaults()` and `Options_API::get_default_option()`) so that it
+	 * runs exactly once on each path.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @return array Raw default values keyed by option ID.
+	 */
+	public static function get_defaults(): array {
+		return array(
+			'highlighting-mode'   => 'client',
+			'color-scheme'        => 'prism-onedark',
+			'copy-to-clipboard'   => 1,
+			'download-button'     => 1,
+			'show-language-label' => 1,
+			'show-file-name'      => 1,
+			'file-name-style'     => 'tab',
+			'default-lang'        => '',
+			'font-size'           => 0,
+		);
+	}
+
+	/**
 	 * Get registered settings.
 	 *
 	 * @since 1.1.0
@@ -179,6 +212,8 @@ class Settings {
 	 * @return array
 	 */
 	public static function get_registered_settings(): array {
+		$defaults = self::get_defaults();
+
 		return array(
 			'general' => array(
 				array(
@@ -186,7 +221,7 @@ class Settings {
 					'name'    => __( 'Highlighting Mode', 'webberzone-code-block-highlighting' ),
 					'desc'    => __( 'Client-side: Prism.js runs in the browser (default, supports all block features). Server-side: highlight.php pre-renders syntax on the server — no JavaScript required.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'radio',
-					'default' => 'client',
+					'default' => $defaults['highlighting-mode'],
 					'options' => array(
 						'client' => __( 'Client-side (Prism.js)', 'webberzone-code-block-highlighting' ),
 						'server' => __( 'Server-side (highlight.php)', 'webberzone-code-block-highlighting' ),
@@ -197,7 +232,7 @@ class Settings {
 					'name'    => __( 'Color Scheme', 'webberzone-code-block-highlighting' ),
 					'desc'    => __( 'Choose the syntax highlighting theme. The same Prism.js theme is used in both client-side and server-side modes.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'select',
-					'default' => 'prism-onedark',
+					'default' => $defaults['color-scheme'],
 					'options' => self::$color_schemes,
 				),
 				array(
@@ -205,35 +240,35 @@ class Settings {
 					'name'    => __( 'Copy to Clipboard', 'webberzone-code-block-highlighting' ),
 					'desc'    => __( 'Show a "Copy" button on code blocks, allowing visitors to copy the code with one click.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'checkbox',
-					'default' => true,
+					'default' => $defaults['copy-to-clipboard'],
 				),
 				array(
 					'id'      => 'download-button',
 					'name'    => __( 'Download Snippet', 'webberzone-code-block-highlighting' ),
 					'desc'    => __( 'Show a "Download" button on code blocks, allowing visitors to save the code as a file. Individual blocks can override this.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'checkbox',
-					'default' => true,
+					'default' => $defaults['download-button'],
 				),
 				array(
 					'id'      => 'show-language-label',
 					'name'    => __( 'Show Language Label', 'webberzone-code-block-highlighting' ),
 					'desc'    => __( 'Display the programming language name in the toolbar above each code block.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'checkbox',
-					'default' => true,
+					'default' => $defaults['show-language-label'],
 				),
 				array(
 					'id'      => 'show-file-name',
 					'name'    => __( 'Show File Name', 'webberzone-code-block-highlighting' ),
 					'desc'    => __( 'Display the file name or title above each code block, when one is set.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'checkbox',
-					'default' => true,
+					'default' => $defaults['show-file-name'],
 				),
 				array(
 					'id'      => 'file-name-style',
 					'name'    => __( 'File Name Style', 'webberzone-code-block-highlighting' ),
 					'desc'    => __( 'How the file name is displayed. Tab renders a GitHub-style header tab above the code block, coloured to match the active theme. Toolbar renders it as a label in the toolbar overlay.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'radio',
-					'default' => 'tab',
+					'default' => $defaults['file-name-style'],
 					'options' => array(
 						'tab'     => __( 'Tab above the code block', 'webberzone-code-block-highlighting' ),
 						'toolbar' => __( 'Toolbar label', 'webberzone-code-block-highlighting' ),
@@ -244,7 +279,7 @@ class Settings {
 					'name'             => __( 'Default Language', 'webberzone-code-block-highlighting' ),
 					'desc'             => __( 'Automatically set this language when a code block is inserted. Leave blank to disable.', 'webberzone-code-block-highlighting' ),
 					'type'             => 'csv',
-					'default'          => '',
+					'default'          => $defaults['default-lang'],
 					'field_class'      => 'ts_autocomplete',
 					'field_attributes' => self::get_language_field_attributes(),
 				),
@@ -253,7 +288,7 @@ class Settings {
 					'name'    => __( 'Font Size (px)', 'webberzone-code-block-highlighting' ),
 					'desc'    => __( 'Font size for code blocks in pixels. Set to 0 to use the active theme default.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'number',
-					'default' => 0,
+					'default' => $defaults['font-size'],
 				),
 			),
 		);
