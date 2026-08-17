@@ -179,6 +179,7 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 = 1.2.1 =
 
 * Improvement: Setting defaults are now resolved from a single lightweight list instead of building every settings field, so reading an option early in the page load no longer risks a "translation loading triggered too early" notice.
+* Fix: Fixed settings on a multisite network reading another site's values in the same request after a `switch_to_blog()` call.
 
 = 1.2.0 (6 August 2026) =
 
