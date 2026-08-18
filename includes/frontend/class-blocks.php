@@ -88,20 +88,9 @@ class Blocks {
 	 * Enqueue editor layout styles and inject the active Prism theme into the
 	 * block editor iframe canvas.
 	 *
-	 * `enqueue_block_editor_assets` only loads styles into the outer editor shell.
-	 * Since WordPress 6.0 the editing canvas runs in an iframe, styles must be
-	 * registered via `enqueue_block_assets` to appear inside it.
-	 *
-	 * The block editor's `.block-editor-block-list__layout pre` rule (specificity
-	 * 0,1,1) overrides Prism's `pre[class*="language-"]` (also 0,1,1) by source
-	 * order. To beat it, only the `background` and `color` declarations are
-	 * extracted from the active Prism theme file and re-injected inline with
-	 * `.block-editor-block-list__layout` prepended, raising specificity to 0,2,1.
-	 * Layout properties (margin, padding, position, overflow) are intentionally
-	 * excluded to avoid disrupting the editor's block positioning.
-	 *
-	 * Only runs in the admin context to avoid duplicating the frontend enqueue
-	 * that `Styles_Handler` already handles via `wp_enqueue_scripts`.
+	 * Only background/color are extracted and re-injected with
+	 * `.block-editor-block-list__layout` prepended, to beat the editor's own `pre` rule on
+	 * specificity (0,2,1 vs 0,1,1) without disrupting block layout.
 	 *
 	 * @since 1.1.0
 	 */

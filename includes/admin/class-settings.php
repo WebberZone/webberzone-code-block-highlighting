@@ -174,17 +174,10 @@ class Settings {
 	/**
 	 * Raw default values for every setting, keyed by option ID.
 	 *
-	 * Single source of truth for field defaults. Deliberately contains no
-	 * translation calls so it is safe to invoke before `init` without triggering a
-	 * "translation loading triggered too early" notice. `get_registered_settings()`
-	 * references this array instead of duplicating literals.
-	 *
-	 * Values are pre-normalised: checkbox defaults use 1/0 rather than true/false
-	 * so that they match what `settings_defaults()` produces after its
-	 * `(int) (bool)` cast. This array is deliberately unfiltered — the
-	 * `wzcbh_settings_defaults` filter is applied by the consumers
-	 * (`settings_defaults()` and `Options_API::get_default_option()`) so that it
-	 * runs exactly once on each path.
+	 * Deliberately contains no translation calls, so it is safe to invoke before `init`.
+	 * Values are pre-normalised (checkboxes as 1/0) and this array is intentionally
+	 * unfiltered — the `wzcbh_settings_defaults` filter is applied by the consumers
+	 * instead.
 	 *
 	 * @since 1.3.0
 	 *
@@ -413,24 +406,10 @@ class Settings {
 	/**
 	 * Extract the base background and foreground colours from a Prism theme CSS file.
 	 *
-	 * Scans every rule whose selector targets `code[class*="language-"]` or
-	 * `pre[class*="language-"]`, skipping pseudo-element (`::selection`) and
-	 * `:not(pre)` selectors. Later declarations win, mirroring the CSS cascade,
-	 * so themes that place `background` in a separate `pre[class*="language-"]`
-	 * rule are handled correctly.
-	 *
-	 * Two details matter for correctness across all bundled themes:
-	 *
-	 * - At-rule blocks (`@media`, `@supports`) are stripped first. Several
-	 *   themes end with a forced-colors block declaring `background: window`,
-	 *   which would otherwise win as the last matching rule.
-	 * - Selector lists are evaluated per comma-separated part, not as a whole.
-	 *   Gruvbox and others declare the background on
-	 *   `:not(pre)>code[class*="language-"], pre[class*="language-"]`; rejecting
-	 *   the whole list because one part contains `:not(` would lose it.
-	 *
-	 * Transparent backgrounds (`none`, `transparent`, the minified `0 0`) are
-	 * treated as absent so callers fall back to their own default.
+	 * Strips `@media`/`@supports` blocks first (forced-colors overrides would otherwise win
+	 * as last match), then evaluates selector lists per comma-separated part so
+	 * `:not(pre)>code[...], pre[...]`-style rules are not rejected wholesale. Transparent
+	 * backgrounds are treated as absent.
 	 *
 	 * Works against both the unminified and minified builds of each theme.
 	 *
