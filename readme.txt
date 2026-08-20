@@ -4,7 +4,7 @@ Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code highlighting
 Requires at least: 6.6
 Tested up to: 7.1
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -178,10 +178,13 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 = 1.2.1 =
 
+*Release Date - 20 August 2026*
+
 * Improvement: Setting defaults are now resolved from a single lightweight list instead of building every settings field, so reading an option early in the page load no longer risks a "translation loading triggered too early" notice.
 * Fix: Fixed settings on a multisite network reading another site's values in the same request after a `switch_to_blog()` call.
+* Fix: Fixed the settings wizard silently dropping repeater field rows on save.
 
-= 1.2.0 (6 August 2026) =
+= 1.2.0 =
 
 *Release Date - 6 August 2026*
 
@@ -195,7 +198,7 @@ Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-2
 * Fix: File names saved by the older Code Syntax Block plugin (stored as a `title` attribute on the `<pre>`) are now displayed on the frontend without needing the post to be re-saved.
 * Fix: The block editor canvas no longer picked up `background: window` from the forced-colors media query in several themes, which left the editor code block unstyled.
 
-= 1.1.0 (10 June 2026) =
+= 1.1.0 =
 
 *Release Date - 10 June 2026*
 
@@ -206,7 +209,7 @@ Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-1
 * New: Added "Plain Text" language option to the language picker. Renders with Prism theme styling but no syntax highlighting.
 * Fix: Duplicate `language-*` class on `<code>` elements in client mode when the saved block HTML already carried the class.
 
-= 1.0.0 (3 May 2026) =
+= 1.0.0 =
 
 *Release Date - 3 May 2026*
 
@@ -225,6 +228,9 @@ Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-0
 * GDPR-friendly: no data collection, no external requests.
 
 == Upgrade Notice ==
+
+= 1.2.1 =
+Fixes settings defaults resolution, a multisite settings cache leak, and repeater fields dropping rows on save.
 
 = 1.2.0 =
 File names now render as an editor-style tab above the code block, themed to match your chosen colour scheme. Adds a "File Name Style" setting to switch back to the toolbar label.
