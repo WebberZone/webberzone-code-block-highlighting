@@ -2,13 +2,13 @@
 slug: code-block-highlighting-settings-reference
 title: "Code Block Highlighting Settings Reference"
 products: [code-block-highlighting]
-sections: [01-wzcbh-getting-started]
+sections: ["01-wzcbh-getting-started"]
 tags: [code-block-highlighting, settings]
 status: publish
-order: 0
+toc: true
 ---
 
-[kbtoc]
+[toc]
 
 All [WebberZone Code Block Highlighting](https://webberzone.com/plugins/webberzone-code-block-highlighting/) settings are available at **Settings > Code Block Highlighting**. Settings are stored in a single WordPress option: `wzcbh_settings`.
 

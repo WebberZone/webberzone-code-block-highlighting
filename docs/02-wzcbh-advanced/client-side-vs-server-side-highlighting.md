@@ -2,15 +2,15 @@
 slug: client-side-vs-server-side-highlighting
 title: "Client-Side vs Server-Side Highlighting"
 products: [code-block-highlighting]
-sections: [02-wzcbh-advanced]
-tags: [code-block-highlighting, server-side, prism, highlight.php]
+sections: ["02-wzcbh-advanced"]
+tags: [code-block-highlighting, highlight-php, prism, server-side]
 status: publish
-order: 0
+toc: true
 ---
 
 [WebberZone Code Block Highlighting](https://webberzone.com/plugins/webberzone-code-block-highlighting/) supports two rendering modes: client-side (Prism.js in the browser) and server-side (highlight.php on the server). The mode is set globally and applies to all code blocks on the site.
 
-[kbtoc]
+[toc]
 
 ## Client-side mode (default)
 

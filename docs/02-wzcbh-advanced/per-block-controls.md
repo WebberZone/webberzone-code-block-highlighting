@@ -2,15 +2,15 @@
 slug: per-block-controls
 title: "Per-Block Controls"
 products: [code-block-highlighting]
-sections: [02-wzcbh-advanced]
-tags: [code-block-highlighting, block editor, inspector controls]
+sections: ["02-wzcbh-advanced"]
+tags: [block-editor, code-block-highlighting, inspector-controls]
 status: publish
-order: 0
+toc: true
 ---
 
 Each code block has its own highlighting settings, available in the **Syntax Highlighting** panel of the Inspector Controls sidebar. These override the global defaults set on the [Code Block Highlighting settings page](https://webberzone.com/plugins/webberzone-code-block-highlighting/).
 
-[kbtoc]
+[toc]
 
 ## Language
 
