@@ -5,6 +5,7 @@ products: [code-block-highlighting]
 sections: ["02-wzcbh-advanced"]
 tags: [block-editor, code-block-highlighting, inspector-controls]
 status: publish
+order: 0
 toc: true
 ---
 

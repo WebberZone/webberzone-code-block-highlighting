@@ -5,6 +5,7 @@ products: [code-block-highlighting]
 sections: ["01-wzcbh-getting-started"]
 tags: [code-block-highlighting, settings]
 status: publish
+order: 0
 toc: true
 ---
 

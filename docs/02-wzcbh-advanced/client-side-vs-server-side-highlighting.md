@@ -5,6 +5,7 @@ products: [code-block-highlighting]
 sections: ["02-wzcbh-advanced"]
 tags: [code-block-highlighting, highlight-php, prism, server-side]
 status: publish
+order: 0
 toc: true
 ---
 

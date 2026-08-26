@@ -5,6 +5,7 @@ products: [code-block-highlighting]
 sections: ["01-wzcbh-getting-started"]
 tags: [code-block-highlighting, installation]
 status: publish
+order: 0
 ---
 
 WebberZone Code Block Highlighting extends the native WordPress Gutenberg `core/code` block with syntax highlighting, and is available for free on WordPress.org.

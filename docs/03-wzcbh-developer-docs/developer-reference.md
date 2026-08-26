@@ -5,6 +5,7 @@ products: [code-block-highlighting]
 sections: ["03-wzcbh-developer-docs"]
 tags: [code-block-highlighting, developer, filters, hooks]
 status: publish
+order: 0
 toc: true
 ---
 
