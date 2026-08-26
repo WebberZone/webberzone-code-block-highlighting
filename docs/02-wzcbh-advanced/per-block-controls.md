@@ -28,7 +28,7 @@ A text field for an optional filename or label (e.g. `config.yml`). When **Show 
 
 **File Name Style** in the global settings controls how it is displayed:
 
-- **Tab above the code block** (default) — an editor-style tab sits flush on top of the block, coloured to match the active theme's own background and foreground. Rendered by PHP, so it looks the same in client-side and server-side modes.
+- **Tab above the code block** (default) — an editor-style tab sits flush on top of the block, colored to match the active theme's own background and foreground. Rendered by PHP, so it looks the same in client-side and server-side modes.
 - **Toolbar label** — the value appears as a label in the hover toolbar, alongside the language label and copy button.
 
 If **Show File Name** is disabled globally, the field is still saved but not displayed.

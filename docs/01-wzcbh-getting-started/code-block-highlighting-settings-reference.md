@@ -49,7 +49,7 @@ When enabled, the file name or title is displayed above each code block, provide
 
 Controls how the file name is displayed when **Show File Name** is enabled. Setting key: `file-name-style`. Default: `tab`.
 
-- **Tab above the code block** (`tab`) — an editor-style tab sits flush on top of the block. Its background and text colour are taken from the active Prism theme, so the tab matches the block below it across all 21 themes. The markup is rendered by PHP in both highlighting modes.
+- **Tab above the code block** (`tab`) — an editor-style tab sits flush on top of the block. Its background and text color are taken from the active Prism theme, so the tab matches the block below it across all 21 themes. The markup is rendered by PHP in both highlighting modes.
 - **Toolbar label** (`toolbar`) — the file name appears as a label in the hover toolbar, next to the language label and copy button.
 
 ## Default Language
