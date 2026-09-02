@@ -1,17 +1,13 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+Guidance for AI coding agents working in this repository.
 
 ## Response Rules
 
 - Return only the changed function or section, not the full file
 - No explanation unless asked
-- No suggestions outside the scope of what was asked
+- No out-of-scope suggestions
 - Skip preamble and trailing summaries
-
-## Release Notes
-
-- In `readme.txt`, prefix any Pro-only changelog bullet with `[Pro]`
 
 ## Links
 
@@ -22,11 +18,11 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Plugin Overview
 
-**WebberZone Code Block Highlighting** v1.2.0 (plugin slug: `webberzone-code-block-highlighting`) extends the native Gutenberg `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter. Does not replace the block — existing posts stay valid. Namespace: `WebberZone\Code_Block_Highlighting`. Requires WordPress 6.6+, PHP 7.4+. No Freemius.
+**WebberZone Code Block Highlighting** v1.2.0 (slug `webberzone-code-block-highlighting`) extends Gutenberg's `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter — doesn't replace the block, so existing posts stay valid. Namespace: `WebberZone\Code_Block_Highlighting`. Requires WordPress 6.6+, PHP 7.4+. No Freemius.
 
 Two highlighting modes:
-- **Client-side** (default): Prism.js runs in the browser. Loads the Prism JS bundle + theme CSS.
-- **Server-side**: highlight.php pre-renders token spans on the server. No Prism.js loaded. Loads Prism theme CSS + `hljs-server-mode.css` + `hljs-clipboard.js` (copy-to-clipboard + expand/collapse). Token class remapping (`remap_token_classes()` in `class-blocks.php`) converts hljs-* span classes to Prism `token *` classes via `strtr`, giving exact visual parity across all 21 themes.
+- **Client-side** (default): Prism.js runs in-browser; loads Prism JS bundle + theme CSS.
+- **Server-side**: highlight.php pre-renders token spans server-side; no Prism.js loaded. Loads Prism theme CSS + `hljs-server-mode.css` + `hljs-clipboard.js` (copy-to-clipboard + expand/collapse). `remap_token_classes()` in `class-blocks.php` converts hljs-* spans to Prism `token *` classes via `strtr`, giving exact visual parity across all 21 themes.
 
 ## Commands
 
@@ -69,11 +65,11 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **`maxHeight`** — CSS-only: serialized as inline `style` by the block save function, not touched by the PHP render filter.
 
-**`wzcbh_languages` filter** — controls the editor UI dropdown only. Does not affect which Prism grammars are bundled. Adding a slug without a matching grammar import in `frontend.js` results in plain-text output.
+**`wzcbh_languages` filter** — controls editor UI dropdown only, not which Prism grammars are bundled; a slug without a matching grammar import in `frontend.js` renders as plain text.
 
-**Editor canvas styling** — `enqueue_editor_canvas_styles()` extracts only `background` and `color` from the active Prism theme CSS and re-injects them with `.block-editor-block-list__layout` prepended to win the specificity race against the editor's own `pre` styles. Layout properties are intentionally excluded.
+**Editor canvas styling** — `enqueue_editor_canvas_styles()` extracts only `background`/`color` from the active Prism theme CSS and re-injects them with `.block-editor-block-list__layout` prepended to win specificity against the editor's own `pre` styles; layout properties are intentionally excluded.
 
-**Download button** — the global `download-button` setting and the block's tri-state `downloadButton` attribute (`''` inherit / `'show'` / `'hide'`) are resolved in `render_code_block()` into one `data-wzcbh-download="{filename}"` attribute, so neither JS surface repeats the logic. Two ordering traps: the filename must be derived from `$params['language']` *before* either render path mutates it (client sets `''` for `text`, server sets `'none'`), and the code text must be read from a clone with `.line-numbers-rows` removed — the gutter lives inside `<code>` and its rows are `display:block`, so a direct read appends one blank line per row. `get_language_extension()` values starting with a dot are appended to `snippet`; a value without one is the whole file name (`docker` → `Dockerfile`).
+**Download button** — the global `download-button` setting and the block's tri-state `downloadButton` attribute (`''` inherit / `'show'` / `'hide'`) resolve in `render_code_block()` into one `data-wzcbh-download="{filename}"` attribute, so neither JS surface repeats the logic. Two ordering traps: the filename must derive from `$params['language']` *before* either render path mutates it (client sets `''` for `text`, server sets `'none'`), and the code text must be read from a clone with `.line-numbers-rows` removed — the gutter lives inside `<code>` with `display:block` rows, so a direct read appends one blank line per row. `get_language_extension()` values starting with a dot are appended to `snippet`; a value without one is the whole file name (`docker` → `Dockerfile`).
 
 **Themes (21):** A11y Dark, Coldark Cold, Coldark Dark, Dracula, Duotone Dark, Duotone Light, GitHub Light, Gruvbox Dark, Gruvbox Light, Lucario, Material Dark, Material Light, Night Owl, Nord, One Dark, One Light, Shades of Purple, Solarized Dark, Synthwave '84, VS Code Dark+, Xonokai (Monokai).
 
@@ -81,11 +77,11 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **If you change block attributes in JS**, update `render_code_block()` in `class-blocks.php` and the defaults flow as well.
 
-**Server-mode token remapping** — `remap_token_classes()` in `class-blocks.php` uses `strtr()` to convert every `class="hljs-*"` span emitted by highlight.php into the equivalent Prism `class="token *"` span. `strtr()` is safe here because highlight.php emits single-class spans only (no compound classes). Keys are ordered longest-first to prevent prefix collisions (e.g. `hljs-selector-tag` before a hypothetical `hljs-selector`).
+**Server-mode token remapping** — `remap_token_classes()` in `class-blocks.php` uses `strtr()` to convert every `class="hljs-*"` span emitted by highlight.php into the equivalent Prism `class="token *"` span — safe because highlight.php emits single-class spans only (no compound classes). Keys are ordered longest-first to prevent prefix collisions (e.g. `hljs-selector-tag` before a hypothetical `hljs-selector`).
 
 **highlight.php autoloader** — `\Highlight\Autoloader::register()` does not exist. Use `spl_autoload_register(static function(string $class_name): void { \Highlight\Autoloader::load($class_name); })`.
 
-**`hljs-server-mode.css`** — only handles `.wzcbh-highlighted-line` line highlighting. Font-size, line-numbers gutter, and word-wrap are all in `frontend.css` (webpack build), which loads in both modes.
+**`hljs-server-mode.css`** — only handles `.wzcbh-highlighted-line` line highlighting; font-size, line-numbers gutter, and word-wrap are all in `frontend.css` (webpack build), loaded in both modes.
 
 **Both modes use the same Prism theme CSS** — `Settings::get_color_scheme_css()` always returns the Prism CSS URL. There is no per-mode branch or hljs-specific theme mapping table.
 
@@ -136,11 +132,11 @@ Verify: JS attribute schema → save output → `render_code_block()` in PHP →
 
 ## Shared framework files: `@since` convention
 
-The Settings API (`includes/admin/settings/*.php`) and the Admin Banner (`includes/admin/class-admin-banner.php`) are copy-pasted, shared framework files whose canonical source is the `Settings_API` repo. To keep `@since` tags meaningful and stable across syncs, these files follow special rules:
+The Settings API (`includes/admin/settings/*.php`) and Admin Banner (`includes/admin/class-admin-banner.php`) are copy-pasted shared framework files whose canonical source is the `Settings_API` repo. To keep `@since` tags meaningful and stable across syncs, these files follow special rules:
 
-- Each file carries **exactly one** `@since` tag, on its **class docblock**, set to the plugin version at which that class was **first introduced into this plugin**. This is per-file (the wizard, metabox and banner classes were generally added later than the core Settings API classes).
+- Each file carries **exactly one** `@since` tag, on its **class docblock**, set to the plugin version that class was **first introduced into this plugin** — per-file (the wizard, metabox and banner classes were generally added later than the core Settings API classes).
 - **Do not** add `@since` to methods, functions or properties in these files.
-- When syncing/updating these files from another plugin or the canonical `Settings_API` repo, **do not overwrite the class-level `@since`** — it is plugin-specific. Re-apply the values below after any sync.
+- When syncing these files from another plugin or the canonical `Settings_API` repo, **do not overwrite the class-level `@since`** — it's plugin-specific; re-apply the values below after any sync.
 
 | File | `@since` |
 |---|---|
