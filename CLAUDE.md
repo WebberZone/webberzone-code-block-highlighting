@@ -43,6 +43,14 @@ pnpm run start          # Watch mode for block/editor/frontend bundles
 pnpm run zip            # Plugin zip
 ```
 
+## Distribution zip vendor invariant
+
+`build-zip.sh` excludes all of `vendor/` in its rsync block, then re-adds only the directories it names, and a missing one is a hard `exit 1`.
+
+`scrivo/highlight.php` *is* a Composer package, but it is deliberately handled differently from the other plugin repos: it is copied with `rsync` to strip `.github`/`README.md`, and **no `vendor/autoload.php` or `vendor/composer` ships at all** — the library loads through highlight.php's own PSR-0 autoloader, registered in `load_highlighter()` in `includes/frontend/class-blocks.php`.
+
+Don't convert this to the `composer.lock`-derived block the other plugin repos use; that would change the shipped payload.
+
 ## Architecture
 
 **Namespace:** `WebberZone\Code_Block_Highlighting`
