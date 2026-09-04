@@ -23,6 +23,18 @@ if ( ! defined( 'WPINC' ) ) {
  */
 class Blocks {
 
+	/**
+	 * Shared highlight.php highlighter, built on first use.
+	 *
+	 * Deliberately untyped: the class lives in an optional bundled library, and a
+	 * typed property would name it in a context the autoloader cannot satisfy on
+	 * installs where the library is absent.
+	 *
+	 * @since 1.2.2
+	 *
+	 * @var \Highlight\Highlighter|null
+	 */
+	protected static $highlighter = null;
 
 	/**
 	 * Constructor.
@@ -460,6 +472,147 @@ class Blocks {
 	}
 
 	/**
+	 * Rewrite the attributes of the first `<pre>` (or `<code>`) opening tag.
+	 *
+	 * The callback receives the raw attribute string — everything between the tag
+	 * name and the closing `>` — and returns its replacement.
+	 *
+	 * `preg_replace_callback()` rather than `preg_replace()` is load-bearing: the
+	 * injected attributes carry editor-supplied values (file name, line ranges,
+	 * download file name) and `preg_replace()` reads `$1` / `\0` / `\\` in its
+	 * *replacement* string as backreferences. `esc_attr()` does not escape either
+	 * character, so a file name of `a$0b` would otherwise expand to the matched
+	 * tag text inside the attribute value.
+	 *
+	 * @since 1.2.2
+	 *
+	 * @param  string   $html    The block HTML.
+	 * @param  string   $tag     Tag name to rewrite (`pre` or `code`).
+	 * @param  callable $rewrite Receives the attribute string, returns its replacement.
+	 * @return string
+	 */
+	protected static function rewrite_tag_attributes( string $html, string $tag, callable $rewrite ): string {
+		return (string) preg_replace_callback(
+			'/<' . $tag . '\b([^>]*)>/i',
+			static function ( array $matches ) use ( $tag, $rewrite ): string {
+				return '<' . $tag . $rewrite( $matches[1] ) . '>';
+			},
+			$html,
+			1
+		);
+	}
+
+	/**
+	 * Merge class names into a tag's attribute string.
+	 *
+	 * Existing classes are preserved and duplicates dropped, so a block whose
+	 * saved HTML already carries `language-php` does not gain a second copy. An
+	 * empty class list leaves the attribute string untouched rather than emitting
+	 * `class=""`.
+	 *
+	 * @since 1.2.2
+	 *
+	 * @param  string   $attributes Raw attribute string of a single tag.
+	 * @param  string[] $classes    Class names to add.
+	 * @return string
+	 */
+	protected static function merge_tag_classes( string $attributes, array $classes ): string {
+		// Only the added classes are escaped. The existing attribute text is
+		// already escaped in the saved HTML, so re-escaping the merged string
+		// would turn an `&amp;` in it into `&amp;amp;`.
+		$classes = array_map( 'esc_attr', array_filter( $classes ) );
+
+		if ( ! $classes ) {
+			return $attributes;
+		}
+
+		if ( preg_match( '/\sclass="([^"]*)"/i', $attributes, $matches ) ) {
+			$existing = preg_split( '/\s+/', trim( $matches[1] ), -1, PREG_SPLIT_NO_EMPTY );
+			$existing = is_array( $existing ) ? $existing : array();
+			$merged   = array_unique( array_merge( $existing, $classes ) );
+
+			return substr_replace(
+				$attributes,
+				' class="' . implode( ' ', $merged ) . '"',
+				(int) strpos( $attributes, $matches[0] ),
+				strlen( $matches[0] )
+			);
+		}
+
+		return $attributes . ' class="' . implode( ' ', array_unique( $classes ) ) . '"';
+	}
+
+	/**
+	 * Set attributes on a tag's attribute string, replacing any already present.
+	 *
+	 * The block's save function already writes `data-title`, `data-line` and
+	 * `data-start` onto the `<pre>`, so appending them emitted a second copy of
+	 * each. Browsers keep the first, which hid the duplication behind the
+	 * plugin's own prepended copy while still inflating every rendered block.
+	 *
+	 * These attributes are replaced rather than skipped: the value written here
+	 * has been through `sanitize_text_field()` and `esc_attr()`, whereas the one
+	 * in the saved HTML is whatever the editor typed.
+	 *
+	 * @since 1.2.2
+	 *
+	 * @param  string                $attributes Raw attribute string of a single tag.
+	 * @param  array<string, string> $new_attrs  Attribute name => already-escaped value.
+	 * @return string
+	 */
+	protected static function set_tag_attributes( string $attributes, array $new_attrs ): string {
+		foreach ( $new_attrs as $name => $value ) {
+			$replacement = ' ' . $name . '="' . $value . '"';
+			$pattern     = '/\s' . preg_quote( $name, '/' ) . '="[^"]*"/i';
+
+			if ( preg_match( $pattern, $attributes, $matches ) ) {
+				$attributes = substr_replace(
+					$attributes,
+					$replacement,
+					(int) strpos( $attributes, $matches[0] ),
+					strlen( $matches[0] )
+				);
+				continue;
+			}
+
+			$attributes .= $replacement;
+		}
+
+		return $attributes;
+	}
+
+	/**
+	 * Append declarations to a tag's inline `style` attribute.
+	 *
+	 * As in merge_tag_classes(), only the appended declarations are escaped; the
+	 * existing attribute text is already escaped in the saved HTML.
+	 *
+	 * @since 1.2.2
+	 *
+	 * @param  string $attributes   Raw attribute string of a single tag.
+	 * @param  string $declarations CSS declarations to append, semicolon terminated.
+	 * @return string
+	 */
+	protected static function merge_tag_style( string $attributes, string $declarations ): string {
+		if ( '' === $declarations ) {
+			return $attributes;
+		}
+
+		$declarations = esc_attr( $declarations );
+
+		if ( preg_match( '/\sstyle="([^"]*)"/i', $attributes, $matches ) ) {
+			return substr_replace(
+				$attributes,
+				' style="' . trim( $matches[1] . ' ' . $declarations ) . '"',
+				(int) strpos( $attributes, $matches[0] ),
+				strlen( $matches[0] )
+			);
+		}
+
+		return $attributes . ' style="' . $declarations . '"';
+	}
+
+	/**
 	 * Render a code block in client mode (Prism.js).
 	 *
 	 * Injects language classes and data-attributes into the existing saved HTML
@@ -488,27 +641,16 @@ class Blocks {
 			$language      = '';
 		}
 
-		// ── Apply language class to <code> (skip if already present) ─────────
+		// ── Apply language class to <code> (merge_tag_classes skips duplicates) ──
 		if ( $language ) {
-			$lang_class = 'language-' . $language;
-
-			if ( ! preg_match( '/<code[^>]+class="[^"]*' . preg_quote( $lang_class, '/' ) . '[^"]*"/', $block_content ) ) {
-				if ( preg_match( '/<code[^>]+class="[^"]*"/', $block_content ) ) {
-					$block_content = preg_replace(
-						'/(<code[^>]+class=")([^"]*)(")/i',
-						'$1$2 ' . $lang_class . '$3',
-						$block_content,
-						1
-					);
-				} else {
-					$block_content = preg_replace(
-						'/<code(?=[^>]*>)/i',
-						'<code class="' . $lang_class . '"',
-						$block_content,
-						1
-					);
+			$lang_class    = 'language-' . $language;
+			$block_content = self::rewrite_tag_attributes(
+				$block_content,
+				'code',
+				static function ( string $attributes ) use ( $lang_class ): string {
+					return self::merge_tag_classes( $attributes, array( $lang_class ) );
 				}
-			}
+			);
 		}
 
 		// ── Apply classes and data attributes to <pre> ────────────────────────
@@ -518,7 +660,7 @@ class Blocks {
 		if ( $line_numbers ) {
 			$pre_classes[] = 'line-numbers';
 			if ( 1 !== $line_numbers_start ) {
-				$pre_attrs[] = 'data-start="' . esc_attr( (string) $line_numbers_start ) . '"';
+				$pre_attrs['data-start'] = esc_attr( (string) $line_numbers_start );
 			}
 		}
 
@@ -527,46 +669,29 @@ class Blocks {
 		}
 
 		if ( $title ) {
-			$pre_attrs[] = 'data-title="' . esc_attr( $title ) . '"';
+			$pre_attrs['data-title'] = esc_attr( $title );
 		}
 
 		if ( $highlight_lines ) {
-			$pre_attrs[] = 'data-line="' . esc_attr( $highlight_lines ) . '"';
+			$pre_attrs['data-line'] = esc_attr( $highlight_lines );
 		}
 
 		// The global setting and the per-block override are already resolved, so
 		// the toolbar button only has to check for the attribute's presence.
 		if ( ! empty( $params['download'] ) ) {
-			$pre_attrs[] = 'data-wzcbh-download="' . esc_attr( (string) $params['download_filename'] ) . '"';
+			$pre_attrs['data-wzcbh-download'] = esc_attr( (string) $params['download_filename'] );
 		}
 
-		if ( $pre_classes ) {
-			if ( preg_match( '/<pre[^>]+class="[^"]*"/', $block_content ) ) {
-				$classes_str   = implode( ' ', $pre_classes );
-				$block_content = preg_replace(
-					'/(<pre[^>]+class=")([^"]*)(")/i',
-					'$1$2 ' . $classes_str . '$3',
-					$block_content,
-					1
-				);
-			} else {
-				$classes_str   = implode( ' ', $pre_classes );
-				$block_content = preg_replace(
-					'/<pre(?=[^>]*>)/i',
-					'<pre class="' . $classes_str . '"',
-					$block_content,
-					1
-				);
-			}
-		}
-
-		if ( $pre_attrs ) {
-			$attrs_str     = ' ' . implode( ' ', $pre_attrs );
-			$block_content = preg_replace(
-				'/(<pre\b)/i',
-				'$1' . $attrs_str,
+		if ( $pre_classes || $pre_attrs ) {
+			$block_content = self::rewrite_tag_attributes(
 				$block_content,
-				1
+				'pre',
+				static function ( string $attributes ) use ( $pre_classes, $pre_attrs ): string {
+					return self::set_tag_attributes(
+						self::merge_tag_classes( $attributes, $pre_classes ),
+						$pre_attrs
+					);
+				}
 			);
 		}
 
@@ -617,11 +742,9 @@ class Blocks {
 
 		// ── Run highlight.php ──────────────────────────────────────────────────
 		$highlighted = '';
-		if ( $hljs_lang ) {
-			self::load_highlighter();
+		if ( $hljs_lang && strlen( $plain_code ) <= self::get_highlight_size_limit( $language ) ) {
 			try {
-				$hl          = new \Highlight\Highlighter();
-				$result      = $hl->highlight( $hljs_lang, $plain_code );
+				$result      = self::get_highlighter()->highlight( $hljs_lang, $plain_code );
 				$highlighted = self::remap_token_classes( $result->value );
 			} catch ( \Throwable $e ) {
 				$highlighted = esc_html( $plain_code );
@@ -631,14 +754,28 @@ class Blocks {
 		}
 
 		// ── Line count (for line-numbers-rows) ────────────────────────────────
-		$line_count = max( 1, substr_count( rtrim( $plain_code, "\n" ), "\n" ) + 1 );
+		// One line per newline, plus a final line only when the code does not end
+		// on one. rtrim()-ing every trailing newline instead under-counted code
+		// ending in blank lines, so the gutter came up short of the lines
+		// wrap_lines() emitted. This matches what Prism's line-numbers plugin
+		// counts in the browser, keeping both modes in step.
+		$line_count = max(
+			1,
+			substr_count( $plain_code, "\n" ) + ( "\n" === substr( $plain_code, -1 ) ? 0 : 1 )
+		);
 
 		// ── Wrap lines for line highlighting (and line numbers) ───────────────
 		// Run wrap_lines() whenever line numbers OR line highlighting is active
 		// so that line highlighting works independently of line numbers.
+		// Ranges are clamped to the lines this block actually has, so a spec of
+		// `1-999999999` cannot allocate a line number for every value in it.
 		$target_lines = array();
 		if ( $highlight_lines ) {
-			$target_lines = self::parse_line_ranges( $highlight_lines );
+			$target_lines = self::parse_line_ranges(
+				$highlight_lines,
+				$line_numbers_start,
+				$line_numbers_start + $line_count - 1
+			);
 		}
 
 		if ( $line_numbers || $target_lines ) {
@@ -674,10 +811,13 @@ class Blocks {
 			1
 		);
 
-		// ── Apply classes to <pre> ────────────────────────────────────────────
+		// ── Apply classes and the line-number counter offset to <pre> ─────────
+		// The counter-reset mirrors what Prism JS does at runtime by reading
+		// data-start. Both are applied in one pass so the saved HTML's own
+		// `language-*` class is not duplicated and no empty `class=""` is added.
 		$pre_classes = array();
 		if ( $language ) {
-			$pre_classes[] = 'language-' . esc_attr( $language );
+			$pre_classes[] = 'language-' . $language;
 		}
 		if ( $line_numbers ) {
 			$pre_classes[] = 'line-numbers';
@@ -686,43 +826,21 @@ class Blocks {
 			$pre_classes[] = 'word-wrap';
 		}
 
-		$classes_str = implode( ' ', $pre_classes );
-		if ( preg_match( '/<pre[^>]+class="[^"]*"/', $block_content ) ) {
-			$block_content = preg_replace(
-				'/(<pre[^>]+class=")([^"]*)(")/i',
-				'$1$2 ' . $classes_str . '$3',
-				$block_content,
-				1
-			);
-		} else {
-			$block_content = preg_replace(
-				'/<pre(?=[^>]*>)/i',
-				'<pre class="' . $classes_str . '"',
-				$block_content,
-				1
-			);
-		}
+		$counter_decl = ( $line_numbers && $line_numbers_start > 1 )
+			? 'counter-reset: linenumber ' . ( $line_numbers_start - 1 ) . ';'
+			: '';
 
-		// ── Set counter-reset on <pre> for lineNumbersStart > 1 ───────────────
-		// Mirrors what Prism JS does at runtime by reading data-start.
-		if ( $line_numbers && $line_numbers_start > 1 ) {
-			$counter_val  = $line_numbers_start - 1;
-			$counter_decl = 'counter-reset: linenumber ' . $counter_val . ';';
-			if ( preg_match( '/(<pre\b[^>]*)\sstyle="([^"]*)"/', $block_content ) ) {
-				$block_content = preg_replace(
-					'/(<pre\b[^>]*)\sstyle="([^"]*)"/',
-					'$1 style="$2 ' . $counter_decl . '"',
-					$block_content,
-					1
-				);
-			} else {
-				$block_content = preg_replace(
-					'/(<pre\b)/i',
-					'$1 style="' . $counter_decl . '"',
-					$block_content,
-					1
-				);
-			}
+		if ( $pre_classes || '' !== $counter_decl ) {
+			$block_content = self::rewrite_tag_attributes(
+				$block_content,
+				'pre',
+				static function ( string $attributes ) use ( $pre_classes, $counter_decl ): string {
+					return self::merge_tag_style(
+						self::merge_tag_classes( $attributes, $pre_classes ),
+						$counter_decl
+					);
+				}
+			);
 		}
 
 		// ── Toolbar: same HTML structure as Prism's toolbar plugin ────────────
@@ -855,6 +973,60 @@ class Blocks {
 	}
 
 	/**
+	 * Get the shared highlight.php highlighter, constructing it on first use.
+	 *
+	 * The instance carries no per-call state — highlighting the same source with
+	 * a reused instance is byte-identical to using a fresh one — and building it
+	 * is the dominant cost on pages with many small code blocks, so one instance
+	 * is shared for the whole request.
+	 *
+	 * @since 1.2.2
+	 *
+	 * @return \Highlight\Highlighter
+	 */
+	protected static function get_highlighter() {
+		$highlighter = self::$highlighter;
+
+		if ( null === $highlighter ) {
+			self::load_highlighter();
+			$highlighter       = new \Highlight\Highlighter();
+			self::$highlighter = $highlighter;
+		}
+
+		return $highlighter;
+	}
+
+	/**
+	 * Largest code block, in bytes, that is highlighted server-side.
+	 *
+	 * highlight.php's matching cost grows quadratically with input size — roughly
+	 * 56ms at 38KB but 2.4s at 307KB — and the work happens inline in the page
+	 * render, so oversized blocks fall back to escaped plain text inside the same
+	 * themed markup rather than stalling the request. Client mode is unaffected:
+	 * Prism highlights in the browser.
+	 *
+	 * @since 1.2.2
+	 *
+	 * @param  string $language The block language slug.
+	 * @return int Size limit in bytes. Zero or less disables server highlighting.
+	 */
+	protected static function get_highlight_size_limit( string $language ): int {
+		/**
+		 * Filter the largest code block that is highlighted server-side.
+		 *
+		 * Blocks above this size are rendered as escaped plain text. Raise it to
+		 * highlight larger blocks at the cost of render time, or set it to 0 to
+		 * disable server-side highlighting entirely.
+		 *
+		 * @since 1.2.2
+		 *
+		 * @param int    $limit    Size limit in bytes. Default 131072 (128KB).
+		 * @param string $language The block language slug.
+		 */
+		return (int) apply_filters( 'wzcbh_server_highlight_max_bytes', 131072, $language ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+	}
+
+	/**
 	 * Load the highlight.php library.
 	 *
 	 * The highlight.php library is a multi-file PSR-0 library bundled under
@@ -925,9 +1097,9 @@ class Blocks {
 	 *
 	 * @since 1.1.0
 	 *
-	 * @param  string $html        Highlighted HTML from highlight.php.
-	 * @param  int    $start       First line number.
-	 * @param  int[]  $target_lines Line numbers that should be highlighted.
+	 * @param  string           $html         Highlighted HTML from highlight.php.
+	 * @param  int              $start        First line number.
+	 * @param  array<int, true> $target_lines Set of line numbers that should be highlighted.
 	 * @return string
 	 */
 	protected static function wrap_lines( string $html, int $start, array $target_lines ): string {
@@ -938,13 +1110,22 @@ class Blocks {
 		$i         = 0;
 		$len       = strlen( $html );
 
+		// Whether any text has been read since the last newline. Tags alone do not
+		// count: after a newline $line_buf is seeded with the reopened tags, and
+		// highlight.php closes its outermost span *after* the trailing newline, so
+		// testing $line_buf emitted a phantom final line holding nothing but an
+		// empty tag pair. That line was one more than the gutter had rows, and it
+		// picked up the highlight stripe when the block's last line was targeted.
+		$line_has_text = false;
+
 		while ( $i < $len ) {
 			$ch = $html[ $i ];
 
 			if ( '<' === $ch ) {
 				$j = strpos( $html, '>', $i );
 				if ( false === $j ) {
-					$line_buf .= substr( $html, $i );
+					$line_buf     .= substr( $html, $i );
+					$line_has_text = true;
 					break;
 				}
 				$tag = substr( $html, $i, $j - $i + 1 );
@@ -968,18 +1149,20 @@ class Blocks {
 					$reopen_str .= $open_tag;
 				}
 
-				$result  .= self::make_line_span( $line_num, $target_lines, $line_buf . $close_str . "\n" );
-				$line_buf = $reopen_str;
+				$result       .= self::make_line_span( $line_num, $target_lines, $line_buf . $close_str . "\n" );
+				$line_buf      = $reopen_str;
+				$line_has_text = false;
 				++$line_num;
 				++$i;
 			} else {
-				$line_buf .= $ch;
+				$line_buf     .= $ch;
+				$line_has_text = true;
 				++$i;
 			}
 		}
 
 		// Emit the final line (common when code has no trailing newline).
-		if ( '' !== $line_buf ) {
+		if ( $line_has_text ) {
 			$close_str = '';
 			foreach ( array_reverse( $open_tags ) as $open_tag ) {
 				preg_match( '/<([a-zA-Z][a-zA-Z0-9]*)/', $open_tag, $tm );
@@ -996,14 +1179,14 @@ class Blocks {
 	 *
 	 * @since 1.1.0
 	 *
-	 * @param int    $line_num     Current line number.
-	 * @param int[]  $target_lines Line numbers that should be highlighted.
-	 * @param string $content      Inner HTML content for this line.
+	 * @param int              $line_num     Current line number.
+	 * @param array<int, true> $target_lines Set of line numbers that should be highlighted.
+	 * @param string           $content      Inner HTML content for this line.
 	 * @return string
 	 */
 	protected static function make_line_span( int $line_num, array $target_lines, string $content ): string {
 		$classes = 'wzcbh-line';
-		if ( in_array( $line_num, $target_lines, true ) ) {
+		if ( isset( $target_lines[ $line_num ] ) ) {
 			$classes .= ' wzcbh-highlighted-line';
 		}
 		return '<span class="' . $classes . '" data-line-number="' . $line_num . '">'
@@ -1011,34 +1194,55 @@ class Blocks {
 	}
 
 	/**
-	 * Parse a Prism-style line range string into an array of line numbers.
+	 * Parse a Prism-style line range string into a set of line numbers.
 	 *
-	 * Accepts e.g. "1,3-5,7" → [1, 3, 4, 5, 7].
+	 * Accepts e.g. "1,3-5,7" → [1 => true, 3 => true, 4 => true, 5 => true, 7 => true].
+	 *
+	 * Ranges are clamped to the lines the block actually has before they are
+	 * expanded. Without that clamp a spec of `1-999999999` — which an editor can
+	 * type into the Highlight lines field, or a migrated post can carry — would
+	 * allocate one array entry per value and exhaust memory while rendering the
+	 * page. Line numbers outside the block never matched anything anyway, so
+	 * clamping changes nothing for valid input.
+	 *
+	 * The result is keyed by line number so membership is an isset() lookup
+	 * rather than a linear in_array() scan once per rendered line.
 	 *
 	 * @since 1.1.0
+	 * @since 1.2.2 Added the $min_line and $max_line clamps, and the keyed return shape.
 	 *
-	 * @param  string $spec The line range specification.
-	 * @return int[]
+	 * @param  string $spec     The line range specification.
+	 * @param  int    $min_line Lowest line number the block renders.
+	 * @param  int    $max_line Highest line number the block renders.
+	 * @return array<int, true> Set of line numbers, keyed by line number.
 	 */
-	protected static function parse_line_ranges( string $spec ): array {
+	protected static function parse_line_ranges( string $spec, int $min_line = 1, int $max_line = PHP_INT_MAX ): array {
 		$lines = array();
+
 		foreach ( explode( ',', $spec ) as $part ) {
 			$part = trim( $part );
 			if ( '' === $part ) {
 				continue;
 			}
+
 			if ( strpos( $part, '-' ) !== false ) {
 				list( $from, $to ) = explode( '-', $part, 2 );
 				$from              = (int) trim( $from );
 				$to                = (int) trim( $to );
-				for ( $n = $from; $n <= $to; $n++ ) {
-					$lines[] = $n;
-				}
 			} else {
-				$lines[] = (int) $part;
+				$from = (int) $part;
+				$to   = $from;
+			}
+
+			$from = max( $min_line, $from );
+			$to   = min( $max_line, $to );
+
+			for ( $n = $from; $n <= $to; $n++ ) {
+				$lines[ $n ] = true;
 			}
 		}
-		return array_unique( $lines );
+
+		return $lines;
 	}
 
 	/**

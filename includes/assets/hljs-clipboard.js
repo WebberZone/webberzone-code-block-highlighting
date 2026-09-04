@@ -33,6 +33,20 @@
 		}, 50 );
 	}
 
+	// ── Plain code text of a <code> element ──────────────────────────────────
+	// textContent, never innerText. innerText follows the rendered layout, and
+	// hljs-server-mode.css gives .wzcbh-highlighted-line `display: block` — so a
+	// highlighted line, whose span already ends in a newline, was copied with a
+	// second one after it. The line-numbers gutter also lives inside <code>, so
+	// it is dropped from a clone first rather than read as text.
+	function getCodeText( code ) {
+		var clone = code.cloneNode( true );
+		clone.querySelectorAll( '.line-numbers-rows' ).forEach( function ( el ) {
+			el.remove();
+		} );
+		return clone.textContent;
+	}
+
 	// ── Copy button (class matches Prism copy-to-clipboard plugin) ───────────
 	function handleCopy( btn ) {
 		var toolbar = btn.closest( '.code-toolbar' );
@@ -41,7 +55,7 @@
 		if ( ! code ) {
 			return;
 		}
-		var text = code.innerText;
+		var text = getCodeText( code );
 
 		function onSuccess() {
 			btn.setAttribute( 'data-copy-state', 'copy-success' );
@@ -85,17 +99,6 @@
 	}
 
 	// ── Download button (mirrors wzcbh-download in frontend.js) ──────────────
-	// The line-numbers gutter lives inside <code> and its rows are display:block,
-	// so it is stripped from a clone before the text is read — otherwise the
-	// downloaded file gains one blank line per row.
-	function getCodeText( code ) {
-		var clone = code.cloneNode( true );
-		clone.querySelectorAll( '.line-numbers-rows' ).forEach( function ( el ) {
-			el.remove();
-		} );
-		return clone.textContent;
-	}
-
 	function handleDownload( btn ) {
 		var toolbar = btn.closest( '.code-toolbar' );
 		var pre = toolbar ? toolbar.querySelector( 'pre' ) : null;

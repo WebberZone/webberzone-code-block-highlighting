@@ -187,7 +187,7 @@ class Settings_Wizard extends Settings_Wizard_API {
 	 * @return string Redirect URL.
 	 */
 	protected function get_completion_redirect_url() {
-		return admin_url( 'admin.php?page=wzcbh_settings' );
+		return Settings::get_settings_page_url();
 	}
 
 	/**
