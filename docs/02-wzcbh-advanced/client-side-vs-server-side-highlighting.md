@@ -29,9 +29,13 @@ This mode is suitable for:
 
 The **Highlight Lines** per-block control has no effect in server-side mode.
 
+### Large code blocks
+
+highlight.php slows sharply as a block grows, and that work runs while the page is built. Blocks larger than 128KB are rendered as plain text in the active theme rather than highlighted. Use the [`wzcbh_server_highlight_max_bytes`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_server_highlight_max_bytes/) filter to change the limit, or set it to 0 to disable server-side highlighting entirely. Client-side mode is unaffected.
+
 ## Visual output
 
-Both modes load the same 21 Prism themes and produce visually identical output. The plugin remaps the token class names emitted by highlight.php to match Prism's class conventions, so the same theme CSS applies correctly in both modes. You can switch modes at any time from **Settings > Code Block Highlighting** without any visible change to your code blocks.
+Both modes load the same 21 Prism themes and produce visually identical output. The plugin remaps the token class names emitted by highlight.php to match Prism's class conventions, so the same theme CSS applies correctly in both modes. You can switch modes at any time from **Settings > Code Block Highlighting** without any visible change to your code blocks, apart from blocks over the server-side size limit described above.
 
 ## Asset loading
 
@@ -47,3 +51,4 @@ Go to **Settings > Code Block Highlighting** and change **Highlighting Mode** to
 ## See also
 
 - [`wzcbh_force_load_assets`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_force_load_assets/)
+- [`wzcbh_server_highlight_max_bytes`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_server_highlight_max_bytes/)

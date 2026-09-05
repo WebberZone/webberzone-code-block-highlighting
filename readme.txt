@@ -24,7 +24,7 @@ Pick the rendering mode that best fits your site from the settings page:
 * **Client-side (default)** — [Prism.js](https://prismjs.com/) highlights your code in the browser. Best for interactive features such as copy-to-clipboard and expand/collapse.
 * **Server-side (highlight.php)** — Code is pre-highlighted on the server with [highlight.php](https://github.com/scrivo/highlight.php), so no Prism.js or any other JavaScript is loaded for highlighting. Ideal for performance, Core Web Vitals, AMP-style setups, and strict content-security policies.
 
-Both modes use the same 21 Prism themes and produce visually identical output, so you can switch between client-side and server-side rendering at any time without changing how your code blocks look.
+Both modes use the same 21 Prism themes and produce visually identical output, so you can switch between client-side and server-side rendering at any time without changing how your code blocks look. Server-side mode leaves code blocks over 128KB unhighlighted.
 
 ### Why use this plugin?
 
@@ -68,6 +68,7 @@ A11y Dark, Coldark Cold (Light), Coldark Dark, Dracula, Duotone Dark, Duotone Li
 * `wzcbh_languages` — Filter the language list array (`slug => label`)
 * `wzcbh_color_scheme_css_url` — Override the Prism theme CSS URL
 * `wzcbh_force_load_assets` — Force Prism assets to load on every page
+* `wzcbh_server_highlight_max_bytes` — Change the size limit for server-side highlighting
 
 ### GDPR
 
@@ -187,8 +188,9 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 * Fix: With line highlighting on, server-side mode could render one line more than the line-number gutter showed, and the extra line could pick up the highlight. Line counting now matches the browser in both modes.
 * Fix: The "Settings" link in the admin banner, and the redirect at the end of the setup wizard, pointed at an address that returned a permissions error.
 * Fix: Code blocks no longer stop the page rendering when a theme or plugin makes the main query return post IDs rather than posts.
+* Change: Server-side mode no longer highlights code blocks larger than 128KB; they render as plain text in the active theme. Use the new `wzcbh_server_highlight_max_bytes` filter to change the limit. Client-side mode is unaffected.
+* Improvement: Server-side mode is faster on pages with several code blocks.
 * Improvement: A "Highlight lines" value spanning a very large range, such as `1-999999999`, no longer exhausts memory while the page is rendering.
-* Improvement: Server-side mode is faster on pages with several code blocks, and very large blocks now fall back to unhighlighted text rather than stalling the page. The size at which that happens can be changed with the new `wzcbh_server_highlight_max_bytes` filter.
 * Improvement: The colour scheme setting is now validated everywhere it is used to build a file path.
 
 = 1.2.1 =
@@ -245,7 +247,7 @@ Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-0
 == Upgrade Notice ==
 
 = 1.2.2 =
-Fixes file names containing `$` or `\` corrupting a block's markup, blank lines when copying in server-side mode, duplicated attributes, and a line-count mismatch with line highlighting. Server-side mode is faster and no longer stalls on very large blocks.
+Fixes file names containing `$` or `\` corrupting a block's markup, blank lines when copying in server-side mode, duplicated attributes, and a line-count mismatch with line highlighting. Server-side mode is faster, and no longer highlights blocks over 128KB.
 
 = 1.2.1 =
 Fixes settings defaults resolution, a multisite settings cache leak, and repeater fields dropping rows on save.
