@@ -22,6 +22,19 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 	exit( 1 );
 }
 
+/*
+ * The test suite runs against a copy of wordpress-develop's `src` directory,
+ * whose version string ends in `-src`, so WordPress switches SCRIPT_DEBUG on by
+ * itself. wp_default_scripts() then include()s
+ * wp-includes/assets/script-loader-react-refresh-entry.php, which is a build
+ * artefact that install.sh never generates — so the first wp_enqueue_script()
+ * of any test raises a warning PHPUnit turns into an error. Pinning it off also
+ * means tests exercise the minified asset paths a real site uses.
+ */
+if ( ! defined( 'SCRIPT_DEBUG' ) ) {
+	define( 'SCRIPT_DEBUG', false );
+}
+
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 

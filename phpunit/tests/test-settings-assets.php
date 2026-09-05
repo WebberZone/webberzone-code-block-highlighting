@@ -21,9 +21,19 @@ class Test_Settings_Assets extends WP_UnitTestCase {
 		delete_option( 'wzcbh_settings' );
 		\WebberZone\Code_Block_Highlighting\Options_API::flush_cache();
 
-		// The style queue is a global that outlives a single test, so the
-		// enqueue assertions below would otherwise see a previous test's styles.
-		unset( $GLOBALS['wp_styles'], $GLOBALS['wp_scripts'] );
+		// The queues outlive a single test, so the enqueue assertions below
+		// would otherwise see handles an earlier test left behind. Cleared by
+		// handle rather than by dropping $wp_styles / $wp_scripts, which would
+		// make WordPress rebuild its whole default registry mid-suite.
+		foreach ( array( 'wzcbh-prism-theme', 'wzcbh-prism-css', 'wzcbh-hljs-server' ) as $handle ) {
+			wp_dequeue_style( $handle );
+			wp_deregister_style( $handle );
+		}
+
+		foreach ( array( 'wzcbh-prism-js', 'wzcbh-hljs-clipboard' ) as $handle ) {
+			wp_dequeue_script( $handle );
+			wp_deregister_script( $handle );
+		}
 	}
 
 	/**

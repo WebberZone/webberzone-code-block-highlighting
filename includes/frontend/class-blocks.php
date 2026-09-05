@@ -973,7 +973,7 @@ class Blocks {
 	/**
 	 * Largest code block, in bytes, that is highlighted server-side.
 	 *
-	 * highlight.php's cost is quadratic in input size and runs inline in the page
+	 * Highlighting cost is quadratic in input size and runs inline in the page
 	 * render, so oversized blocks fall back to escaped plain text in the same
 	 * themed markup. Client mode is unaffected.
 	 *
