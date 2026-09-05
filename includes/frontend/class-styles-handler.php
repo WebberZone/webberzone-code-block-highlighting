@@ -59,11 +59,8 @@ class Styles_Handler {
 				return;
 			}
 
-			// The instanceof guard matters: a main query switched to
-			// `fields => 'ids'` in pre_get_posts leaves $posts as an array of
-			// integers, which a WP_Post parameter type would turn into a
-			// frontend TypeError. Stopping at the first hit also skips parsing
-			// the remaining posts on an archive.
+			// instanceof, not a WP_Post type hint: a main query switched to
+			// `fields => 'ids'` leaves $posts as an array of integers.
 			$has_code_block = false;
 
 			foreach ( $posts as $post ) {
@@ -250,10 +247,8 @@ class Styles_Handler {
 	/**
 	 * Build the Prism theme CSS file name, respecting SCRIPT_DEBUG and is_rtl().
 	 *
-	 * The slug comes from Settings::get_color_scheme_slug() rather than the raw
-	 * option: this name is interpolated into a filesystem path that is passed to
-	 * filemtime() and file_get_contents(), as well as into the enqueued
-	 * stylesheet URL.
+	 * The slug is validated, since it is interpolated into a filesystem path as
+	 * well as the enqueued URL.
 	 *
 	 * @since 1.0.0
 	 *

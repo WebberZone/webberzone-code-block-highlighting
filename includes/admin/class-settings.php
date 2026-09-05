@@ -161,10 +161,9 @@ class Settings {
 	/**
 	 * Get the admin URL of the settings page.
 	 *
-	 * The page is registered with add_options_page() (`'type' => 'options'` in
-	 * get_props()), so it lives under options-general.php. Linking to
-	 * admin.php?page=… instead resolves to a hook name that was never registered
-	 * and WordPress answers with a 403, so every link is built from here.
+	 * Registered with add_options_page(), so it lives under options-general.php.
+	 * Linking to admin.php?page=… resolves to an unregistered hook name and
+	 * WordPress answers 403, so every link is built from here.
 	 *
 	 * @since 1.2.2
 	 *
@@ -386,11 +385,9 @@ class Settings {
 	/**
 	 * Get the active color scheme slug, validated against the registered themes.
 	 *
-	 * The saved option is interpolated into both a filesystem path and an asset
-	 * URL, so every consumer resolves it through here rather than reading the
-	 * option directly. An unrecognised value — a stale slug from an older
-	 * release, a hand-edited option row, a `wzcbh_get_option` filter — falls back
-	 * to the default rather than reaching the filesystem.
+	 * The saved option is interpolated into a filesystem path and an asset URL,
+	 * so every consumer resolves it through here. An unrecognised value falls
+	 * back to the default rather than reaching the filesystem.
 	 *
 	 * @since 1.2.2
 	 *

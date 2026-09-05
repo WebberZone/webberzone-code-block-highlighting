@@ -34,11 +34,9 @@
 	}
 
 	// ── Plain code text of a <code> element ──────────────────────────────────
-	// textContent, never innerText. innerText follows the rendered layout, and
-	// hljs-server-mode.css gives .wzcbh-highlighted-line `display: block` — so a
-	// highlighted line, whose span already ends in a newline, was copied with a
-	// second one after it. The line-numbers gutter also lives inside <code>, so
-	// it is dropped from a clone first rather than read as text.
+	// textContent, never innerText: .wzcbh-highlighted-line is display:block and
+	// its spans already end in a newline, so innerText doubles them. The
+	// line-numbers gutter lives inside <code>, so drop it from a clone first.
 	function getCodeText( code ) {
 		var clone = code.cloneNode( true );
 		clone.querySelectorAll( '.line-numbers-rows' ).forEach( function ( el ) {

@@ -18,7 +18,7 @@ Guidance for Claude Code (claude.ai/code) working in this repository.
 
 ## Plugin Overview
 
-**WebberZone Code Block Highlighting** v1.2.0 (slug `webberzone-code-block-highlighting`) extends Gutenberg's `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter — doesn't replace the block, so existing posts stay valid. Namespace: `WebberZone\Code_Block_Highlighting`. Requires WordPress 6.6+, PHP 7.4+. No Freemius.
+**WebberZone Code Block Highlighting** v1.2.2 (slug `webberzone-code-block-highlighting`) extends Gutenberg's `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter — doesn't replace the block, so existing posts stay valid. Namespace: `WebberZone\Code_Block_Highlighting`. Requires WordPress 6.6+, PHP 7.4+. No Freemius.
 
 Two highlighting modes:
 - **Client-side** (default): Prism.js runs in-browser; loads Prism JS bundle + theme CSS.

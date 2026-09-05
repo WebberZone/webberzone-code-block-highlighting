@@ -26,9 +26,7 @@ class Blocks {
 	/**
 	 * Shared highlight.php highlighter, built on first use.
 	 *
-	 * Deliberately untyped: the class lives in an optional bundled library, and a
-	 * typed property would name it in a context the autoloader cannot satisfy on
-	 * installs where the library is absent.
+	 * Untyped: the class ships in an optional bundled library.
 	 *
 	 * @since 1.2.2
 	 *
@@ -474,15 +472,9 @@ class Blocks {
 	/**
 	 * Rewrite the attributes of the first `<pre>` (or `<code>`) opening tag.
 	 *
-	 * The callback receives the raw attribute string — everything between the tag
-	 * name and the closing `>` — and returns its replacement.
-	 *
-	 * `preg_replace_callback()` rather than `preg_replace()` is load-bearing: the
-	 * injected attributes carry editor-supplied values (file name, line ranges,
-	 * download file name) and `preg_replace()` reads `$1` / `\0` / `\\` in its
-	 * *replacement* string as backreferences. `esc_attr()` does not escape either
-	 * character, so a file name of `a$0b` would otherwise expand to the matched
-	 * tag text inside the attribute value.
+	 * Callback rather than a `preg_replace()` replacement string: the injected
+	 * values are editor-supplied, and `$1` / `\0` / `\\` in a replacement are
+	 * backreferences that `esc_attr()` does not escape.
 	 *
 	 * @since 1.2.2
 	 *
@@ -505,10 +497,8 @@ class Blocks {
 	/**
 	 * Merge class names into a tag's attribute string.
 	 *
-	 * Existing classes are preserved and duplicates dropped, so a block whose
-	 * saved HTML already carries `language-php` does not gain a second copy. An
-	 * empty class list leaves the attribute string untouched rather than emitting
-	 * `class=""`.
+	 * Duplicates are dropped, and an empty list leaves the tag alone rather than
+	 * adding `class=""`.
 	 *
 	 * @since 1.2.2
 	 *
@@ -517,9 +507,7 @@ class Blocks {
 	 * @return string
 	 */
 	protected static function merge_tag_classes( string $attributes, array $classes ): string {
-		// Only the added classes are escaped. The existing attribute text is
-		// already escaped in the saved HTML, so re-escaping the merged string
-		// would turn an `&amp;` in it into `&amp;amp;`.
+		// Escape only what we add; the existing text is already escaped.
 		$classes = array_map( 'esc_attr', array_filter( $classes ) );
 
 		if ( ! $classes ) {
@@ -545,14 +533,9 @@ class Blocks {
 	/**
 	 * Set attributes on a tag's attribute string, replacing any already present.
 	 *
-	 * The block's save function already writes `data-title`, `data-line` and
-	 * `data-start` onto the `<pre>`, so appending them emitted a second copy of
-	 * each. Browsers keep the first, which hid the duplication behind the
-	 * plugin's own prepended copy while still inflating every rendered block.
-	 *
-	 * These attributes are replaced rather than skipped: the value written here
-	 * has been through `sanitize_text_field()` and `esc_attr()`, whereas the one
-	 * in the saved HTML is whatever the editor typed.
+	 * The save function already writes `data-title`, `data-line` and `data-start`,
+	 * so these replace rather than duplicate them — the value written here is the
+	 * sanitised one.
 	 *
 	 * @since 1.2.2
 	 *
@@ -583,9 +566,6 @@ class Blocks {
 
 	/**
 	 * Append declarations to a tag's inline `style` attribute.
-	 *
-	 * As in merge_tag_classes(), only the appended declarations are escaped; the
-	 * existing attribute text is already escaped in the saved HTML.
 	 *
 	 * @since 1.2.2
 	 *
@@ -641,7 +621,7 @@ class Blocks {
 			$language      = '';
 		}
 
-		// ── Apply language class to <code> (merge_tag_classes skips duplicates) ──
+		// ── Apply language class to <code> (duplicates are dropped) ──────────
 		if ( $language ) {
 			$lang_class    = 'language-' . $language;
 			$block_content = self::rewrite_tag_attributes(
@@ -755,10 +735,8 @@ class Blocks {
 
 		// ── Line count (for line-numbers-rows) ────────────────────────────────
 		// One line per newline, plus a final line only when the code does not end
-		// on one. rtrim()-ing every trailing newline instead under-counted code
-		// ending in blank lines, so the gutter came up short of the lines
-		// wrap_lines() emitted. This matches what Prism's line-numbers plugin
-		// counts in the browser, keeping both modes in step.
+		// on one. Matches what Prism's line-numbers plugin counts in the browser,
+		// and what wrap_lines() emits below.
 		$line_count = max(
 			1,
 			substr_count( $plain_code, "\n" ) + ( "\n" === substr( $plain_code, -1 ) ? 0 : 1 )
@@ -766,9 +744,8 @@ class Blocks {
 
 		// ── Wrap lines for line highlighting (and line numbers) ───────────────
 		// Run wrap_lines() whenever line numbers OR line highlighting is active
-		// so that line highlighting works independently of line numbers.
-		// Ranges are clamped to the lines this block actually has, so a spec of
-		// `1-999999999` cannot allocate a line number for every value in it.
+		// so that line highlighting works independently of line numbers. Ranges
+		// are clamped to the lines this block actually has.
 		$target_lines = array();
 		if ( $highlight_lines ) {
 			$target_lines = self::parse_line_ranges(
@@ -813,8 +790,7 @@ class Blocks {
 
 		// ── Apply classes and the line-number counter offset to <pre> ─────────
 		// The counter-reset mirrors what Prism JS does at runtime by reading
-		// data-start. Both are applied in one pass so the saved HTML's own
-		// `language-*` class is not duplicated and no empty `class=""` is added.
+		// data-start.
 		$pre_classes = array();
 		if ( $language ) {
 			$pre_classes[] = 'language-' . $language;
@@ -975,10 +951,8 @@ class Blocks {
 	/**
 	 * Get the shared highlight.php highlighter, constructing it on first use.
 	 *
-	 * The instance carries no per-call state — highlighting the same source with
-	 * a reused instance is byte-identical to using a fresh one — and building it
-	 * is the dominant cost on pages with many small code blocks, so one instance
-	 * is shared for the whole request.
+	 * The instance carries no per-call state, and constructing it dominates the
+	 * cost of pages with many small blocks, so one is shared per request.
 	 *
 	 * @since 1.2.2
 	 *
@@ -999,11 +973,9 @@ class Blocks {
 	/**
 	 * Largest code block, in bytes, that is highlighted server-side.
 	 *
-	 * highlight.php's matching cost grows quadratically with input size — roughly
-	 * 56ms at 38KB but 2.4s at 307KB — and the work happens inline in the page
-	 * render, so oversized blocks fall back to escaped plain text inside the same
-	 * themed markup rather than stalling the request. Client mode is unaffected:
-	 * Prism highlights in the browser.
+	 * highlight.php's cost is quadratic in input size and runs inline in the page
+	 * render, so oversized blocks fall back to escaped plain text in the same
+	 * themed markup. Client mode is unaffected.
 	 *
 	 * @since 1.2.2
 	 *
@@ -1014,9 +986,8 @@ class Blocks {
 		/**
 		 * Filter the largest code block that is highlighted server-side.
 		 *
-		 * Blocks above this size are rendered as escaped plain text. Raise it to
-		 * highlight larger blocks at the cost of render time, or set it to 0 to
-		 * disable server-side highlighting entirely.
+		 * Blocks above this size render as escaped plain text. Set to 0 to disable
+		 * server-side highlighting entirely.
 		 *
 		 * @since 1.2.2
 		 *
@@ -1110,12 +1081,9 @@ class Blocks {
 		$i         = 0;
 		$len       = strlen( $html );
 
-		// Whether any text has been read since the last newline. Tags alone do not
-		// count: after a newline $line_buf is seeded with the reopened tags, and
-		// highlight.php closes its outermost span *after* the trailing newline, so
-		// testing $line_buf emitted a phantom final line holding nothing but an
-		// empty tag pair. That line was one more than the gutter had rows, and it
-		// picked up the highlight stripe when the block's last line was targeted.
+		// Text only — tags do not count. $line_buf is seeded with the reopened
+		// tags after a newline, and highlight.php closes its outermost span after
+		// the trailing one, so testing $line_buf emitted a phantom final line.
 		$line_has_text = false;
 
 		while ( $i < $len ) {
@@ -1198,15 +1166,9 @@ class Blocks {
 	 *
 	 * Accepts e.g. "1,3-5,7" → [1 => true, 3 => true, 4 => true, 5 => true, 7 => true].
 	 *
-	 * Ranges are clamped to the lines the block actually has before they are
-	 * expanded. Without that clamp a spec of `1-999999999` — which an editor can
-	 * type into the Highlight lines field, or a migrated post can carry — would
-	 * allocate one array entry per value and exhaust memory while rendering the
-	 * page. Line numbers outside the block never matched anything anyway, so
-	 * clamping changes nothing for valid input.
-	 *
-	 * The result is keyed by line number so membership is an isset() lookup
-	 * rather than a linear in_array() scan once per rendered line.
+	 * Ranges are clamped before expanding, so a spec of `1-999999999` cannot
+	 * allocate an entry per value; those lines never matched anything anyway.
+	 * Keyed by line number so membership is isset() rather than in_array().
 	 *
 	 * @since 1.1.0
 	 * @since 1.2.2 Added the $min_line and $max_line clamps, and the keyed return shape.
