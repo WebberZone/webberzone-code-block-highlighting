@@ -82,7 +82,7 @@ class Admin {
 	public function plugin_action_links( array $links ): array {
 		$settings_link = sprintf(
 			'<a href="%s">%s</a>',
-			esc_url( admin_url( 'options-general.php?page=wzcbh_settings' ) ),
+			esc_url( Settings::get_settings_page_url() ),
 			esc_html__( 'Settings', 'webberzone-code-block-highlighting' )
 		);
 
@@ -121,7 +121,7 @@ class Admin {
 			'sections'   => array(
 				'settings' => array(
 					'label'      => esc_html__( 'Settings', 'webberzone-code-block-highlighting' ),
-					'url'        => admin_url( 'admin.php?page=wzcbh_settings' ),
+					'url'        => Settings::get_settings_page_url(),
 					'screen_ids' => array( 'settings_page_wzcbh_settings' ),
 					'page_slugs' => array( 'wzcbh_settings' ),
 				),

@@ -4,7 +4,7 @@ Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code highlighting
 Requires at least: 6.6
 Tested up to: 7.1
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -176,6 +176,21 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 == Changelog ==
 
+= 1.2.2 =
+
+*Release Date - 5 September 2026*
+
+* Fix: A file name containing `$0`, `$1` or `\0` was written into the code block's markup as the surrounding tag text instead of the name itself. Line ranges and download file names were affected the same way.
+* Fix: Copying a code block in server-side mode added a blank line after every highlighted line.
+* Fix: Server-side mode repeated the language class the block had already saved, and could add an empty `class` attribute.
+* Fix: `data-title`, `data-line` and `data-start` were written twice on every code block.
+* Fix: With line highlighting on, server-side mode could render one line more than the line-number gutter showed, and the extra line could pick up the highlight. Line counting now matches the browser in both modes.
+* Fix: The "Settings" link in the admin banner, and the redirect at the end of the setup wizard, pointed at an address that returned a permissions error.
+* Fix: Code blocks no longer stop the page rendering when a theme or plugin makes the main query return post IDs rather than posts.
+* Improvement: A "Highlight lines" value spanning a very large range, such as `1-999999999`, no longer exhausts memory while the page is rendering.
+* Improvement: Server-side mode is faster on pages with several code blocks, and very large blocks now fall back to unhighlighted text rather than stalling the page. The size at which that happens can be changed with the new `wzcbh_server_highlight_max_bytes` filter.
+* Improvement: The colour scheme setting is now validated everywhere it is used to build a file path.
+
 = 1.2.1 =
 
 *Release Date - 20 August 2026*
@@ -228,6 +243,9 @@ Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-0
 * GDPR-friendly: no data collection, no external requests.
 
 == Upgrade Notice ==
+
+= 1.2.2 =
+Fixes file names containing `$` or `\` corrupting a block's markup, blank lines when copying in server-side mode, duplicated attributes, and a line-count mismatch with line highlighting. Server-side mode is faster and no longer stalls on very large blocks.
 
 = 1.2.1 =
 Fixes settings defaults resolution, a multisite settings cache leak, and repeater fields dropping rows on save.

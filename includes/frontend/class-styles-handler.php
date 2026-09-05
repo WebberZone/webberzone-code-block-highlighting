@@ -55,17 +55,20 @@ class Styles_Handler {
 		if ( ! $force_load ) {
 			global $posts;
 
-			if ( empty( $posts ) ) {
+			if ( empty( $posts ) || ! is_array( $posts ) ) {
 				return;
 			}
 
-			$has_code_block = array_reduce(
-				$posts,
-				static function ( bool $carry, \WP_Post $post ): bool {
-					return $carry || has_block( 'core/code', $post );
-				},
-				false
-			);
+			// instanceof, not a WP_Post type hint: a main query switched to
+			// `fields => 'ids'` leaves $posts as an array of integers.
+			$has_code_block = false;
+
+			foreach ( $posts as $post ) {
+				if ( $post instanceof \WP_Post && has_block( 'core/code', $post ) ) {
+					$has_code_block = true;
+					break;
+				}
+			}
 
 			if ( ! $has_code_block ) {
 				return;
@@ -244,12 +247,15 @@ class Styles_Handler {
 	/**
 	 * Build the Prism theme CSS file name, respecting SCRIPT_DEBUG and is_rtl().
 	 *
+	 * The slug is validated, since it is interpolated into a filesystem path as
+	 * well as the enqueued URL.
+	 *
 	 * @since 1.0.0
 	 *
 	 * @return string File name relative to includes/assets/.
 	 */
 	private static function get_prism_theme_css_file_name(): string {
-		$option   = wzcbh_get_option( 'color-scheme', 'prism-onedark' );
+		$option   = Settings::get_color_scheme_slug();
 		$min      = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
 		$rtl_part = is_rtl() ? '-rtl' : '';
 

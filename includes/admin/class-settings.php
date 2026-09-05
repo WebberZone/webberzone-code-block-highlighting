@@ -159,6 +159,21 @@ class Settings {
 	}
 
 	/**
+	 * Get the admin URL of the settings page.
+	 *
+	 * Registered with add_options_page(), so it lives under options-general.php.
+	 * Linking to admin.php?page=… resolves to an unregistered hook name and
+	 * WordPress answers 403, so every link is built from here.
+	 *
+	 * @since 1.2.2
+	 *
+	 * @return string
+	 */
+	public static function get_settings_page_url(): string {
+		return admin_url( 'options-general.php?page=' . self::$menu_slug );
+	}
+
+	/**
 	 * Get settings sections (tabs).
 	 *
 	 * @since 1.1.0
@@ -368,6 +383,23 @@ class Settings {
 	}
 
 	/**
+	 * Get the active color scheme slug, validated against the registered themes.
+	 *
+	 * The saved option is interpolated into a filesystem path and an asset URL,
+	 * so every consumer resolves it through here. An unrecognised value falls
+	 * back to the default rather than reaching the filesystem.
+	 *
+	 * @since 1.2.2
+	 *
+	 * @return string A slug that is always a key of self::$color_schemes.
+	 */
+	public static function get_color_scheme_slug(): string {
+		$option = (string) wzcbh_get_option( 'color-scheme', 'prism-onedark' );
+
+		return array_key_exists( $option, self::$color_schemes ) ? $option : 'prism-onedark';
+	}
+
+	/**
 	 * Get the URL (or filesystem path) to the active color scheme CSS file.
 	 *
 	 * Returns the plain unminified LTR path; enqueuing with SCRIPT_DEBUG and RTL
@@ -379,10 +411,7 @@ class Settings {
 	 * @return string
 	 */
 	public static function get_color_scheme_css( bool $return_path = false ): string {
-		$option = wzcbh_get_option( 'color-scheme', 'prism-onedark' );
-		if ( ! array_key_exists( $option, self::$color_schemes ) ) {
-			$option = 'prism-onedark';
-		}
+		$option   = self::get_color_scheme_slug();
 		$rel_path = "includes/assets/{$option}.css";
 
 		if ( ! file_exists( WZCBH_PLUGIN_DIR . $rel_path ) ) {

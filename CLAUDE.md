@@ -18,7 +18,7 @@ Guidance for Claude Code (claude.ai/code) working in this repository.
 
 ## Plugin Overview
 
-**WebberZone Code Block Highlighting** v1.2.0 (slug `webberzone-code-block-highlighting`) extends Gutenberg's `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter — doesn't replace the block, so existing posts stay valid. Namespace: `WebberZone\Code_Block_Highlighting`. Requires WordPress 6.6+, PHP 7.4+. No Freemius.
+**WebberZone Code Block Highlighting** v1.2.2 (slug `webberzone-code-block-highlighting`) extends Gutenberg's `core/code` block with syntax highlighting via JS block filters and a `render_block_core/code` PHP filter — doesn't replace the block, so existing posts stay valid. Namespace: `WebberZone\Code_Block_Highlighting`. Requires WordPress 6.6+, PHP 7.4+. No Freemius.
 
 Two highlighting modes:
 - **Client-side** (default): Prism.js runs in-browser; loads Prism JS bundle + theme CSS.
@@ -93,6 +93,14 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **highlight.php autoloader** — `\Highlight\Autoloader::register()` does not exist. Use `spl_autoload_register(static function(string $class_name): void { \Highlight\Autoloader::load($class_name); })`.
 
+**Server-mode cost** — highlight.php's matching is quadratic in input size (≈56 ms at 38 KB, ≈2.4 s at 307 KB) and runs inline in the page render, so `render_code_block_server()` skips it above `wzcbh_server_highlight_max_bytes` and falls back to `esc_html()` inside the same themed markup. One `\Highlight\Highlighter` is shared per request via `get_highlighter()` — constructing it dominates pages with many small blocks, and reuse is output-identical across languages.
+
+**Injecting attributes into saved HTML** — always go through `rewrite_tag_attributes()` / `merge_tag_classes()` / `set_tag_attributes()` / `merge_tag_style()`, never `preg_replace()` with an interpolated replacement string. Block titles, line ranges and download file names are editor-supplied, and `$0` / `\0` / `\\` in a `preg_replace()` *replacement* are backreferences that `esc_attr()` does not escape. The helpers also de-duplicate class names and overwrite rather than repeat the `data-title` / `data-line` / `data-start` the save function already wrote.
+
+**Server-mode line counting** — `$line_count` counts one line per newline plus a final line only when the code does not end on one, matching what Prism's line-numbers plugin counts in the browser. `wrap_lines()` uses the same rule via its `$line_has_text` tracker: highlight.php closes its outermost span *after* the trailing newline, so testing the line buffer alone emitted a phantom final line that the highlight stripe could land on. The gutter row count and the `.wzcbh-line` span count must always agree.
+
+**`hljs-clipboard.js` reads `textContent`, never `innerText`** — `hljs-server-mode.css` gives `.wzcbh-highlighted-line` `display: block`, and those spans already end in a newline, so `innerText` doubles the newline on every highlighted line. Client mode is unaffected: Prism's copy plugin uses `textContent`.
+
 **`hljs-server-mode.css`** — only handles `.wzcbh-highlighted-line` line highlighting; font-size, line-numbers gutter, and word-wrap are all in `frontend.css` (webpack build), loaded in both modes.
 
 **Both modes use the same Prism theme CSS** — `Settings::get_color_scheme_css()` always returns the Prism CSS URL. There is no per-mode branch or hljs-specific theme mapping table.
@@ -111,6 +119,7 @@ Assets load only on pages containing at least one `core/code` block (`Styles_Han
 - `wzcbh_force_load_assets` — force Prism assets to load on every page
 - `wzcbh_file_tab_html` — override the file name tab markup (`$tab, $title, $language`)
 - `wzcbh_download_extensions` — language slug => download file extension map (`$extensions, $language`)
+- `wzcbh_server_highlight_max_bytes` — largest code block highlighted server-side (`$limit, $language`); default 131072
 - REST route: `wzcbh/v1/default-settings`
 - Settings key: `wzcbh_settings`
 - `file-name-style` setting: `tab` (default) | `toolbar` — how the block's file name is displayed
