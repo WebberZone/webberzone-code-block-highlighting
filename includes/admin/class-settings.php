@@ -470,7 +470,7 @@ class Settings {
 			}
 
 			foreach ( preg_split( '/[\n;]/', $rule[2] ) as $decl ) {
-				$decl = trim( (string) $decl );
+				$decl = trim( (string) $decl, " \t\n\r\0\x0B" );
 
 				if ( preg_match( '/^background(?:-color)?:\s*(.+)$/i', $decl, $bm ) ) {
 					$value = self::normalise_css_value( $bm[1] );
@@ -499,7 +499,7 @@ class Settings {
 	 * @return string
 	 */
 	private static function normalise_css_value( string $value ): string {
-		return trim( (string) preg_replace( '/\s*!\s*important\s*$/i', '', trim( $value ) ) );
+		return trim( (string) preg_replace( '/\s*!\s*important\s*$/i', '', trim( $value, " \t\n\r\0\x0B" ) ), " \t\n\r\0\x0B" );
 	}
 
 	/**

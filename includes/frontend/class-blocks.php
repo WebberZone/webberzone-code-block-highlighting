@@ -515,7 +515,7 @@ class Blocks {
 		}
 
 		if ( preg_match( '/\sclass="([^"]*)"/i', $attributes, $matches ) ) {
-			$existing = preg_split( '/\s+/', trim( $matches[1] ), -1, PREG_SPLIT_NO_EMPTY );
+			$existing = preg_split( '/\s+/', trim( $matches[1], " \t\n\r\0\x0B" ), -1, PREG_SPLIT_NO_EMPTY );
 			$existing = is_array( $existing ) ? $existing : array();
 			$merged   = array_unique( array_merge( $existing, $classes ) );
 
@@ -583,7 +583,7 @@ class Blocks {
 		if ( preg_match( '/\sstyle="([^"]*)"/i', $attributes, $matches ) ) {
 			return substr_replace(
 				$attributes,
-				' style="' . trim( $matches[1] . ' ' . $declarations ) . '"',
+				' style="' . trim( $matches[1] . ' ' . $declarations, " \t\n\r\0\x0B" ) . '"',
 				(int) strpos( $attributes, $matches[0] ),
 				strlen( $matches[0] )
 			);
@@ -1182,15 +1182,15 @@ class Blocks {
 		$lines = array();
 
 		foreach ( explode( ',', $spec ) as $part ) {
-			$part = trim( $part );
+			$part = trim( $part, " \t\n\r\0\x0B" );
 			if ( '' === $part ) {
 				continue;
 			}
 
 			if ( strpos( $part, '-' ) !== false ) {
 				list( $from, $to ) = explode( '-', $part, 2 );
-				$from              = (int) trim( $from );
-				$to                = (int) trim( $to );
+				$from              = (int) trim( $from, " \t\n\r\0\x0B" );
+				$to                = (int) trim( $to, " \t\n\r\0\x0B" );
 			} else {
 				$from = (int) $part;
 				$to   = $from;
