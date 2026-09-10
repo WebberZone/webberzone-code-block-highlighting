@@ -274,7 +274,7 @@ class Settings {
 				array(
 					'id'      => 'file-name-style',
 					'name'    => __( 'File Name Style', 'webberzone-code-block-highlighting' ),
-					'desc'    => __( 'How the file name is displayed. Tab renders a GitHub-style header tab above the code block, coloured to match the active theme. Toolbar renders it as a label in the toolbar overlay.', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'How the file name is displayed. Tab renders a GitHub-style header tab above the code block, colored to match the active theme. Toolbar renders it as a label in the toolbar overlay.', 'webberzone-code-block-highlighting' ),
 					'type'    => 'radio',
 					'default' => $defaults['file-name-style'],
 					'options' => array(

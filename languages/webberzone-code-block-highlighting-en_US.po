@@ -70,7 +70,7 @@ msgstr "Thank you for installing Code Block Highlighting! This wizard will help 
 
 #: includes/admin/class-settings-wizard.php:79
 #: includes/admin/class-settings-wizard.php:84
-#: includes/admin/class-settings.php:225
+#: includes/admin/class-settings.php:240
 msgid "Color Scheme"
 msgstr "Color Scheme"
 
@@ -84,7 +84,7 @@ msgstr "Select the Prism.js theme for syntax highlighting."
 
 #: includes/admin/class-settings-wizard.php:93
 #: includes/admin/class-settings-wizard.php:98
-#: includes/admin/class-settings.php:272
+#: includes/admin/class-settings.php:287
 msgid "Default Language"
 msgstr "Default Language"
 
@@ -196,39 +196,39 @@ msgstr "Code Block Highlighting"
 msgid "Thank you for using %s!"
 msgstr "Thank you for using %s!"
 
-#: includes/admin/class-settings.php:170
+#: includes/admin/class-settings.php:185
 msgid "General"
 msgstr "General"
 
-#: includes/admin/class-settings.php:233
+#: includes/admin/class-settings.php:248
 msgid "Copy to Clipboard"
 msgstr "Copy to Clipboard"
 
-#: includes/admin/class-settings.php:234
+#: includes/admin/class-settings.php:249
 msgid "Show a \"Copy\" button on code blocks, allowing visitors to copy the code with one click."
 msgstr "Show a \"Copy\" button on code blocks, allowing visitors to copy the code with one click."
 
-#: includes/admin/class-settings.php:247
+#: includes/admin/class-settings.php:262
 msgid "Show Language Label"
 msgstr "Show Language Label"
 
-#: includes/admin/class-settings.php:248
+#: includes/admin/class-settings.php:263
 msgid "Display the programming language name in the toolbar above each code block."
 msgstr "Display the programming language name in the toolbar above each code block."
 
-#: includes/admin/class-settings.php:254
+#: includes/admin/class-settings.php:269
 msgid "Show File Name"
 msgstr "Show File Name"
 
-#: includes/admin/class-settings.php:273
+#: includes/admin/class-settings.php:288
 msgid "Automatically set this language when a code block is inserted. Leave blank to disable."
 msgstr "Automatically set this language when a code block is inserted. Leave blank to disable."
 
-#: includes/admin/class-settings.php:281
+#: includes/admin/class-settings.php:296
 msgid "Font Size (px)"
 msgstr "Font Size (px)"
 
-#: includes/admin/class-settings.php:282
+#: includes/admin/class-settings.php:297
 msgid "Font size for code blocks in pixels. Set to 0 to use the active theme default."
 msgstr "Font size for code blocks in pixels. Set to 0 to use the active theme default."
 
@@ -268,27 +268,27 @@ msgstr "WebberZone plugins"
 msgid "Follow us"
 msgstr "Follow us"
 
-#: includes/frontend/class-blocks.php:740
-#: includes/frontend/class-styles-handler.php:234
+#: includes/frontend/class-blocks.php:834
+#: includes/frontend/class-styles-handler.php:237
 #: includes/blocks/build/frontend.js:3
 #: includes/blocks/src/js/frontend.js:276
 #: includes/blocks/src/js/frontend.js:292
 msgid "Expand"
 msgstr "Expand"
 
-#: includes/frontend/class-styles-handler.php:235
+#: includes/frontend/class-styles-handler.php:238
 #: includes/blocks/build/frontend.js:3
 #: includes/blocks/src/js/frontend.js:284
 msgid "Collapse"
 msgstr "Collapse"
 
-#: includes/frontend/class-styles-handler.php:232
+#: includes/frontend/class-styles-handler.php:235
 #: includes/blocks/build/frontend.js:3
 #: includes/blocks/src/js/frontend.js:125
 msgid "Copied code to clipboard."
 msgstr "Copied code to clipboard."
 
-#: includes/frontend/class-styles-handler.php:233
+#: includes/frontend/class-styles-handler.php:236
 #: includes/blocks/build/frontend.js:3
 #: includes/blocks/src/js/frontend.js:129
 msgid "Unable to copy code to clipboard."
@@ -378,32 +378,32 @@ msgstr ""
 msgid "https://webberzone.com/webberzone-code-block-highlighting-page/"
 msgstr ""
 
-#: includes/admin/class-settings.php:214
+#: includes/admin/class-settings.php:229
 msgid "Highlighting Mode"
 msgstr ""
 
-#: includes/admin/class-settings.php:215
+#: includes/admin/class-settings.php:230
 msgid "Client-side: Prism.js runs in the browser (default, supports all block features). Server-side: highlight.php pre-renders syntax on the server — no JavaScript required."
 msgstr ""
 
-#: includes/admin/class-settings.php:219
+#: includes/admin/class-settings.php:234
 msgid "Client-side (Prism.js)"
 msgstr ""
 
-#: includes/admin/class-settings.php:220
+#: includes/admin/class-settings.php:235
 msgid "Server-side (highlight.php)"
 msgstr ""
 
-#: includes/admin/class-settings.php:226
+#: includes/admin/class-settings.php:241
 msgid "Choose the syntax highlighting theme. The same Prism.js theme is used in both client-side and server-side modes."
 msgstr ""
 
-#: includes/frontend/class-blocks.php:762
-#: includes/frontend/class-styles-handler.php:230
+#: includes/frontend/class-blocks.php:856
+#: includes/frontend/class-styles-handler.php:233
 msgid "Copy"
 msgstr ""
 
-#: includes/frontend/class-styles-handler.php:231
+#: includes/frontend/class-styles-handler.php:234
 msgid "Copied!"
 msgstr ""
 
@@ -419,50 +419,46 @@ msgstr ""
 msgid "None"
 msgstr ""
 
-#: includes/admin/class-settings.php:240
+#: includes/admin/class-settings.php:255
 msgid "Download Snippet"
 msgstr ""
 
-#: includes/admin/class-settings.php:241
+#: includes/admin/class-settings.php:256
 msgid "Show a \"Download\" button on code blocks, allowing visitors to save the code as a file. Individual blocks can override this."
 msgstr ""
 
-#: includes/admin/class-settings.php:255
+#: includes/admin/class-settings.php:270
 msgid "Display the file name or title above each code block, when one is set."
 msgstr ""
 
-#: includes/admin/class-settings.php:261
+#: includes/admin/class-settings.php:276
 msgid "File Name Style"
 msgstr ""
 
-#: includes/admin/class-settings.php:262
-msgid "How the file name is displayed. Tab renders a GitHub-style header tab above the code block, coloured to match the active theme. Toolbar renders it as a label in the toolbar overlay."
-msgstr ""
-
-#: includes/admin/class-settings.php:266
+#: includes/admin/class-settings.php:281
 msgid "Tab above the code block"
 msgstr ""
 
-#: includes/admin/class-settings.php:267
+#: includes/admin/class-settings.php:282
 msgid "Toolbar label"
 msgstr ""
 
 #. translators: %s: file name of the downloaded snippet
-#: includes/frontend/class-blocks.php:775
+#: includes/frontend/class-blocks.php:869
 #: includes/blocks/build/frontend.js:2
 #: includes/blocks/src/js/frontend.js:214
 #, php-format,js-format
 msgid "Download code as %s"
 msgstr ""
 
-#: includes/frontend/class-blocks.php:779
+#: includes/frontend/class-blocks.php:873
 #: includes/blocks/build/frontend.js:2
 #: includes/blocks/src/js/frontend.js:222
 msgid "Download"
 msgstr ""
 
 #. translators: %s: file name of the downloaded snippet
-#: includes/frontend/class-styles-handler.php:237
+#: includes/frontend/class-styles-handler.php:240
 #: includes/blocks/build/frontend.js:3
 #: includes/blocks/src/js/frontend.js:193
 #, php-format,js-format
@@ -492,4 +488,8 @@ msgstr ""
 #: includes/blocks/build/index.js:1
 #: includes/blocks/src/js/index.js:269
 msgid "Hide"
+msgstr ""
+
+#: includes/admin/class-settings.php:277
+msgid "How the file name is displayed. Tab renders a GitHub-style header tab above the code block, colored to match the active theme. Toolbar renders it as a label in the toolbar overlay."
 msgstr ""
