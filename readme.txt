@@ -178,83 +178,68 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 = 1.2.2 =
 
-*Release Date - 5 September 2026*
+Release date: 10 September 2026
 
-* Fix: A file name containing `$0`, `$1` or `\0` was written into the code block's markup as the surrounding tag text instead of the name itself. Line ranges and download file names were affected the same way.
-* Fix: Copying a code block in server-side mode added a blank line after every highlighted line.
-* Fix: Server-side mode repeated the language class the block had already saved, and could add an empty `class` attribute.
-* Fix: `data-title`, `data-line` and `data-start` were written twice on every code block.
-* Fix: With line highlighting on, server-side mode could render one line more than the line-number gutter showed, and the extra line could pick up the highlight. Line counting now matches the browser in both modes.
-* Fix: The "Settings" link in the admin banner, and the redirect at the end of the setup wizard, pointed at an address that returned a permissions error.
-* Fix: Code blocks no longer stop the page rendering when a theme or plugin makes the main query return post IDs rather than posts.
-* Improvement: A "Highlight lines" value spanning a very large range, such as `1-999999999`, no longer exhausts memory while the page is rendering.
-* Improvement: Server-side mode is faster on pages with several code blocks, and very large blocks now fall back to unhighlighted text rather than stalling the page. The size at which that happens can be changed with the new `wzcbh_server_highlight_max_bytes` filter.
-* Improvement: The colour scheme setting is now validated everywhere it is used to build a file path.
+**Changed**
+
+* Server-side highlighting is faster on pages with several code blocks, and very large blocks now fall back to unhighlighted text rather than stalling the page — the threshold is filterable with the new `wzcbh_server_highlight_max_bytes`.
+* Settings screens and per-block help text now use American English.
+
+**Security**
+
+* Hardened settings sanitization so every field type is sanitized before it is stored, with choice fields validated against the options they register.
+* Hardened textarea sanitization in the settings framework.
+* The color scheme setting is now validated everywhere it is used to build a file path.
+
+**Fixed**
+
+* A file name containing `$0`, `$1` or `\0` was written into the block's markup as the surrounding tag text instead of the name itself; line ranges and download file names were affected the same way.
+* Copying a code block in server-side mode added a blank line after every highlighted line.
+* Server-side mode repeated the language class the block had already saved, and could add an empty `class` attribute.
+* `data-title`, `data-line` and `data-start` were written twice on every code block.
+* With line highlighting on, server-side mode could render one line more than the line-number gutter showed, and the extra line could pick up the highlight.
+* A "Highlight lines" value spanning a very large range, such as `1-999999999`, exhausted memory while the page was rendering.
+* The "Settings" link in the admin banner, and the redirect at the end of the setup wizard, pointed at an address that returned a permissions error.
+* Code blocks stopped the page rendering when a theme or plugin made the main query return post IDs rather than posts.
+* Deprecation notices on PHP 8.6 from calling `trim()` without an explicit second argument.
 
 = 1.2.1 =
 
-*Release Date - 20 August 2026*
+Release date: 20 August 2026
 
-* Improvement: Setting defaults are now resolved from a single lightweight list instead of building every settings field, so reading an option early in the page load no longer risks a "translation loading triggered too early" notice.
-* Fix: Fixed settings on a multisite network reading another site's values in the same request after a `switch_to_blog()` call.
-* Fix: Fixed the settings wizard silently dropping repeater field rows on save.
+**Changed**
+
+* Setting defaults are now resolved from a single lightweight list instead of building every settings field, so reading an option early in the page load no longer risks a "translation loading triggered too early" notice.
+
+**Fixed**
+
+* Settings on a multisite network read another site's values in the same request after a `switch_to_blog()` call.
+* The settings wizard silently dropped repeater field rows on save.
 
 = 1.2.0 =
 
-*Release Date - 6 August 2026*
+Release date: 6 August 2026
+Release post: https://webberzone.com/announcements/code-block-highlighting-v1-2-0/
 
-Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-2-0/](https://webberzone.com/announcements/code-block-highlighting-v1-2-0/)
+**Added**
 
-* New: File name tab. The file name set on a block now renders as an editor-style tab above the code block, coloured to match the active Prism theme. Works identically in client-side and server-side modes.
-* New: "File Name Style" setting to choose between the new tab and the previous toolbar label.
-* New: `wzcbh_file_tab_html` filter to customise the file name tab markup.
-* New: Download snippet button. A "Download" button now appears next to "Copy" in the code block toolbar, saving the snippet as a file named after the block's file name, or `snippet.{ext}` derived from its language. Enabled by default; it can be turned off globally with the new "Download Snippet" setting, or per block from the "Download button" control in the block sidebar.
-* New: `wzcbh_download_extensions` filter to customise the language-to-file-extension map used for downloads.
-* Fix: File names saved by the older Code Syntax Block plugin (stored as a `title` attribute on the `<pre>`) are now displayed on the frontend without needing the post to be re-saved.
-* Fix: The block editor canvas no longer picked up `background: window` from the forced-colors media query in several themes, which left the editor code block unstyled.
+* File name tab: the file name set on a block renders as an editor-style tab above the code block, colored to match the active Prism theme, in both client-side and server-side modes.
+* "File Name Style" setting to choose between the new tab and the previous toolbar label.
+* `wzcbh_file_tab_html` filter to customize the file name tab markup.
+* Download snippet button next to "Copy" in the toolbar, saving the snippet as a file named after the block's file name, or `snippet.{ext}` derived from its language.
+* "Download Snippet" setting to turn the download button off globally, and a "Download button" control to turn it off per block.
+* `wzcbh_download_extensions` filter to customize the language-to-file-extension map used for downloads.
 
-= 1.1.0 =
+**Fixed**
 
-*Release Date - 10 June 2026*
+* File names saved by the older Code Syntax Block plugin, stored as a `title` attribute on the `<pre>`, were not displayed on the frontend until the post was re-saved.
+* The block editor canvas picked up `background: window` from the forced-colors media query in several themes, leaving the editor code block unstyled.
 
-Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-1-0/](https://webberzone.com/announcements/code-block-highlighting-v1-1-0/)
+= Earlier versions =
 
-* New: Server-side highlighting mode powered by highlight.php — syntax is pre-rendered on the server with no JavaScript required for highlighting.
-* New: All 21 Prism themes work identically in both client-side and server-side modes. Server mode now outputs Prism-compatible token classes and loads the same theme CSS, so switching modes produces no visual difference.
-* New: Added "Plain Text" language option to the language picker. Renders with Prism theme styling but no syntax highlighting.
-* Fix: Duplicate `language-*` class on `<code>` elements in client mode when the saved block HTML already carried the class.
-
-= 1.0.0 =
-
-*Release Date - 3 May 2026*
-
-Release post: [https://webberzone.com/announcements/code-block-highlighting-v1-0-0/](https://webberzone.com/announcements/code-block-highlighting-v1-0-0/)
-
-* Initial release.
-* Extends `core/code` with Prism.js syntax highlighting — no block replacement, no block validation errors.
-* 40 supported languages with per-block language selection.
-* 21 built-in Prism themes selectable from the settings page.
-* Per-block controls: language, line numbers, start line, word wrap, title, highlight lines, and max height.
-* Expand/collapse toolbar button for blocks with a max-height set.
-* Smart asset loading — Prism CSS and JS only enqueued on pages containing code blocks.
-* Copy-to-clipboard and show-language toolbar buttons (configurable globally).
-* Global settings page for colour scheme, default language, and more.
-* Developer filters: `wzcbh_languages`, `wzcbh_color_scheme_css_url`, `wzcbh_force_load_assets`.
-* GDPR-friendly: no data collection, no external requests.
+For the changelog of earlier versions, please refer to the [releases page on GitHub](https://github.com/WebberZone/webberzone-code-block-highlighting/releases).
 
 == Upgrade Notice ==
 
 = 1.2.2 =
-Fixes file names containing `$` or `\` corrupting a block's markup, blank lines when copying in server-side mode, duplicated attributes, and a line-count mismatch with line highlighting. Server-side mode is faster and no longer stalls on very large blocks.
-
-= 1.2.1 =
-Fixes settings defaults resolution, a multisite settings cache leak, and repeater fields dropping rows on save.
-
-= 1.2.0 =
-File names now render as an editor-style tab above the code block, themed to match your chosen colour scheme. Adds a "File Name Style" setting to switch back to the toolbar label.
-
-= 1.1.0 =
-Adds server-side highlighting mode (highlight.php) with full theme parity across all 21 Prism themes, plus a "Plain Text" language picker option.
-
-= 1.0.0 =
-Initial release.
+Security and stability release. Hardens settings sanitization for every field type, and fixes file names containing $ or \ corrupting block markup, duplicated attributes and a line-count mismatch in server-side mode.

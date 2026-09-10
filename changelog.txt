@@ -1,0 +1,33 @@
+= 1.1.0 =
+
+Release date: 10 June 2026
+Release post: https://webberzone.com/announcements/code-block-highlighting-v1-1-0/
+
+**Added**
+
+* Server-side highlighting mode powered by highlight.php — syntax is pre-rendered on the server with no JavaScript required for highlighting.
+* All 21 Prism themes work identically in both client-side and server-side modes, so switching modes produces no visual difference.
+* "Plain Text" language option in the language picker, rendering with Prism theme styling but no syntax highlighting.
+
+**Fixed**
+
+* Duplicate `language-*` class on `<code>` elements in client mode when the saved block HTML already carried the class.
+
+= 1.0.0 =
+
+Release date: 3 May 2026
+Release post: https://webberzone.com/announcements/code-block-highlighting-v1-0-0/
+
+**Added**
+
+* Initial release.
+* Extends `core/code` with Prism.js syntax highlighting — no block replacement, no block validation errors.
+* 40 supported languages with per-block language selection.
+* 21 built-in Prism themes selectable from the settings page.
+* Per-block controls: language, line numbers, start line, word wrap, title, highlight lines, and max height.
+* Expand/collapse toolbar button for blocks with a max-height set.
+* Smart asset loading — Prism CSS and JS only enqueued on pages containing code blocks.
+* Copy-to-clipboard and show-language toolbar buttons, configurable globally.
+* Global settings page for color scheme, default language, and more.
+* Developer filters: `wzcbh_languages`, `wzcbh_color_scheme_css_url`, `wzcbh_force_load_assets`.
+* GDPR-friendly: no data collection, no external requests.
