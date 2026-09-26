@@ -127,6 +127,9 @@ class Settings {
 			'modified_legend'      => esc_html__( 'Setting modified from its default value', 'webberzone-code-block-highlighting' ),
 			'default_label'        => esc_html__( 'Default', 'webberzone-code-block-highlighting' ),
 			'default_none'         => esc_html__( 'None', 'webberzone-code-block-highlighting' ),
+			'repeater_move_up'     => esc_html__( 'Move item up', 'webberzone-code-block-highlighting' ),
+			'repeater_move_down'   => esc_html__( 'Move item down', 'webberzone-code-block-highlighting' ),
+			'repeater_remove_item' => esc_html__( 'Remove item', 'webberzone-code-block-highlighting' ),
 		);
 	}
 
