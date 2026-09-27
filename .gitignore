@@ -22,3 +22,4 @@ assets/prism-*.css
 
 # Testing
 /.playwright-mcp
+.phpunit.result.cache
