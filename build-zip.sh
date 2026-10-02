@@ -32,6 +32,7 @@ test-tools/
 docs/
 build-assets.js
 *.zip
+eslint.config.*
 *.dist
 *.yml
 *.neon
