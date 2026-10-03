@@ -409,10 +409,61 @@ const save = ({ attributes }) => {
 };
 
 /**
+ * Deprecation for markup saved by the old code-syntax-block plugin.
+ */
+const codeSyntaxBlockDeprecation = (contentAttribute) => ({
+	attributes: {
+		content: contentAttribute,
+		language: {
+			type: 'string',
+			selector: 'code',
+			source: 'attribute',
+			attribute: 'lang',
+		},
+		lineNumbers: {
+			type: 'boolean',
+		},
+		title: {
+			type: 'string',
+			source: 'attribute',
+			selector: 'pre',
+			attribute: 'title',
+		},
+	},
+	save: ({ attributes }) => {
+		const { language, lineNumbers, title } = attributes;
+		const codeClassName = [
+			language ? `language-${language}` : '',
+			lineNumbers ? 'line-numbers' : '',
+		]
+			.filter(Boolean)
+			.join(' ');
+
+		return (
+			<pre {...useBlockProps.save()} title={title || undefined}>
+				<RichText.Content
+					tagName="code"
+					value={
+						typeof attributes.content === 'string'
+							? attributes.content
+							: attributes.content?.toHTMLString?.({
+								preserveWhiteSpace: true,
+							}) ?? ''
+					}
+					lang={language || undefined}
+					className={codeClassName || undefined}
+				/>
+			</pre>
+		);
+	},
+});
+
+/**
  * Replace core/code block with our enhanced version.
  */
-const addSyntaxToCodeBlock = (settings) => {
-	if (settings.name !== 'core/code') {
+const addSyntaxToCodeBlock = (settings, name, deprecation) => {
+	// WordPress also runs this filter on each deprecation; leave their save intact.
+	if (name !== 'core/code' || deprecation) {
 		return settings;
 	}
 
@@ -465,6 +516,10 @@ const addSyntaxToCodeBlock = (settings) => {
 		},
 		edit,
 		save,
+		deprecated: [
+			codeSyntaxBlockDeprecation(settings.attributes.content),
+			...(settings.deprecated || []),
+		],
 	};
 };
 
