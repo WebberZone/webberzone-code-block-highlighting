@@ -183,8 +183,8 @@ Release date: 3 October 2026
 **Fixed**
 
 * Code blocks saved by the older Code Syntax Block plugin showed "This block contains unexpected content" in the block editor. They now open normally and switch to the current format when the post is saved.
-* Setting names on the settings screen were not linked to their fields, so clicking a name did not focus the field and screen readers did not announce it.
-* Saving settings caused a fatal error on PHP 8 when the stored settings option held something other than an array.
+* Setting names on the settings screen and setup wizard were not linked to their fields, so clicking a name did not focus the field and screen readers did not announce it.
+* Saving the default language or line numbers from the block editor caused a fatal error on PHP 8 when the stored settings option was not an array.
 * Deprecation notices on PHP 8.6 from `spl_object_hash()`.
 
 = 1.2.2 =
@@ -253,4 +253,4 @@ For the changelog of earlier versions, please refer to the [releases page on Git
 == Upgrade Notice ==
 
 = 1.2.3 =
-Fixes old code blocks showing as invalid in the block editor and a fatal error when saving corrupted settings on PHP 8. No action needed after updating.
+Fixes old Code Syntax Block blocks showing as invalid in the block editor, and a PHP 8 fatal error when saving editor defaults with a corrupted settings option. No action needed after updating.
