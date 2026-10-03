@@ -4,7 +4,7 @@ Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code highlighting
 Requires at least: 6.6
 Tested up to: 7.1
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -176,6 +176,17 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 == Changelog ==
 
+= 1.2.3 =
+
+Release date: 3 October 2026
+
+**Fixed**
+
+* Code blocks saved by the older Code Syntax Block plugin showed "This block contains unexpected content" in the block editor. They now open normally and switch to the current format when the post is saved.
+* Setting names on the settings screen were not linked to their fields, so clicking a name did not focus the field and screen readers did not announce it.
+* Saving settings caused a fatal error on PHP 8 when the stored settings option held something other than an array.
+* Deprecation notices on PHP 8.6 from `spl_object_hash()`.
+
 = 1.2.2 =
 
 Release date: 10 September 2026
@@ -241,5 +252,5 @@ For the changelog of earlier versions, please refer to the [releases page on Git
 
 == Upgrade Notice ==
 
-= 1.2.2 =
-Security and stability release. Hardens settings sanitization for every field type, and fixes file names containing $ or \ corrupting block markup, duplicated attributes and a line-count mismatch in server-side mode.
+= 1.2.3 =
+Fixes old code blocks showing as invalid in the block editor and a fatal error when saving corrupted settings on PHP 8. No action needed after updating.
