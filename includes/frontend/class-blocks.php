@@ -806,7 +806,7 @@ class Blocks {
 			? 'counter-reset: linenumber ' . ( $line_numbers_start - 1 ) . ';'
 			: '';
 
-		if ( $pre_classes || '' !== $counter_decl ) {
+		if ( $pre_classes ) {
 			$block_content = self::rewrite_tag_attributes(
 				$block_content,
 				'pre',
