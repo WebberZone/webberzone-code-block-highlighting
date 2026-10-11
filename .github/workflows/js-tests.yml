@@ -1,0 +1,35 @@
+name: JS Unit Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  jest:
+    name: Jest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      # No committed lockfile or pnpm-workspace.yaml allowBuilds; Jest needs no build scripts.
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
+
+      - name: Run Jest
+        run: pnpm run test:unit
