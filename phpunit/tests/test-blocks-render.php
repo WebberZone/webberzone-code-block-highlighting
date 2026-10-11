@@ -50,7 +50,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Build saved core/code HTML the way the block's save function does.
+	 * Build saved core/code HTML the way 1.2.3 and earlier saved it.
 	 *
 	 * @param array $args Block arguments.
 	 * @return string
@@ -418,6 +418,132 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$text  = html_entity_decode( strip_tags( (string) $inner ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 
 		$this->assertSame( $code, $text );
+	}
+
+	/**
+	 * Render core's saved markup, with every option in the block comment.
+	 *
+	 * @param array  $attrs Block comment attributes.
+	 * @param string $code  Code text.
+	 * @return string
+	 */
+	private function render_core_markup( array $attrs, $code = "one\ntwo" ) {
+		return $this->blocks->render_code_block(
+			'<pre class="wp-block-code"><code>' . esc_html( $code ) . '</code></pre>',
+			array( 'attrs' => $attrs )
+		);
+	}
+
+	/**
+	 * Every option set in the block comment renders in client mode.
+	 */
+	public function test_client_mode_renders_comment_attributes_on_core_markup() {
+		$html = $this->render_core_markup(
+			array(
+				'language'         => 'php',
+				'title'            => 'demo.php',
+				'lineNumbers'      => true,
+				'lineNumbersStart' => 5,
+				'wordWrap'         => true,
+				'highlightLines'   => '2',
+				'maxHeight'        => 120,
+			)
+		);
+
+		preg_match( '/<pre[^>]*>/', $html, $pre );
+		preg_match( '/<code[^>]*>/', $html, $code );
+
+		foreach ( array( 'language-php', 'line-numbers', 'word-wrap', 'data-start="5"', 'data-title="demo.php"', 'data-line="2"', 'max-height:120px;overflow-y:auto;' ) as $needle ) {
+			$this->assertStringContainsString( $needle, $pre[0] );
+		}
+		$this->assertStringContainsString( 'class="language-php"', $code[0] );
+		$this->assertStringContainsString( 'wzcbh-file-tab', $html );
+	}
+
+	/**
+	 * Every option set in the block comment renders in server mode.
+	 */
+	public function test_server_mode_renders_comment_attributes_on_core_markup() {
+		$this->set_option( 'highlighting-mode', 'server' );
+
+		$html = $this->render_core_markup(
+			array(
+				'language'         => 'php',
+				'title'            => 'demo.php',
+				'lineNumbers'      => true,
+				'lineNumbersStart' => 5,
+				'wordWrap'         => true,
+				'highlightLines'   => '6',
+				'maxHeight'        => 120,
+			)
+		);
+
+		preg_match( '/<pre[^>]*>/', $html, $pre );
+
+		foreach ( array( 'language-php', 'line-numbers', 'word-wrap', 'data-line="6"', 'max-height:120px;overflow-y:auto;counter-reset: linenumber 4;' ) as $needle ) {
+			$this->assertStringContainsString( $needle, $pre[0] );
+		}
+		$this->assertStringContainsString( 'wzcbh-expand-button', $html );
+		$this->assertStringContainsString( 'wzcbh-highlighted-line', $html );
+	}
+
+	/**
+	 * Max height alone still reaches the <pre> in both modes.
+	 *
+	 * @param string $mode Highlighting mode.
+	 *
+	 * @dataProvider data_modes
+	 */
+	public function test_max_height_alone_is_rendered( $mode ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		$html = $this->render_core_markup( array( 'maxHeight' => 80 ) );
+
+		$this->assertStringContainsString( 'style="max-height:80px;overflow-y:auto;"', $html );
+	}
+
+	/**
+	 * Markup saved by 1.2.3 already carries max-height; it must not repeat.
+	 *
+	 * @param string $mode Highlighting mode.
+	 *
+	 * @dataProvider data_modes
+	 */
+	public function test_legacy_max_height_is_not_repeated( $mode ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		$html = $this->blocks->render_code_block(
+			'<pre class="wp-block-code" style="padding-top:10px;max-height:80px;overflow-y:auto"><code>x</code></pre>',
+			array( 'attrs' => array( 'maxHeight' => 80 ) )
+		);
+
+		$this->assertSame( 1, substr_count( $html, 'max-height' ) );
+	}
+
+	/**
+	 * Appended declarations are separated from a saved style without a trailing semicolon.
+	 */
+	public function test_style_declarations_are_separated() {
+		$html = $this->blocks->render_code_block(
+			'<pre class="wp-block-code" style="padding-top:10px"><code>x</code></pre>',
+			array( 'attrs' => array( 'maxHeight' => 80 ) )
+		);
+
+		$this->assertStringContainsString( 'style="padding-top:10px;max-height:80px;overflow-y:auto;"', $html );
+	}
+
+	/**
+	 * Plain text gets language-none on both tags from the comment attribute alone.
+	 */
+	public function test_client_mode_text_language_on_core_markup() {
+		$html = $this->render_core_markup( array( 'language' => 'text' ) );
+
+		preg_match( '/<pre[^>]*>/', $html, $pre );
+		preg_match( '/<code[^>]*>/', $html, $code );
+
+		$this->assertStringContainsString( 'language-none', $pre[0] );
+		$this->assertStringContainsString( 'language-none', $code[0] );
+		$this->assertStringNotContainsString( 'language-text', $html );
 	}
 
 	/**

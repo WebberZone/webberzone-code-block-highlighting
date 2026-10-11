@@ -28,7 +28,7 @@ Both modes use the same 21 Prism themes and produce visually identical output, s
 
 ### Why use this plugin?
 
-* **Safe by design** — Works as a filter on top of `core/code`. Existing posts are never invalidated. Deactivate the plugin and your blocks are still valid standard WordPress code blocks.
+* **Safe by design** — Works as a filter on top of `core/code` and saves blocks with core's own markup. Existing posts are never invalidated. Deactivate the plugin and your blocks are still valid standard WordPress code blocks.
 * **Zero configuration** — Activate and start writing. No setup wizard, no shortcodes.
 * **No highlighting JavaScript in server mode** — Server-side mode pre-renders syntax colours on the server. No Prism.js or any other JavaScript is enqueued for highlighting.
 * **Smart asset loading** — Theme CSS (and, in client mode, Prism JS) only load on pages that actually contain code blocks. Pages without code stay fast.
@@ -119,11 +119,13 @@ After activation, open any post or page in the block editor, add or select a Cod
 
 = Does this plugin replace the core Code block? =
 
-No. WebberZone Code Block Highlighting uses JavaScript and PHP filters to extend the native `core/code` block. It never swaps the block for a custom one, so existing posts are never invalidated and the plugin can be deactivated without leaving behind broken blocks.
+No. WebberZone Code Block Highlighting uses JavaScript and PHP filters to extend the native `core/code` block. It never swaps the block for a custom one: the block is saved with the same markup as the core Code block, the highlighting options are stored as block attributes, and the language classes, file name, line numbers and max height are added when the page is rendered.
 
 = Will my code blocks break if I deactivate the plugin? =
 
-No. Because the plugin extends `core/code` rather than replacing it, deactivating simply removes the highlighting. Your code content is stored in standard WordPress block markup and remains valid.
+No. Code blocks are saved with the core Code block's own markup, so deactivating simply removes the highlighting and the blocks stay valid.
+
+Blocks last saved with version 1.2.3 or earlier carry extra markup that the core block does not recognize, and show "This block contains unexpected or invalid content" if you deactivate the plugin before they are converted. To convert them, either open and update each post with the plugin active, or convert every post at once from Tools > Convert Code Blocks or with the WP-CLI command `wp wzcbh migrate-code-blocks`. Back up your database first: posts are updated in place without creating revisions.
 
 = Which programming languages are supported? =
 
@@ -176,75 +178,18 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 == Changelog ==
 
-= 1.2.3 =
+= 1.3.0 =
 
-Release date: 3 October 2026
-
-**Fixed**
-
-* Code blocks saved by the older Code Syntax Block plugin showed "This block contains unexpected content" in the block editor. They now open normally and switch to the current format when the post is saved.
-* Setting names on the settings screen and setup wizard were not linked to their fields, so clicking a name did not focus the field and screen readers did not announce it.
-* Saving the default language or line numbers from the block editor caused a fatal error on PHP 8 when the stored settings option was not an array.
-* Deprecation notices on PHP 8.6 from `spl_object_hash()`.
-
-= 1.2.2 =
-
-Release date: 10 September 2026
-
-**Changed**
-
-* Server-side highlighting is faster on pages with several code blocks, and very large blocks now fall back to unhighlighted text rather than stalling the page — the threshold is filterable with the new `wzcbh_server_highlight_max_bytes`.
-* Settings screens and per-block help text now use American English.
-
-**Security**
-
-* Hardened settings sanitization so every field type is sanitized before it is stored, with choice fields validated against the options they register.
-* Hardened textarea sanitization in the settings framework.
-* The color scheme setting is now validated everywhere it is used to build a file path.
-
-**Fixed**
-
-* A file name containing `$0`, `$1` or `\0` was written into the block's markup as the surrounding tag text instead of the name itself; line ranges and download file names were affected the same way.
-* Copying a code block in server-side mode added a blank line after every highlighted line.
-* Server-side mode repeated the language class the block had already saved, and could add an empty `class` attribute.
-* `data-title`, `data-line` and `data-start` were written twice on every code block.
-* With line highlighting on, server-side mode could render one line more than the line-number gutter showed, and the extra line could pick up the highlight.
-* A "Highlight lines" value spanning a very large range, such as `1-999999999`, exhausted memory while the page was rendering.
-* The "Settings" link in the admin banner, and the redirect at the end of the setup wizard, pointed at an address that returned a permissions error.
-* Code blocks stopped the page rendering when a theme or plugin made the main query return post IDs rather than posts.
-* Deprecation notices on PHP 8.6 from calling `trim()` without an explicit second argument.
-
-= 1.2.1 =
-
-Release date: 20 August 2026
-
-**Changed**
-
-* Setting defaults are now resolved from a single lightweight list instead of building every settings field, so reading an option early in the page load no longer risks a "translation loading triggered too early" notice.
-
-**Fixed**
-
-* Settings on a multisite network read another site's values in the same request after a `switch_to_blog()` call.
-* The settings wizard silently dropped repeater field rows on save.
-
-= 1.2.0 =
-
-Release date: 6 August 2026
-Release post: https://webberzone.com/announcements/code-block-highlighting-v1-2-0/
+Release date: TBD
 
 **Added**
 
-* File name tab: the file name set on a block renders as an editor-style tab above the code block, colored to match the active Prism theme, in both client-side and server-side modes.
-* "File Name Style" setting to choose between the new tab and the previous toolbar label.
-* `wzcbh_file_tab_html` filter to customize the file name tab markup.
-* Download snippet button next to "Copy" in the toolbar, saving the snippet as a file named after the block's file name, or `snippet.{ext}` derived from its language.
-* "Download Snippet" setting to turn the download button off globally, and a "Download button" control to turn it off per block.
-* `wzcbh_download_extensions` filter to customize the language-to-file-extension map used for downloads.
+* Tools > Convert Code Blocks screen and `wp wzcbh migrate-code-blocks` WP-CLI command to convert code blocks saved by earlier versions in bulk.
 
 **Fixed**
 
-* File names saved by the older Code Syntax Block plugin, stored as a `title` attribute on the `<pre>`, were not displayed on the frontend until the post was re-saved.
-* The block editor canvas picked up `background: window` from the forced-colors media query in several themes, leaving the editor code block unstyled.
+* Code blocks with a language, file name, highlighted lines, max height or custom start line showed "This block contains unexpected or invalid content" after the plugin was deactivated. Blocks saved by earlier versions convert when their post is updated.
+* In server-side mode, a custom start line was ignored when the block also had a max height or a spacing style.
 
 = Earlier versions =
 
@@ -252,5 +197,5 @@ For the changelog of earlier versions, please refer to the [releases page on Git
 
 == Upgrade Notice ==
 
-= 1.2.3 =
-Fixes old Code Syntax Block blocks showing as invalid in the block editor, and a PHP 8 fatal error when saving editor defaults with a corrupted settings option. No action needed after updating.
+= 1.3.0 =
+Code blocks now stay valid if the plugin is deactivated. Existing blocks convert when their post is updated, or all at once from Tools > Convert Code Blocks. Back up your database before converting.

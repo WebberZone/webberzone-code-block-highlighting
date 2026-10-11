@@ -35,7 +35,7 @@ Both modes use the same 21 Prism themes and produce visually identical output, s
 
 ### Why use this plugin?
 
-* __Safe by design__ — Works as a filter on top of `core/code`. Existing posts are never invalidated. Deactivate the plugin and your blocks are still valid standard WordPress code blocks.
+* __Safe by design__ — Works as a filter on top of `core/code` and saves blocks with core's own markup. Existing posts are never invalidated. Deactivate the plugin and your blocks are still valid standard WordPress code blocks.
 * __Zero configuration__ — Activate and start writing. No setup wizard, no shortcodes.
 * __No highlighting JavaScript in server mode__ — Server-side mode pre-renders syntax colours on the server. No Prism.js or any other JavaScript is enqueued for highlighting.
 * __Smart asset loading__ — Theme CSS (and, in client mode, Prism JS) only load on pages that actually contain code blocks. Pages without code stay fast.
@@ -105,7 +105,7 @@ After activation, open any post or page in the block editor, add or select a Cod
 Full FAQ is available on the [WordPress.org plugin page](https://wordpress.org/plugins/webberzone-code-block-highlighting/faq/). For support, use the [WordPress.org support forum](https://wordpress.org/support/plugin/webberzone-code-block-highlighting).
 
 __Does this plugin replace the core Code block?__
-No. The plugin uses JavaScript and PHP filters to extend `core/code`. Deactivating it leaves behind valid, standard WordPress blocks.
+No. The plugin uses JavaScript and PHP filters to extend `core/code`, and saves blocks with core's own markup. Deactivating it leaves behind valid, standard WordPress blocks. Blocks last saved with 1.2.3 or earlier convert when their post is updated, or all at once from Tools > Convert Code Blocks or `wp wzcbh migrate-code-blocks`.
 
 __Which languages are supported?__
 40 out of the box. Use the `wzcbh_languages` filter to add or remove entries from the language picker — note the corresponding Prism.js grammar must also be available on the frontend.

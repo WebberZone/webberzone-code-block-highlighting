@@ -58,6 +58,15 @@ class Admin {
 	public Admin_Banner $admin_banner;
 
 	/**
+	 * Tools page that converts code blocks saved by 1.2.3 and earlier.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @var Tools_Page
+	 */
+	public Tools_Page $tools_page;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.1.0
@@ -67,6 +76,7 @@ class Admin {
 		$this->admin_notices_api = new Admin_Notices_API();
 		$this->settings_wizard   = new Settings_Wizard();
 		$this->admin_banner      = new Admin_Banner( $this->get_admin_banner_config() );
+		$this->tools_page        = new Tools_Page();
 
 		Hook_Registry::add_filter( 'plugin_action_links_' . plugin_basename( WZCBH_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
 	}

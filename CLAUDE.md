@@ -45,6 +45,7 @@ pnpm run build          # Production build -> includes/blocks/build/
 pnpm run build:prism    # Copy Prism themes -> includes/assets/
 pnpm run build:assets   # Minify generated CSS/JS assets
 pnpm run start          # Watch mode for block/editor/frontend bundles
+pnpm run test:unit      # Jest: core/code validation with and without the plugin
 pnpm run zip            # Plugin zip
 ```
 
@@ -76,7 +77,9 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **`_legacyTitle` attribute** — read-only migration attribute; copies `title` from old `code-syntax-block` format on first load, then clears itself.
 
-**`maxHeight`** — CSS-only: serialized as inline `style` by the block save function, not touched by the PHP render filter.
+**Saved markup is core's** — the block filter keeps core's `save()`, so every option (`language` and `title` included) lives in the block comment and the render filter adds the classes, `data-*` attributes and max-height style. This is what keeps blocks valid when the plugin is deactivated; never write plugin attributes from a `save()`. Markup saved by ≤1.2.3 (`lang` on `<code>`, `data-title`/`data-start`/`data-line`/max-height `style`/managed classes on `<pre>`) is handled by `pluginSaveDeprecation` in `index.js` — its `isEligible` catches line-numbers/word-wrap-only blocks that would otherwise validate with those classes folded into `className`, and it carries `supports` because deprecations don't inherit them. `render_code_block()` keeps regex fallbacks for unconverted posts. `Code_Block_Migrator` (`includes/class-code-block-migrator.php`) is the PHP twin of those deprecations, used by `wp wzcbh migrate-code-blocks` (`class-cli.php`) and Tools > Convert Code Blocks (`admin/class-tools-page.php`): it must produce byte-for-byte what the editor writes on re-save, so change both together. It rewrites only the matched `wp:code` spans and writes `post_content` with `$wpdb->update()` — `wp_update_post()` runs kses for users without `unfiltered_html` (WP-CLI, multisite site admins) and strips code.
+
+**`maxHeight`** — rendered as an inline `max-height` style on `<pre>` by both render paths (skipped when ≤1.2.3 markup already carries it); the expand button keys off `pre.style.maxHeight`.
 
 **`wzcbh_languages` filter** — controls editor UI dropdown only, not which Prism grammars are bundled; a slug without a matching grammar import in `frontend.js` renders as plain text.
 
@@ -100,7 +103,7 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **Server-mode cost** — highlight.php's matching is quadratic in input size (≈56 ms at 38 KB, ≈2.4 s at 307 KB) and runs inline in the page render, so `render_code_block_server()` skips it above `wzcbh_server_highlight_max_bytes` and falls back to `esc_html()` inside the same themed markup. One `\Highlight\Highlighter` is shared per request via `get_highlighter()` — constructing it dominates pages with many small blocks, and reuse is output-identical across languages.
 
-**Injecting attributes into saved HTML** — always go through `rewrite_tag_attributes()` / `merge_tag_classes()` / `set_tag_attributes()` / `merge_tag_style()`, never `preg_replace()` with an interpolated replacement string. Block titles, line ranges and download file names are editor-supplied, and `$0` / `\0` / `\\` in a `preg_replace()` *replacement* are backreferences that `esc_attr()` does not escape. The helpers also de-duplicate class names and overwrite rather than repeat the `data-title` / `data-line` / `data-start` the save function already wrote.
+**Injecting attributes into saved HTML** — always go through `rewrite_tag_attributes()` / `merge_tag_classes()` / `set_tag_attributes()` / `merge_tag_style()`, never `preg_replace()` with an interpolated replacement string. Block titles, line ranges and download file names are editor-supplied, and `$0` / `\0` / `\\` in a `preg_replace()` *replacement* are backreferences that `esc_attr()` does not escape. The helpers also de-duplicate class names and overwrite rather than repeat the `data-title` / `data-line` / `data-start` that markup saved by ≤1.2.3 already carries.
 
 **Server-mode line counting** — `$line_count` counts one line per newline plus a final line only when the code does not end on one, matching what Prism's line-numbers plugin counts in the browser. `wrap_lines()` uses the same rule via its `$line_has_text` tracker: highlight.php closes its outermost span *after* the trailing newline, so testing the line buffer alone emitted a phantom final line that the highlight stripe could land on. The gutter row count and the `.wzcbh-line` span count must always agree.
 

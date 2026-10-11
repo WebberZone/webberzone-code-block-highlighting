@@ -9,6 +9,7 @@ parameters:
     scanFiles:
         - webberzone-code-block-highlighting.php
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+        - vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
     scanDirectories:
         - includes
     bootstrapFiles:

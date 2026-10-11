@@ -31,6 +31,8 @@ wporg-assets/
 test-tools/
 docs/
 build-assets.js
+jest.config.js
+includes/blocks/src/js/test/
 *.zip
 eslint.config.*
 *.dist

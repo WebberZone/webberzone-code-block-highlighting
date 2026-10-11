@@ -249,9 +249,8 @@ class Blocks {
 	public function render_code_block( string $block_content, array $block ): string {
 		$attrs = $block['attrs'] ?? array();
 
-		// `language` and `title` are sourced from HTML attributes in the save
-		// function (lang= on <code>, data-title= on <pre>) and are not serialized
-		// to the block JSON comment. Extract both here before dispatching.
+		// Blocks saved by 1.2.3 and earlier keep `language` and `title` in the HTML
+		// (lang= on <code>, data-title= on <pre>), not in the block comment.
 		if ( empty( $attrs['language'] ) && preg_match( '/<code[^>]+\blang="([^"]+)"/', $block_content, $lm ) ) {
 			$attrs['language'] = sanitize_key( $lm[1] );
 		}
@@ -533,9 +532,9 @@ class Blocks {
 	/**
 	 * Set attributes on a tag's attribute string, replacing any already present.
 	 *
-	 * The save function already writes `data-title`, `data-line` and `data-start`,
-	 * so these replace rather than duplicate them — the value written here is the
-	 * sanitised one.
+	 * Markup saved by 1.2.3 and earlier already carries `data-title`, `data-line`
+	 * and `data-start`, so these replace rather than duplicate them — the value
+	 * written here is the sanitised one.
 	 *
 	 * @since 1.2.2
 	 *
@@ -581,15 +580,38 @@ class Blocks {
 		$declarations = esc_attr( $declarations );
 
 		if ( preg_match( '/\sstyle="([^"]*)"/i', $attributes, $matches ) ) {
+			// Saved inline styles have no trailing semicolon.
+			$existing = rtrim( $matches[1], " \t\n\r\0\x0B;" );
+
 			return substr_replace(
 				$attributes,
-				' style="' . trim( $matches[1] . ' ' . $declarations, " \t\n\r\0\x0B" ) . '"',
+				' style="' . ( '' === $existing ? '' : $existing . ';' ) . $declarations . '"',
 				(int) strpos( $attributes, $matches[0] ),
 				strlen( $matches[0] )
 			);
 		}
 
 		return $attributes . ' style="' . $declarations . '"';
+	}
+
+	/**
+	 * Build the inline max-height declarations for a block's `<pre>`.
+	 *
+	 * Markup saved by 1.2.3 and earlier already carries them, so they are not
+	 * repeated there. The expand button keys off `pre.style.maxHeight`.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  int    $max_height Max height in pixels; zero or less for none.
+	 * @param  string $attributes Raw attribute string of the `<pre>` tag.
+	 * @return string
+	 */
+	protected static function get_max_height_declarations( int $max_height, string $attributes = '' ): string {
+		if ( $max_height <= 0 || preg_match( '/\sstyle="[^"]*\bmax-height\s*:/i', $attributes ) ) {
+			return '';
+		}
+
+		return 'max-height:' . $max_height . 'px;overflow-y:auto;';
 	}
 
 	/**
@@ -611,14 +633,13 @@ class Blocks {
 		$word_wrap          = $params['word_wrap'];
 		$title              = $params['title'];
 		$highlight_lines    = $params['highlight_lines'];
+		$max_height         = $params['max_height'];
 
-		// 'text' is stored as the block attribute value but Prism has no 'text'
-		// grammar. Map it to 'none' so Prism applies theme styling without
-		// highlighting. Replace in the saved HTML (which already carries
-		// language-text on both <pre> and <code>) rather than appending.
+		// Prism has no 'text' grammar; 'none' gets theme styling without
+		// highlighting. Markup saved by 1.2.3 and earlier carries language-text.
 		if ( 'text' === $language ) {
 			$block_content = str_replace( 'language-text', 'language-none', $block_content );
-			$language      = '';
+			$language      = 'none';
 		}
 
 		// ── Apply language class to <code> (duplicates are dropped) ──────────
@@ -636,6 +657,11 @@ class Blocks {
 		// ── Apply classes and data attributes to <pre> ────────────────────────
 		$pre_classes = array();
 		$pre_attrs   = array();
+
+		// Theme CSS selects on the <pre> class before Prism runs.
+		if ( $language ) {
+			$pre_classes[] = 'language-' . $language;
+		}
 
 		if ( $line_numbers ) {
 			$pre_classes[] = 'line-numbers';
@@ -662,15 +688,16 @@ class Blocks {
 			$pre_attrs['data-wzcbh-download'] = esc_attr( (string) $params['download_filename'] );
 		}
 
-		if ( $pre_classes || $pre_attrs ) {
+		if ( $pre_classes || $pre_attrs || $max_height ) {
 			$block_content = self::rewrite_tag_attributes(
 				$block_content,
 				'pre',
-				static function ( string $attributes ) use ( $pre_classes, $pre_attrs ): string {
-					return self::set_tag_attributes(
+				static function ( string $attributes ) use ( $pre_classes, $pre_attrs, $max_height ): string {
+					$attributes = self::set_tag_attributes(
 						self::merge_tag_classes( $attributes, $pre_classes ),
 						$pre_attrs
 					);
+					return self::merge_tag_style( $attributes, self::get_max_height_declarations( $max_height, $attributes ) );
 				}
 			);
 		}
@@ -700,11 +727,8 @@ class Blocks {
 		$highlight_lines    = $params['highlight_lines'];
 		$max_height         = $params['max_height'];
 
-		// 'text' is stored as the block attribute value but there is no 'text'
-		// grammar. Map it to 'none' so plain text blocks get consistent class
-		// names with the client-side mode. Replace in the saved HTML (which
-		// already carries language-text on both <pre> and <code>) rather than
-		// appending.
+		// There is no 'text' grammar; 'none' matches the client-side class names.
+		// Markup saved by 1.2.3 and earlier carries language-text.
 		if ( 'text' === $language ) {
 			$block_content = str_replace( 'language-text', 'language-none', $block_content );
 			$language      = 'none';
@@ -802,19 +826,31 @@ class Blocks {
 			$pre_classes[] = 'word-wrap';
 		}
 
-		$counter_decl = ( $line_numbers && $line_numbers_start > 1 )
+		$style_decl = ( $line_numbers && $line_numbers_start > 1 )
 			? 'counter-reset: linenumber ' . ( $line_numbers_start - 1 ) . ';'
 			: '';
 
-		if ( $pre_classes ) {
+		// Not read by server mode, but Prism's bundled line-highlight CSS pads
+		// pre[data-line], so they are kept for parity with client mode.
+		$pre_attrs = array();
+		if ( $title ) {
+			$pre_attrs['data-title'] = esc_attr( $title );
+		}
+		if ( $line_numbers && 1 !== $line_numbers_start ) {
+			$pre_attrs['data-start'] = esc_attr( (string) $line_numbers_start );
+		}
+		if ( $highlight_lines ) {
+			$pre_attrs['data-line'] = esc_attr( $highlight_lines );
+		}
+
+		if ( $pre_classes || $pre_attrs || $max_height ) {
 			$block_content = self::rewrite_tag_attributes(
 				$block_content,
 				'pre',
-				static function ( string $attributes ) use ( $pre_classes, $counter_decl ): string {
-					return self::merge_tag_style(
-						self::merge_tag_classes( $attributes, $pre_classes ),
-						$counter_decl
-					);
+				static function ( string $attributes ) use ( $pre_classes, $pre_attrs, $style_decl, $max_height ): string {
+					$attributes = self::set_tag_attributes( self::merge_tag_classes( $attributes, $pre_classes ), $pre_attrs );
+					$attributes = self::merge_tag_style( $attributes, self::get_max_height_declarations( $max_height, $attributes ) );
+					return self::merge_tag_style( $attributes, $style_decl );
 				}
 			);
 		}

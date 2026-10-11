@@ -1,3 +1,73 @@
+= 1.2.3 =
+
+Release date: 3 October 2026
+
+**Fixed**
+
+* Code blocks saved by the older Code Syntax Block plugin showed "This block contains unexpected content" in the block editor. They now open normally and switch to the current format when the post is saved.
+* Setting names on the settings screen and setup wizard were not linked to their fields, so clicking a name did not focus the field and screen readers did not announce it.
+* Saving the default language or line numbers from the block editor caused a fatal error on PHP 8 when the stored settings option was not an array.
+* Deprecation notices on PHP 8.6 from `spl_object_hash()`.
+
+= 1.2.2 =
+
+Release date: 10 September 2026
+
+**Changed**
+
+* Server-side highlighting is faster on pages with several code blocks, and very large blocks now fall back to unhighlighted text rather than stalling the page — the threshold is filterable with the new `wzcbh_server_highlight_max_bytes`.
+* Settings screens and per-block help text now use American English.
+
+**Security**
+
+* Hardened settings sanitization so every field type is sanitized before it is stored, with choice fields validated against the options they register.
+* Hardened textarea sanitization in the settings framework.
+* The color scheme setting is now validated everywhere it is used to build a file path.
+
+**Fixed**
+
+* A file name containing `$0`, `$1` or `\0` was written into the block's markup as the surrounding tag text instead of the name itself; line ranges and download file names were affected the same way.
+* Copying a code block in server-side mode added a blank line after every highlighted line.
+* Server-side mode repeated the language class the block had already saved, and could add an empty `class` attribute.
+* `data-title`, `data-line` and `data-start` were written twice on every code block.
+* With line highlighting on, server-side mode could render one line more than the line-number gutter showed, and the extra line could pick up the highlight.
+* A "Highlight lines" value spanning a very large range, such as `1-999999999`, exhausted memory while the page was rendering.
+* The "Settings" link in the admin banner, and the redirect at the end of the setup wizard, pointed at an address that returned a permissions error.
+* Code blocks stopped the page rendering when a theme or plugin made the main query return post IDs rather than posts.
+* Deprecation notices on PHP 8.6 from calling `trim()` without an explicit second argument.
+
+= 1.2.1 =
+
+Release date: 20 August 2026
+
+**Changed**
+
+* Setting defaults are now resolved from a single lightweight list instead of building every settings field, so reading an option early in the page load no longer risks a "translation loading triggered too early" notice.
+
+**Fixed**
+
+* Settings on a multisite network read another site's values in the same request after a `switch_to_blog()` call.
+* The settings wizard silently dropped repeater field rows on save.
+
+= 1.2.0 =
+
+Release date: 6 August 2026
+Release post: https://webberzone.com/announcements/code-block-highlighting-v1-2-0/
+
+**Added**
+
+* File name tab: the file name set on a block renders as an editor-style tab above the code block, colored to match the active Prism theme, in both client-side and server-side modes.
+* "File Name Style" setting to choose between the new tab and the previous toolbar label.
+* `wzcbh_file_tab_html` filter to customize the file name tab markup.
+* Download snippet button next to "Copy" in the toolbar, saving the snippet as a file named after the block's file name, or `snippet.{ext}` derived from its language.
+* "Download Snippet" setting to turn the download button off globally, and a "Download button" control to turn it off per block.
+* `wzcbh_download_extensions` filter to customize the language-to-file-extension map used for downloads.
+
+**Fixed**
+
+* File names saved by the older Code Syntax Block plugin, stored as a `title` attribute on the `<pre>`, were not displayed on the frontend until the post was re-saved.
+* The block editor canvas picked up `background: window` from the forced-colors media query in several themes, leaving the editor code block unstyled.
+
 = 1.1.0 =
 
 Release date: 10 June 2026

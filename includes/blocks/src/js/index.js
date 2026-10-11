@@ -356,62 +356,94 @@ const edit = ({ attributes, setAttributes }) => {
 	);
 };
 
+const MANAGED_CLASS = /^(line-numbers|word-wrap|language-.+)$/;
+
 /**
- * Save function for core/code block.
+ * Deprecation for markup saved by this plugin up to 1.2.3, whose save() wrote
+ * the highlighting options into the HTML instead of leaving core's markup.
  */
-const save = ({ attributes }) => {
-	const {
-		language,
-		lineNumbers,
-		lineNumbersStart,
-		wordWrap,
-		title,
-		highlightLines,
-		maxHeight,
-	} = attributes;
-	const codeClassName = language ? `language-${language}` : undefined;
-	const preClassName = [
-		language ? `language-${language}` : '',
-		lineNumbers ? 'line-numbers' : '',
-		wordWrap ? 'word-wrap' : '',
-	]
-		.filter(Boolean)
-		.join(' ');
+const pluginSaveDeprecation = (blockAttributes, supports) => ({
+	// Deprecations don't inherit supports; without them the color, spacing and
+	// typography classes and styles are missing from the regenerated markup.
+	supports,
+	attributes: {
+		...blockAttributes,
+		language: {
+			type: 'string',
+			selector: 'code',
+			source: 'attribute',
+			attribute: 'lang',
+		},
+		title: {
+			type: 'string',
+			source: 'attribute',
+			selector: 'pre',
+			attribute: 'data-title',
+		},
+	},
+	// Blocks with only line numbers or word wrap still validate against core's
+	// save once the parser folds those classes into className, so opt them in.
+	isEligible: (parsedAttributes, innerBlocks, { block }) => {
+		const custom = (parsedAttributes.className || '').split(/\s+/);
+		return (block?.attributes?.className || '')
+			.split(/\s+/)
+			.some((name) => MANAGED_CLASS.test(name) && !custom.includes(name));
+	},
+	save: ({ attributes }) => {
+		const {
+			language,
+			lineNumbers,
+			lineNumbersStart,
+			wordWrap,
+			title,
+			highlightLines,
+			maxHeight,
+		} = attributes;
+		const codeClassName = language ? `language-${language}` : undefined;
+		const preClassName = [
+			language ? `language-${language}` : '',
+			lineNumbers ? 'line-numbers' : '',
+			wordWrap ? 'word-wrap' : '',
+		]
+			.filter(Boolean)
+			.join(' ');
 
-	const blockProps = useBlockProps.save({
-		className: preClassName || undefined,
-		'data-title': title || undefined,
-		...(lineNumbers && lineNumbersStart && lineNumbersStart !== 1
-			? { 'data-start': lineNumbersStart }
-			: {}),
-		...(highlightLines ? { 'data-line': highlightLines } : {}),
-		...(maxHeight
-			? { style: { maxHeight: `${maxHeight}px`, overflowY: 'auto' } }
-			: {}),
-	});
+		const blockProps = useBlockProps.save({
+			className: preClassName || undefined,
+			'data-title': title || undefined,
+			...(lineNumbers && lineNumbersStart && lineNumbersStart !== 1
+				? { 'data-start': lineNumbersStart }
+				: {}),
+			...(highlightLines ? { 'data-line': highlightLines } : {}),
+			...(maxHeight
+				? { style: { maxHeight: `${maxHeight}px`, overflowY: 'auto' } }
+				: {}),
+		});
 
-	return (
-		<pre {...blockProps}>
-			<RichText.Content
-				tagName="code"
-				value={
-					typeof attributes.content === 'string'
-						? attributes.content
-						: attributes.content?.toHTMLString?.({
-							preserveWhiteSpace: true,
-						}) ?? ''
-				}
-				lang={language || undefined}
-				className={codeClassName}
-			/>
-		</pre>
-	);
-};
+		return (
+			<pre {...blockProps}>
+				<RichText.Content
+					tagName="code"
+					value={
+						typeof attributes.content === 'string'
+							? attributes.content
+							: attributes.content?.toHTMLString?.({
+								preserveWhiteSpace: true,
+							}) ?? ''
+					}
+					lang={language || undefined}
+					className={codeClassName}
+				/>
+			</pre>
+		);
+	},
+});
 
 /**
  * Deprecation for markup saved by the old code-syntax-block plugin.
  */
-const codeSyntaxBlockDeprecation = (contentAttribute) => ({
+const codeSyntaxBlockDeprecation = (contentAttribute, supports) => ({
+	supports,
 	attributes: {
 		content: contentAttribute,
 		language: {
@@ -459,7 +491,7 @@ const codeSyntaxBlockDeprecation = (contentAttribute) => ({
 });
 
 /**
- * Replace core/code block with our enhanced version.
+ * Extend core/code with our attributes and editor UI, keeping core's save().
  */
 const addSyntaxToCodeBlock = (settings, name, deprecation) => {
 	// WordPress also runs this filter on each deprecation; leave their save intact.
@@ -467,57 +499,54 @@ const addSyntaxToCodeBlock = (settings, name, deprecation) => {
 		return settings;
 	}
 
+	const attributes = {
+		...settings.attributes,
+		language: {
+			type: 'string',
+		},
+		lineNumbers: {
+			type: 'boolean',
+		},
+		lineNumbersStart: {
+			type: 'number',
+		},
+		wordWrap: {
+			type: 'boolean',
+		},
+		highlightLines: {
+			type: 'string',
+		},
+		maxHeight: {
+			type: 'number',
+		},
+		// Tri-state override of the global download setting: undefined
+		// inherits it, 'show' and 'hide' force it.
+		downloadButton: {
+			type: 'string',
+		},
+		title: {
+			type: 'string',
+		},
+		// Read-only fallback: sources title from pre[title] as saved by the
+		// old code-syntax-block plugin. Migrated to `title` on first edit.
+		_legacyTitle: {
+			type: 'string',
+			source: 'attribute',
+			selector: 'pre',
+			attribute: 'title',
+		},
+	};
+
 	return {
 		...settings,
-		attributes: {
-			...settings.attributes,
-			language: {
-				type: 'string',
-				selector: 'code',
-				source: 'attribute',
-				attribute: 'lang',
-			},
-			lineNumbers: {
-				type: 'boolean',
-			},
-			lineNumbersStart: {
-				type: 'number',
-			},
-			wordWrap: {
-				type: 'boolean',
-			},
-			highlightLines: {
-				type: 'string',
-			},
-			maxHeight: {
-				type: 'number',
-			},
-			// Tri-state override of the global download setting: undefined
-			// inherits it, 'show' and 'hide' force it. Not sourced from the
-			// saved HTML, so PHP reads it from the block comment attributes.
-			downloadButton: {
-				type: 'string',
-			},
-			title: {
-				type: 'string',
-				source: 'attribute',
-				selector: 'pre',
-				attribute: 'data-title',
-			},
-			// Read-only fallback: sources title from pre[title] as saved by the
-			// old code-syntax-block plugin. Migrated to `title` (data-title) on
-			// first edit. Never written by our save function.
-			_legacyTitle: {
-				type: 'string',
-				source: 'attribute',
-				selector: 'pre',
-				attribute: 'title',
-			},
-		},
+		attributes,
 		edit,
-		save,
 		deprecated: [
-			codeSyntaxBlockDeprecation(settings.attributes.content),
+			pluginSaveDeprecation(attributes, settings.supports),
+			codeSyntaxBlockDeprecation(
+				settings.attributes.content,
+				settings.supports
+			),
 			...(settings.deprecated || []),
 		],
 	};

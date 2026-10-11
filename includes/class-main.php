@@ -93,6 +93,10 @@ final class Main {
 		$this->styles = new Frontend\Styles_Handler();
 
 		Hook_Registry::add_action( 'init', array( $this, 'init_admin' ) );
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			\WP_CLI::add_command( 'wzcbh', CLI::class );
+		}
 	}
 
 	/**
