@@ -105,7 +105,7 @@ After activation, open any post or page in the block editor, add or select a Cod
 Full FAQ is available on the [WordPress.org plugin page](https://wordpress.org/plugins/webberzone-code-block-highlighting/faq/). For support, use the [WordPress.org support forum](https://wordpress.org/support/plugin/webberzone-code-block-highlighting).
 
 __Does this plugin replace the core Code block?__
-No. The plugin uses JavaScript and PHP filters to extend `core/code`, and saves blocks with core's own markup. Deactivating it leaves behind valid, standard WordPress blocks. Blocks last saved with 1.2.3 or earlier convert when their post is updated, or all at once from Tools > Convert Code Blocks or `wp wzcbh migrate-code-blocks`.
+No. The plugin uses JavaScript and PHP filters to extend `core/code`, and saves blocks with core's own markup. Deactivating it leaves behind valid, standard WordPress blocks. Blocks last saved with 1.2.3 or earlier convert when their post is updated, or all at once from **Convert Code Blocks** in the banner at the top of Settings > Code Block Highlighting, or with `wp wzcbh migrate-code-blocks`.
 
 __Which languages are supported?__
 40 out of the box. Use the `wzcbh_languages` filter to add or remove entries from the language picker — note the corresponding Prism.js grammar must also be available on the frontend.

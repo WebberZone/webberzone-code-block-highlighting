@@ -16,7 +16,7 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: webberzone-code-block-highlighting.php
-#: includes/admin/class-admin.php:127
+#: includes/admin/class-admin.php:129
 msgid "WebberZone Code Block Highlighting"
 msgstr "WebberZone Code Block Highlighting"
 
@@ -35,28 +35,28 @@ msgstr "WebberZone"
 msgid "https://webberzone.com"
 msgstr "https://webberzone.com"
 
-#: includes/admin/class-admin.php:125
+#: includes/admin/class-admin.php:127
 msgid "Code Block Highlighting quick links"
 msgstr "Code Block Highlighting quick links"
 
-#: includes/admin/class-admin.php:126
+#: includes/admin/class-admin.php:128
 msgid "Code Block Highlighting admin shortcuts"
 msgstr "Code Block Highlighting admin shortcuts"
 
-#: includes/admin/class-admin.php:128
+#: includes/admin/class-admin.php:130
 msgid "Beautiful syntax highlighting for your code blocks."
 msgstr "Beautiful syntax highlighting for your code blocks."
 
-#: includes/admin/class-admin.php:129
+#: includes/admin/class-admin.php:131
 msgid "Configure your Prism.js theme and default language settings, or explore more WebberZone plugins."
 msgstr "Configure your Prism.js theme and default language settings, or explore more WebberZone plugins."
 
 #: includes/admin/class-admin.php:96
-#: includes/admin/class-admin.php:133
+#: includes/admin/class-admin.php:135
 msgid "Settings"
 msgstr "Settings"
 
-#: includes/admin/class-admin.php:139
+#: includes/admin/class-admin.php:147
 msgid "WebberZone Plugins"
 msgstr "WebberZone Plugins"
 
@@ -515,61 +515,62 @@ msgstr ""
 msgid "Server-side mode only. Detect the language of code blocks that have none set, and highlight them. Blocks set to Plain Text are left as they are, and blocks that do not clearly match a language stay plain."
 msgstr ""
 
-#: includes/admin/class-tools-page.php:58
-#: includes/admin/class-tools-page.php:59
-#: includes/admin/class-tools-page.php:119
+#: includes/admin/class-admin.php:141
+#: includes/admin/class-convert-page.php:59
+#: includes/admin/class-convert-page.php:60
+#: includes/admin/class-convert-page.php:167
 msgid "Convert Code Blocks"
 msgstr ""
 
-#: includes/admin/class-tools-page.php:83
+#: includes/admin/class-convert-page.php:131
 msgid "Sorry, you are not allowed to do that."
 msgstr ""
 
-#: includes/admin/class-tools-page.php:121
+#: includes/admin/class-convert-page.php:169
 msgid "Code blocks last saved with WebberZone Code Block Highlighting 1.2.3 or earlier store the language, file name and display options in their HTML. The core Code block cannot validate that markup, so these blocks show \"This block contains unexpected or invalid content\" if the plugin is deactivated."
 msgstr ""
 
-#: includes/admin/class-tools-page.php:122
+#: includes/admin/class-convert-page.php:170
 msgid "Converting moves those options into the block settings, exactly as opening and updating each post in the editor does. Nothing else in the post changes, and how the blocks look on your site stays the same."
 msgstr ""
 
-#: includes/admin/class-tools-page.php:123
+#: includes/admin/class-convert-page.php:171
 msgid "Post content is updated in place without creating revisions. Back up your database before converting."
 msgstr ""
 
-#: includes/admin/class-tools-page.php:125
+#: includes/admin/class-convert-page.php:173
 msgid "On a multisite network, this converts the posts of the current site only."
 msgstr ""
 
-#: includes/admin/class-tools-page.php:137
+#: includes/admin/class-convert-page.php:185
 msgid "Check posts"
 msgstr ""
 
-#: includes/admin/class-tools-page.php:138
+#: includes/admin/class-convert-page.php:186
 msgid "Convert code blocks"
 msgstr ""
 
 #. translators: 1: posts scanned, 2: posts that would change, 3: code blocks that would be converted
-#: includes/admin/class-tools-page.php:158
+#: includes/admin/class-convert-page.php:206
 #, php-format
 msgid "Checked %1$s posts: %2$s would change, with %3$s code blocks to convert."
 msgstr ""
 
 #. translators: 1: posts scanned, 2: posts changed, 3: code blocks converted
-#: includes/admin/class-tools-page.php:166
+#: includes/admin/class-convert-page.php:214
 #, php-format
 msgid "Checked %1$s posts: %2$s changed, with %3$s code blocks converted."
 msgstr ""
 
 #. translators: %s: number of code blocks
-#: includes/admin/class-tools-page.php:181
+#: includes/admin/class-convert-page.php:229
 #, php-format
 msgid "%s code block did not match what earlier versions saved and was left as it is. Open its post in the editor to review it:"
 msgid_plural "%s code blocks did not match what earlier versions saved and were left as they are. Open their posts in the editor to review them:"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/class-tools-page.php:198
+#: includes/admin/class-convert-page.php:246
 msgid "Continue with the next posts"
 msgstr ""
 

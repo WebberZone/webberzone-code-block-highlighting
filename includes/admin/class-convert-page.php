@@ -1,6 +1,6 @@
 <?php
 /**
- * Tools page that converts code blocks saved by 1.2.3 and earlier.
+ * Hidden admin page that converts code blocks saved by 1.2.3 and earlier.
  *
  * @package WebberZone\Code_Block_Highlighting\Admin
  */
@@ -15,11 +15,11 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Tools page class.
+ * Convert Code Blocks page, linked from the settings banner.
  *
  * @since 1.3.0
  */
-class Tools_Page {
+class Convert_Page {
 
 	/**
 	 * Page slug.
@@ -49,12 +49,13 @@ class Tools_Page {
 	}
 
 	/**
-	 * Register the page under Tools.
+	 * Register the page under Settings; its menu item is removed in hide_menu_item().
 	 *
 	 * @since 1.3.0
 	 */
 	public function add_page(): void {
-		$hook = add_management_page(
+		$hook = add_submenu_page(
+			'options-general.php',
 			__( 'Convert Code Blocks', 'webberzone-code-block-highlighting' ),
 			__( 'Convert Code Blocks', 'webberzone-code-block-highlighting' ),
 			'manage_options',
@@ -64,7 +65,54 @@ class Tools_Page {
 
 		if ( $hook ) {
 			Hook_Registry::add_action( 'load-' . $hook, array( $this, 'handle_request' ) );
+			Hook_Registry::add_action( 'admin_head', array( $this, 'hide_menu_item' ) );
+			Hook_Registry::add_filter( 'submenu_file', array( $this, 'highlight_settings_submenu' ) );
 		}
+	}
+
+	/**
+	 * Remove the page's Settings menu item.
+	 *
+	 * Runs after WordPress has checked access to the page, which needs the item registered.
+	 *
+	 * @since 1.3.0
+	 */
+	public function hide_menu_item(): void {
+		remove_submenu_page( 'options-general.php', self::SLUG );
+	}
+
+	/**
+	 * URL of the page.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @return string
+	 */
+	public static function get_page_url(): string {
+		return admin_url( 'options-general.php?page=' . self::SLUG );
+	}
+
+	/**
+	 * Mark the plugin's settings page as current in the Settings submenu while on this page.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string|null $submenu_file Submenu file.
+	 * @return string|null
+	 */
+	public function highlight_settings_submenu( $submenu_file ) {
+		return self::is_current_page() ? Settings::$menu_slug : $submenu_file;
+	}
+
+	/**
+	 * Whether the current request is for this page.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @return bool
+	 */
+	protected static function is_current_page(): bool {
+		return isset( $_GET['page'] ) && self::SLUG === sanitize_key( wp_unslash( $_GET['page'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -103,7 +151,7 @@ class Tools_Page {
 
 		set_transient( $this->get_result_key(), $stats, HOUR_IN_SECONDS );
 
-		wp_safe_redirect( add_query_arg( 'wzcbh_result', 1, menu_page_url( self::SLUG, false ) ) );
+		wp_safe_redirect( add_query_arg( 'wzcbh_result', 1, self::get_page_url() ) );
 		exit;
 	}
 
@@ -131,7 +179,7 @@ class Tools_Page {
 			}
 			?>
 
-			<form method="post" action="<?php echo esc_url( menu_page_url( self::SLUG, false ) ); ?>">
+			<form method="post" action="<?php echo esc_url( self::get_page_url() ); ?>">
 				<?php wp_nonce_field( self::SLUG ); ?>
 				<p>
 					<button type="submit" name="wzcbh_migrate_action" value="check" class="button"><?php esc_html_e( 'Check posts', 'webberzone-code-block-highlighting' ); ?></button>
@@ -191,7 +239,7 @@ class Tools_Page {
 				</ul>
 			<?php endif; ?>
 			<?php if ( empty( $result['done'] ) ) : ?>
-				<form method="post" action="<?php echo esc_url( menu_page_url( self::SLUG, false ) ); ?>">
+				<form method="post" action="<?php echo esc_url( self::get_page_url() ); ?>">
 					<?php wp_nonce_field( self::SLUG ); ?>
 					<input type="hidden" name="wzcbh_after_id" value="<?php echo esc_attr( (string) (int) $result['last_id'] ); ?>" />
 					<p>

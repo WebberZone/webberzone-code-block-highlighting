@@ -58,13 +58,13 @@ class Admin {
 	public Admin_Banner $admin_banner;
 
 	/**
-	 * Tools page that converts code blocks saved by 1.2.3 and earlier.
+	 * Page that converts code blocks saved by 1.2.3 and earlier.
 	 *
 	 * @since 1.3.0
 	 *
-	 * @var Tools_Page
+	 * @var Convert_Page
 	 */
-	public Tools_Page $tools_page;
+	public Convert_Page $convert_page;
 
 	/**
 	 * Constructor.
@@ -76,7 +76,7 @@ class Admin {
 		$this->admin_notices_api = new Admin_Notices_API();
 		$this->settings_wizard   = new Settings_Wizard();
 		$this->admin_banner      = new Admin_Banner( $this->get_admin_banner_config() );
-		$this->tools_page        = new Tools_Page();
+		$this->convert_page      = new Convert_Page();
 
 		Hook_Registry::add_filter( 'plugin_action_links_' . plugin_basename( WZCBH_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
 	}
@@ -117,9 +117,11 @@ class Admin {
 			),
 			'screen_ids' => array(
 				'settings_page_wzcbh_settings',
+				'settings_page_' . Convert_Page::SLUG,
 			),
 			'page_slugs' => array(
 				'wzcbh_settings',
+				Convert_Page::SLUG,
 			),
 			'strings'    => array(
 				'region_label' => esc_html__( 'Code Block Highlighting quick links', 'webberzone-code-block-highlighting' ),
@@ -134,6 +136,12 @@ class Admin {
 					'url'        => Settings::get_settings_page_url(),
 					'screen_ids' => array( 'settings_page_wzcbh_settings' ),
 					'page_slugs' => array( 'wzcbh_settings' ),
+				),
+				'convert'  => array(
+					'label'      => esc_html__( 'Convert Code Blocks', 'webberzone-code-block-highlighting' ),
+					'url'        => Convert_Page::get_page_url(),
+					'screen_ids' => array( 'settings_page_' . Convert_Page::SLUG ),
+					'page_slugs' => array( Convert_Page::SLUG ),
 				),
 				'plugins'  => array(
 					'label'  => esc_html__( 'WebberZone Plugins', 'webberzone-code-block-highlighting' ),

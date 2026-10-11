@@ -125,7 +125,7 @@ No. WebberZone Code Block Highlighting uses JavaScript and PHP filters to extend
 
 No. Code blocks are saved with the core Code block's own markup, so deactivating simply removes the highlighting and the blocks stay valid.
 
-Blocks last saved with version 1.2.3 or earlier carry extra markup that the core block does not recognize, and show "This block contains unexpected or invalid content" if you deactivate the plugin before they are converted. To convert them, either open and update each post with the plugin active, or convert every post at once from Tools > Convert Code Blocks or with the WP-CLI command `wp wzcbh migrate-code-blocks`. Back up your database first: posts are updated in place without creating revisions.
+Blocks last saved with version 1.2.3 or earlier carry extra markup that the core block does not recognize, and show "This block contains unexpected or invalid content" if you deactivate the plugin before they are converted. To convert them, either open and update each post with the plugin active, or convert every post at once from the **Convert Code Blocks** link in the banner at the top of Settings > Code Block Highlighting, or with the WP-CLI command `wp wzcbh migrate-code-blocks`. Back up your database first: posts are updated in place without creating revisions.
 
 = Which programming languages are supported? =
 
@@ -184,7 +184,7 @@ Release date: 11 October 2026
 
 **Added**
 
-* Tools > Convert Code Blocks screen and `wp wzcbh migrate-code-blocks` WP-CLI command to convert code blocks saved by earlier versions in bulk.
+* Convert Code Blocks screen, linked from the settings page banner, and `wp wzcbh migrate-code-blocks` WP-CLI command to convert code blocks saved by earlier versions in bulk.
 * Per-block color scheme option to override the global color scheme for a single code block, also stored by **Save as default**.
 * Language detection for code blocks with no language set, in server-side mode. Turn on **Detect Language** in the settings; blocks that do not clearly match a language stay plain.
 
@@ -206,4 +206,4 @@ For the changelog of earlier versions, please refer to the [releases page on Git
 == Upgrade Notice ==
 
 = 1.3.0 =
-Code blocks now stay valid if the plugin is deactivated. Existing blocks convert when their post is updated, or all at once from Tools > Convert Code Blocks; back up your database first. Also adds per-block color schemes and server-side language detection.
+Code blocks now stay valid if the plugin is deactivated. Existing blocks convert when their post is updated, or all at once from Convert Code Blocks on the settings page; back up your database first. Also adds per-block color schemes and server-side language detection.
