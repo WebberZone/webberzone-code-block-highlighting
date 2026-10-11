@@ -181,6 +181,7 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 = 1.3.0 =
 
 Release date: 11 October 2026
+Release post: https://webberzone.com/announcements/code-block-highlighting-v1-3/
 
 **Added**
 
