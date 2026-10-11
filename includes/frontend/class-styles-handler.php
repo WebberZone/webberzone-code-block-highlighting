@@ -30,7 +30,7 @@ class Styles_Handler {
 	 */
 	public function __construct() {
 		Hook_Registry::add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
-		Hook_Registry::add_filter( 'render_block_core/code', array( $this, 'enqueue_on_render' ), 5 );
+		Hook_Registry::add_filter( 'render_block_core/code', array( $this, 'enqueue_on_render' ), 5, 2 );
 	}
 
 	/**
@@ -53,9 +53,9 @@ class Styles_Handler {
 		 */
 		$force_load = apply_filters( 'wzcbh_force_load_assets', false ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
-		if ( ! $force_load ) {
-			global $posts;
+		global $posts;
 
+		if ( ! $force_load ) {
 			if ( empty( $posts ) || ! is_array( $posts ) ) {
 				return;
 			}
@@ -77,6 +77,15 @@ class Styles_Handler {
 		}
 
 		$this->enqueue_mode_assets();
+
+		// Found up front so classic themes print them in the head, not the footer.
+		if ( ! empty( $posts ) && is_array( $posts ) ) {
+			foreach ( $posts as $post ) {
+				if ( $post instanceof \WP_Post ) {
+					array_map( array( __CLASS__, 'enqueue_color_scheme' ), self::get_post_color_schemes( $post ) );
+				}
+			}
+		}
 	}
 
 	/**
@@ -88,15 +97,17 @@ class Styles_Handler {
 	 *
 	 * @since 1.3.0
 	 *
-	 * @param  string $block_content The rendered block HTML.
+	 * @param  string               $block_content The rendered block HTML.
+	 * @param  array<string, mixed> $block         The block data array.
 	 * @return string Unchanged block HTML.
 	 */
-	public function enqueue_on_render( string $block_content ): string {
+	public function enqueue_on_render( string $block_content, array $block = array() ): string {
 		if ( is_admin() || wp_is_json_request() || is_feed() || wp_doing_ajax() ) {
 			return $block_content;
 		}
 
 		$this->enqueue_mode_assets();
+		self::enqueue_color_scheme( Settings::sanitize_block_color_scheme( (string) ( $block['attrs']['colorScheme'] ?? '' ) ) );
 
 		return $block_content;
 	}
@@ -139,21 +150,61 @@ class Styles_Handler {
 
 		$seen = array();
 
-		return self::blocks_have_code_block( parse_blocks( $post->post_content ), $seen );
+		return self::walk_blocks(
+			parse_blocks( $post->post_content ),
+			$seen,
+			static function ( array $block ): bool {
+				return 'core/code' === $block['blockName'];
+			}
+		);
 	}
 
 	/**
-	 * Walk parsed blocks for a code block, following synced pattern references.
+	 * Per-block color schemes used by a post's code blocks, including inside its synced patterns.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  \WP_Post $post Post to check.
+	 * @return string[] Registered scheme slugs.
+	 */
+	private static function get_post_color_schemes( \WP_Post $post ): array {
+		if ( false === strpos( $post->post_content, 'colorScheme' ) && ! has_block( 'core/block', $post ) ) {
+			return array();
+		}
+
+		$seen    = array();
+		$schemes = array();
+
+		self::walk_blocks(
+			parse_blocks( $post->post_content ),
+			$seen,
+			static function ( array $block ) use ( &$schemes ): bool {
+				if ( 'core/code' === $block['blockName'] ) {
+					$slug = Settings::sanitize_block_color_scheme( (string) ( $block['attrs']['colorScheme'] ?? '' ) );
+					if ( '' !== $slug ) {
+						$schemes[ $slug ] = true;
+					}
+				}
+				return false;
+			}
+		);
+
+		return array_keys( $schemes );
+	}
+
+	/**
+	 * Walk parsed blocks, following synced pattern references, until the visitor returns true.
 	 *
 	 * @since 1.3.0
 	 *
 	 * @param  array<int, array<string, mixed>> $blocks Parsed blocks.
 	 * @param  array<int, true>                 $seen   Synced pattern IDs already followed, so nested references cannot loop.
-	 * @return bool
+	 * @param  callable                         $visit  Receives each block; returning true stops the walk.
+	 * @return bool Whether the visitor stopped the walk.
 	 */
-	private static function blocks_have_code_block( array $blocks, array &$seen ): bool {
+	private static function walk_blocks( array $blocks, array &$seen, callable $visit ): bool {
 		foreach ( $blocks as $block ) {
-			if ( 'core/code' === $block['blockName'] ) {
+			if ( $visit( $block ) ) {
 				return true;
 			}
 
@@ -163,12 +214,12 @@ class Styles_Handler {
 				$seen[ $ref ] = true;
 				$pattern      = get_post( $ref );
 
-				if ( $pattern instanceof \WP_Post && 'wp_block' === $pattern->post_type && self::blocks_have_code_block( parse_blocks( $pattern->post_content ), $seen ) ) {
+				if ( $pattern instanceof \WP_Post && 'wp_block' === $pattern->post_type && self::walk_blocks( parse_blocks( $pattern->post_content ), $seen, $visit ) ) {
 					return true;
 				}
 			}
 
-			if ( ! empty( $block['innerBlocks'] ) && self::blocks_have_code_block( $block['innerBlocks'], $seen ) ) {
+			if ( ! empty( $block['innerBlocks'] ) && self::walk_blocks( $block['innerBlocks'], $seen, $visit ) ) {
 				return true;
 			}
 		}
@@ -344,10 +395,11 @@ class Styles_Handler {
 	 *
 	 * @since 1.0.0
 	 *
+	 * @param  string $slug A registered color scheme slug; defaults to the global scheme.
 	 * @return string File name relative to includes/assets/.
 	 */
-	private static function get_prism_theme_css_file_name(): string {
-		$option   = Settings::get_color_scheme_slug();
+	private static function get_prism_theme_css_file_name( string $slug = '' ): string {
+		$option   = '' !== $slug ? $slug : Settings::get_color_scheme_slug();
 		$min      = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
 		$rtl_part = is_rtl() ? '-rtl' : '';
 
@@ -384,8 +436,55 @@ class Styles_Handler {
 	 * @return string
 	 */
 	private static function get_prism_color_scheme_version(): string {
-		$path = self::get_prism_theme_css_path();
+		return self::get_file_version( self::get_prism_theme_css_path() );
+	}
 
+	/**
+	 * Get a cache-busting version string for an asset file.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  string $path Absolute filesystem path.
+	 * @return string
+	 */
+	private static function get_file_version( string $path ): string {
 		return file_exists( $path ) ? (string) filemtime( $path ) : WZCBH_VERSION;
+	}
+
+	/**
+	 * Enqueue the scoped CSS and file tab colours for a per-block color scheme, once.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  string $slug A registered color scheme slug, or empty for none.
+	 */
+	private static function enqueue_color_scheme( string $slug ): void {
+		if ( '' === $slug || Settings::get_color_scheme_slug() === $slug ) {
+			return;
+		}
+
+		$handle = 'wzcbh-prism-theme-' . $slug;
+
+		if ( wp_style_is( $handle, 'enqueued' ) ) {
+			return;
+		}
+
+		$file_name = self::get_prism_theme_css_file_name( $slug );
+
+		wp_enqueue_style(
+			$handle,
+			WZCBH_PLUGIN_URL . 'includes/assets/scoped/' . $file_name,
+			array( 'wzcbh-prism-theme' ),
+			self::get_file_version( WZCBH_PLUGIN_DIR . 'includes/assets/scoped/' . $file_name )
+		);
+
+		$colors = Settings::extract_theme_colors( WZCBH_PLUGIN_DIR . 'includes/assets/' . $file_name );
+		$vars   = '--wzcbh-tab-bg: ' . ( '' !== $colors['background'] ? $colors['background'] : Settings::FALLBACK_TAB_BACKGROUND ) . ';';
+
+		if ( '' !== $colors['color'] ) {
+			$vars .= ' --wzcbh-tab-color: ' . $colors['color'] . ';';
+		}
+
+		wp_add_inline_style( $handle, '.' . Blocks::get_color_scheme_class( $slug ) . ' {' . $vars . '}' );
 	}
 }

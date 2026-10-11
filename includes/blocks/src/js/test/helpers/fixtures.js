@@ -105,8 +105,13 @@ export const current = {
 			highlightLines: '2',
 			maxHeight: 120,
 			downloadButton: 'hide',
+			colorScheme: 'prism-nord',
 		},
 		`<pre class="wp-block-code my-class has-vivid-red-background-color has-background"><code>${CODE}</code></pre>`
+	),
+	colorScheme: block(
+		{ colorScheme: 'prism-one-light' },
+		`<pre class="wp-block-code"><code>${CODE}</code></pre>`
 	),
 	plain: block(null, `<pre class="wp-block-code"><code>${CODE}</code></pre>`),
 };

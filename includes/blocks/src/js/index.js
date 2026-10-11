@@ -19,16 +19,20 @@ import {
 	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
+import { select } from '@wordpress/data';
 import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 
-/* global cbhLanguages, cbhDefaultLang, cbhDefaultSettings */
+/* global cbhLanguages, cbhDefaultLang, cbhDefaultSettings, cbhColorSchemes */
+
+// Blocks already given defaults; moving a block remounts its edit component.
+const initialisedBlocks = new Set();
 
 /**
  * Edit function for core/code block.
  */
-const edit = ({ attributes, setAttributes }) => {
+const edit = ({ attributes, setAttributes, clientId }) => {
 	const {
 		content,
 		language,
@@ -40,26 +44,42 @@ const edit = ({ attributes, setAttributes }) => {
 		highlightLines,
 		maxHeight,
 		downloadButton,
+		colorScheme,
 	} = attributes;
 	const [isSaving, setIsSaving] = useState(false);
 	const [savedNotice, setSavedNotice] = useState('');
 
-	// Apply saved defaults only on initial mount (newly inserted blocks have undefined attrs).
 	useEffect(() => {
-		const defaults =
-			typeof cbhDefaultSettings !== 'undefined' ? cbhDefaultSettings : {};
 		const updates = {};
 
-		if (!language)
-			updates.language = defaults.language || cbhDefaultLang || '';
-		if (lineNumbers === undefined && 'lineNumbers' in defaults)
-			updates.lineNumbers = defaults.lineNumbers;
-		if (lineNumbersStart === undefined && defaults.lineNumbersStart > 1)
-			updates.lineNumbersStart = defaults.lineNumbersStart;
-		if (wordWrap === undefined && 'wordWrap' in defaults)
-			updates.wordWrap = defaults.wordWrap;
-		if (maxHeight === undefined && defaults.maxHeight > 0)
-			updates.maxHeight = defaults.maxHeight;
+		// Parsed blocks carry originalContent; only newly inserted ones take the saved defaults.
+		const isNew =
+			!initialisedBlocks.has(clientId) &&
+			select('core/block-editor').getBlock(clientId)?.originalContent ===
+				undefined;
+		initialisedBlocks.add(clientId);
+
+		if (isNew) {
+			const defaults =
+				typeof cbhDefaultSettings !== 'undefined'
+					? cbhDefaultSettings
+					: {};
+			const defaultLang = defaults.language || cbhDefaultLang;
+
+			if (!language && defaultLang) updates.language = defaultLang;
+			if (lineNumbers === undefined && defaults.lineNumbers)
+				updates.lineNumbers = true;
+			if (lineNumbersStart === undefined && defaults.lineNumbersStart > 1)
+				updates.lineNumbersStart = defaults.lineNumbersStart;
+			if (wordWrap === undefined && defaults.wordWrap)
+				updates.wordWrap = true;
+			if (maxHeight === undefined && defaults.maxHeight > 0)
+				updates.maxHeight = defaults.maxHeight;
+			if (downloadButton === undefined && defaults.downloadButton)
+				updates.downloadButton = defaults.downloadButton;
+			if (colorScheme === undefined && defaults.colorScheme)
+				updates.colorScheme = defaults.colorScheme;
+		}
 
 		// Migrate title from old code-syntax-block format (pre[title]) to ours
 		// (pre[data-title]). Mirrors the toolbar JS: getAttribute('data-title') ||
@@ -82,6 +102,8 @@ const edit = ({ attributes, setAttributes }) => {
 					lineNumbersStart: lineNumbersStart || 1,
 					wordWrap: !!wordWrap,
 					maxHeight: maxHeight || 0,
+					downloadButton: downloadButton || '',
+					colorScheme: colorScheme || '',
 				},
 			});
 			setSavedNotice(
@@ -99,7 +121,11 @@ const edit = ({ attributes, setAttributes }) => {
 
 	const blockProps = useBlockProps({
 		className:
-			[language ? `language-${language}` : '', wordWrap ? 'word-wrap' : '']
+			[
+				language ? `language-${language}` : '',
+				wordWrap ? 'word-wrap' : '',
+				colorScheme ? `wzcbh-theme-${colorScheme}` : '',
+			]
 				.filter(Boolean)
 				.join(' ') || undefined,
 		style: maxHeight
@@ -276,6 +302,38 @@ const edit = ({ attributes, setAttributes }) => {
 							onChange={(val) =>
 								setAttributes({
 									downloadButton: val || undefined,
+								})
+							}
+						/>
+					</PanelRow>
+					<PanelRow>
+						<SelectControl
+							label={__(
+								'Color scheme',
+								'webberzone-code-block-highlighting'
+							)}
+							help={__(
+								'Override the global color scheme for this block.',
+								'webberzone-code-block-highlighting'
+							)}
+							value={colorScheme || ''}
+							options={[
+								{
+									label: __(
+										'Use global setting',
+										'webberzone-code-block-highlighting'
+									),
+									value: '',
+								},
+							].concat(
+								Object.keys(cbhColorSchemes).map((slug) => ({
+									label: cbhColorSchemes[slug],
+									value: slug,
+								}))
+							)}
+							onChange={(val) =>
+								setAttributes({
+									colorScheme: val || undefined,
 								})
 							}
 						/>
@@ -522,6 +580,10 @@ const addSyntaxToCodeBlock = (settings, name, deprecation) => {
 		// Tri-state override of the global download setting: undefined
 		// inherits it, 'show' and 'hide' force it.
 		downloadButton: {
+			type: 'string',
+		},
+		// Registered scheme slug; undefined inherits the global scheme.
+		colorScheme: {
 			type: 'string',
 		},
 		title: {

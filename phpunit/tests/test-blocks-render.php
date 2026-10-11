@@ -557,4 +557,117 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 			'server' => array( 'server' ),
 		);
 	}
+
+	/**
+	 * A per-block color scheme wraps the block in its scope class in both modes.
+	 *
+	 * @param string $mode Highlighting mode.
+	 *
+	 * @dataProvider data_modes
+	 */
+	public function test_color_scheme_wraps_the_block( $mode ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		$html = $this->render_core_markup(
+			array(
+				'language'    => 'php',
+				'colorScheme' => 'prism-nord',
+			)
+		);
+
+		$this->assertStringStartsWith( '<div class="wzcbh-theme-prism-nord">', $html );
+		$this->assertSame( 1, substr_count( $html, 'wzcbh-theme-' ) );
+	}
+
+	/**
+	 * With a file tab, the scope class goes on the tab wrapper so the tab takes the scheme's colours.
+	 *
+	 * @param string $mode Highlighting mode.
+	 *
+	 * @dataProvider data_modes
+	 */
+	public function test_color_scheme_scopes_the_file_tab_wrapper( $mode ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		$html = $this->render_core_markup(
+			array(
+				'language'    => 'php',
+				'title'       => 'demo.php',
+				'colorScheme' => 'prism-one-light',
+			)
+		);
+
+		$this->assertStringStartsWith( '<div class="wzcbh-code-wrapper wzcbh-code-wrapper--php wzcbh-theme-prism-one-light">', $html );
+		$this->assertSame( 1, substr_count( $html, 'wzcbh-theme-' ) );
+	}
+
+	/**
+	 * An unregistered or empty scheme renders exactly as a block without one.
+	 *
+	 * @param string $mode Highlighting mode.
+	 *
+	 * @dataProvider data_modes
+	 */
+	public function test_invalid_color_scheme_is_ignored( $mode ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		$expected = $this->render_core_markup( array( 'language' => 'php' ) );
+
+		foreach ( array( '', 'prism-missing', '../prism-nord', 'prism-nord"><script>' ) as $scheme ) {
+			$this->assertSame(
+				$expected,
+				$this->render_core_markup(
+					array(
+						'language'    => 'php',
+						'colorScheme' => $scheme,
+					)
+				)
+			);
+		}
+	}
+
+	/**
+	 * Save as default stores every block setting, including the color scheme and download override.
+	 */
+	public function test_save_default_settings_stores_all_block_settings() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		do_action( 'rest_api_init' );
+
+		$request = new WP_REST_Request( 'POST', '/wzcbh/v1/default-settings' );
+		$request->set_body_params(
+			array(
+				'language'         => 'php',
+				'lineNumbers'      => true,
+				'lineNumbersStart' => 3,
+				'wordWrap'         => true,
+				'maxHeight'        => 200,
+				'downloadButton'   => 'hide',
+				'colorScheme'      => 'prism-nord',
+			)
+		);
+		$response = rest_do_request( $request );
+		\WebberZone\Code_Block_Highlighting\Options_API::flush_cache();
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'php', wzcbh_get_option( 'default-lang' ) );
+		$this->assertSame( 3, (int) wzcbh_get_option( 'default-line-numbers-start' ) );
+		$this->assertSame( 200, (int) wzcbh_get_option( 'default-max-height' ) );
+		$this->assertSame( 'hide', wzcbh_get_option( 'default-download-button' ) );
+		$this->assertSame( 'prism-nord', wzcbh_get_option( 'default-color-scheme' ) );
+		$this->assertSame( 'prism-onedark', \WebberZone\Code_Block_Highlighting\Admin\Settings::get_color_scheme_slug() );
+	}
+
+	/**
+	 * An unregistered color scheme is rejected rather than stored as a default.
+	 */
+	public function test_save_default_settings_rejects_unknown_color_scheme() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		do_action( 'rest_api_init' );
+
+		$request = new WP_REST_Request( 'POST', '/wzcbh/v1/default-settings' );
+		$request->set_body_params( array( 'colorScheme' => '../prism-nord' ) );
+
+		$this->assertSame( 400, rest_do_request( $request )->get_status() );
+		$this->assertSame( '', (string) wzcbh_get_option( 'default-color-scheme', '' ) );
+	}
 }

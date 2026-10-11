@@ -25,6 +25,14 @@ describe('core/code with the plugin', () => {
 		);
 	});
 
+	it('keeps colorScheme in the block comment, not the markup', () => {
+		const [block] = parse(current.colorScheme);
+		expect(block.attributes.colorScheme).toBe('prism-one-light');
+		const html = serialize(block);
+		expect(html).toContain('"colorScheme":"prism-one-light"');
+		expect(getBlockContent(block)).not.toMatch(/wzcbh-theme|prism-one-light/);
+	});
+
 	it.each(Object.entries(legacy))(
 		'%s markup from 1.2.3 migrates',
 		(name, [markup, expected]) => {
@@ -47,7 +55,7 @@ describe('core/code with the plugin', () => {
 				__unstableSkipMigrationLogs: true,
 			});
 			const html = serialize(block);
-			expect(html).not.toMatch(/ lang=| data-title=| data-line=| data-start=| title=|max-height|line-numbers|word-wrap|language-/);
+			expect(html).not.toMatch(/ lang=| data-title=| data-line=| data-start=| title=|max-height|line-numbers|word-wrap|language-|wzcbh-theme/);
 		}
 	);
 });

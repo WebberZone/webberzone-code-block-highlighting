@@ -53,6 +53,15 @@ class Settings {
 	);
 
 	/**
+	 * Background used when a theme's own resolves to transparent; matches the `--wzcbh-tab-bg` default in frontend.css.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @var string
+	 */
+	public const FALLBACK_TAB_BACKGROUND = '#2d2d2d';
+
+	/**
 	 * Settings prefix.
 	 *
 	 * @var string
@@ -400,6 +409,18 @@ class Settings {
 		$option = (string) wzcbh_get_option( 'color-scheme', 'prism-onedark' );
 
 		return array_key_exists( $option, self::$color_schemes ) ? $option : 'prism-onedark';
+	}
+
+	/**
+	 * Validate a per-block color scheme slug.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  string $slug Slug from the block's `colorScheme` attribute.
+	 * @return string The slug when registered, otherwise an empty string (inherit the global scheme).
+	 */
+	public static function sanitize_block_color_scheme( string $slug ): string {
+		return array_key_exists( $slug, self::$color_schemes ) ? $slug : '';
 	}
 
 	/**

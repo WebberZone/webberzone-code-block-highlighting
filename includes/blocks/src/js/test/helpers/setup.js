@@ -5,6 +5,7 @@ import { __experimentalGetCoreBlocks } from '@wordpress/block-library';
 global.cbhLanguages = { php: 'PHP', javascript: 'JavaScript' };
 global.cbhDefaultLang = '';
 global.cbhDefaultSettings = {};
+global.cbhColorSchemes = { 'prism-nord': 'Nord', 'prism-one-light': 'One Light' };
 
 export function registerCoreCode() {
 	if (getBlockType('core/code')) {

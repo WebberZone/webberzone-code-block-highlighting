@@ -185,12 +185,18 @@ Release date: TBD
 **Added**
 
 * Tools > Convert Code Blocks screen and `wp wzcbh migrate-code-blocks` WP-CLI command to convert code blocks saved by earlier versions in bulk.
+* Per-block color scheme option to override the global color scheme for a single code block, also stored by **Save as default**.
+
+**Changed**
+
+* **Save as default** now also stores the block's download button setting.
 
 **Fixed**
 
 * Code blocks with a language, file name, highlighted lines, max height or custom start line showed "This block contains unexpected or invalid content" after the plugin was deactivated. Blocks saved by earlier versions convert when their post is updated.
 * In server-side mode, a custom start line was ignored when the block also had a max height or a spacing style.
 * Code blocks inside synced patterns, widgets or templates were not highlighted when the post content itself had no code block.
+* Opening a post in the editor applied the saved block defaults to its existing code blocks and marked the post as changed. Defaults now apply only to newly inserted blocks.
 
 = Earlier versions =
 

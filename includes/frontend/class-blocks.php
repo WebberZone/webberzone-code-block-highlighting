@@ -77,6 +77,8 @@ class Blocks {
 			'lineNumbersStart' => (int) wzcbh_get_option( 'default-line-numbers-start', 1 ),
 			'wordWrap'         => (bool) wzcbh_get_option( 'default-word-wrap', false ),
 			'maxHeight'        => (int) wzcbh_get_option( 'default-max-height', 0 ),
+			'downloadButton'   => (string) wzcbh_get_option( 'default-download-button', '' ),
+			'colorScheme'      => Settings::sanitize_block_color_scheme( (string) wzcbh_get_option( 'default-color-scheme', '' ) ),
 		);
 
 		$flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
@@ -88,6 +90,7 @@ class Blocks {
 					'const cbhLanguages = ' . wp_json_encode( $languages, $flags ) . ';',
 					'const cbhDefaultLang = ' . wp_json_encode( $default_lang, $flags ) . ';',
 					'const cbhDefaultSettings = ' . wp_json_encode( $default_settings, $flags ) . ';',
+					'const cbhColorSchemes = ' . wp_json_encode( Settings::$color_schemes, $flags ) . ';',
 				)
 			),
 			'before'
@@ -152,6 +155,35 @@ class Blocks {
 				);
 			}
 		}
+
+		if ( wp_style_is( 'wzcbh-editor-canvas-style', 'enqueued' ) ) {
+			wp_add_inline_style( 'wzcbh-editor-canvas-style', self::get_editor_color_scheme_css() );
+		}
+	}
+
+	/**
+	 * Build the editor canvas rules for every per-block color scheme, since a block can switch at any time.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @return string
+	 */
+	protected static function get_editor_color_scheme_css(): string {
+		$css = '';
+
+		foreach ( array_keys( Settings::$color_schemes ) as $slug ) {
+			$colors = Settings::extract_theme_colors( WZCBH_PLUGIN_DIR . "includes/assets/{$slug}.css" );
+			// A transparent theme background (Synthwave '84) would show the global scheme through.
+			$props = array( 'background: ' . ( '' !== $colors['background'] ? $colors['background'] : Settings::FALLBACK_TAB_BACKGROUND ) . ';' );
+
+			if ( '' !== $colors['color'] ) {
+				$props[] = 'color: ' . $colors['color'] . ';';
+			}
+
+			$css .= '.block-editor-block-list__layout pre.wp-block-code.' . self::get_color_scheme_class( $slug ) . '{' . implode( ' ', $props ) . '}';
+		}
+
+		return $css;
 	}
 
 	/**
@@ -187,6 +219,14 @@ class Blocks {
 					'maxHeight'        => array(
 						'type'    => 'integer',
 						'minimum' => 0,
+					),
+					'downloadButton'   => array(
+						'type' => 'string',
+						'enum' => array( '', 'show', 'hide' ),
+					),
+					'colorScheme'      => array(
+						'type' => 'string',
+						'enum' => array_merge( array( '' ), array_keys( Settings::$color_schemes ) ),
 					),
 				),
 			)
@@ -227,6 +267,16 @@ class Blocks {
 		if ( $request->has_param( 'maxHeight' ) ) {
 			wzcbh_update_option( 'default-max-height', (int) $request->get_param( 'maxHeight' ) );
 			$updated[] = 'maxHeight';
+		}
+
+		if ( $request->has_param( 'downloadButton' ) ) {
+			wzcbh_update_option( 'default-download-button', (string) $request->get_param( 'downloadButton' ) );
+			$updated[] = 'downloadButton';
+		}
+
+		if ( $request->has_param( 'colorScheme' ) ) {
+			wzcbh_update_option( 'default-color-scheme', Settings::sanitize_block_color_scheme( (string) $request->get_param( 'colorScheme' ) ) );
+			$updated[] = 'colorScheme';
 		}
 
 		return new \WP_REST_Response( array( 'updated' => $updated ), 200 );
@@ -272,6 +322,7 @@ class Blocks {
 			'title'              => sanitize_text_field( $attrs['title'] ?? '' ),
 			'highlight_lines'    => sanitize_text_field( $attrs['highlightLines'] ?? '' ),
 			'max_height'         => max( 0, (int) ( $attrs['maxHeight'] ?? 0 ) ),
+			'color_scheme'       => Settings::sanitize_block_color_scheme( (string) ( $attrs['colorScheme'] ?? '' ) ),
 		);
 
 		// Resolved before either render path runs: both mutate `language` ('' in
@@ -286,7 +337,39 @@ class Blocks {
 			$block_content = $this->render_code_block_client( $block_content, $params );
 		}
 
-		return $this->maybe_add_file_tab( $block_content, $params );
+		$has_tab       = self::has_file_tab( $params );
+		$block_content = $this->maybe_add_file_tab( $block_content, $params );
+
+		// An ancestor, so the scope also reaches the toolbar Prism wraps around the <pre>.
+		if ( $params['color_scheme'] && ! $has_tab ) {
+			$block_content = '<div class="' . esc_attr( self::get_color_scheme_class( $params['color_scheme'] ) ) . '">' . $block_content . '</div>';
+		}
+
+		return $block_content;
+	}
+
+	/**
+	 * Get the class that scopes a per-block color scheme.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  string $slug A registered color scheme slug.
+	 * @return string
+	 */
+	public static function get_color_scheme_class( string $slug ): string {
+		return 'wzcbh-theme-' . $slug;
+	}
+
+	/**
+	 * Whether a block renders its file name as a tab.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  array<string,mixed> $params Normalised block parameters.
+	 * @return bool
+	 */
+	protected static function has_file_tab( array $params ): bool {
+		return '' !== (string) $params['title'] && self::is_file_tab_style();
 	}
 
 	/**
@@ -442,14 +525,17 @@ class Blocks {
 	 * @return string
 	 */
 	protected function maybe_add_file_tab( string $block_content, array $params ): string {
-		$title = (string) $params['title'];
-
-		if ( '' === $title || ! self::is_file_tab_style() ) {
+		if ( ! self::has_file_tab( $params ) ) {
 			return $block_content;
 		}
 
+		$title    = (string) $params['title'];
 		$language = (string) $params['language'];
 		$classes  = 'wzcbh-code-wrapper' . ( $language ? ' wzcbh-code-wrapper--' . sanitize_html_class( $language ) : '' );
+
+		if ( ! empty( $params['color_scheme'] ) ) {
+			$classes .= ' ' . self::get_color_scheme_class( (string) $params['color_scheme'] );
+		}
 
 		$tab = '<div class="wzcbh-file-tab"><span class="wzcbh-file-tab__name">'
 			. esc_html( $title ) . '</span></div>';

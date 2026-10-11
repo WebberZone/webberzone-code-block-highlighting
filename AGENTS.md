@@ -75,9 +75,13 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 ## Non-obvious implementation details
 
+**Block defaults apply to new blocks only** — the edit component's mount effect applies `cbhDefaultSettings` (saved by **Save as default**) only when the block has no `originalContent`, which every parsed block carries and `createBlock()` does not; `initialisedBlocks` stops a remount (moving the block) from reapplying them. Existing blocks are never changed on load. `_legacyTitle` migration still runs for every block.
+
 **`_legacyTitle` attribute** — read-only migration attribute; copies `title` from old `code-syntax-block` format on first load, then clears itself.
 
 **Saved markup is core's** — the block filter keeps core's `save()`, so every option (`language` and `title` included) lives in the block comment and the render filter adds the classes, `data-*` attributes and max-height style. This is what keeps blocks valid when the plugin is deactivated; never write plugin attributes from a `save()`. Markup saved by ≤1.2.3 (`lang` on `<code>`, `data-title`/`data-start`/`data-line`/max-height `style`/managed classes on `<pre>`) is handled by `pluginSaveDeprecation` in `index.js` — its `isEligible` catches line-numbers/word-wrap-only blocks that would otherwise validate with those classes folded into `className`, and it carries `supports` because deprecations don't inherit them. `render_code_block()` keeps regex fallbacks for unconverted posts. `Code_Block_Migrator` (`includes/class-code-block-migrator.php`) is the PHP twin of those deprecations, used by `wp wzcbh migrate-code-blocks` (`class-cli.php`) and Tools > Convert Code Blocks (`admin/class-tools-page.php`): it must produce byte-for-byte what the editor writes on re-save, so change both together. It rewrites only the matched `wp:code` spans and writes `post_content` with `$wpdb->update()` — `wp_update_post()` runs kses for users without `unfiltered_html` (WP-CLI, multisite site admins) and strips code.
+
+**Per-block color scheme** — the `colorScheme` comment attribute (`''` inherits) is validated by `Settings::sanitize_block_color_scheme()` and rendered as a `wzcbh-theme-{slug}` class on an *ancestor* of the `<pre>` — the file tab wrapper when there is one, otherwise a plain `<div>` — so it also reaches the tab and the `.code-toolbar` Prism adds around the `<pre>` at runtime. `build-prism.js` writes each theme scoped under that class to `includes/assets/scoped/` (postcss), prefixed with a reset that restores `frontend.css` defaults (tokens, toolbar, line highlight, gutter) so the unscoped global theme cannot leak through; tokens reset to `inherit` because Synthwave's glow inherits from `code`. Non-transparent base backgrounds are promoted to `!important` to beat a global Synthwave's `background-color: transparent !important`. `Styles_Handler::enqueue_color_scheme()` loads `wzcbh-prism-theme-{slug}` (depends on `wzcbh-prism-theme`) plus inline `--wzcbh-tab-*` vars on the scope class; it skips the global scheme. Schemes in main-query posts (and their synced patterns) are found up front so classic themes get them in `<head>`; `enqueue_on_render()` covers the rest. The editor gets background/colour rules for every scheme from `get_editor_color_scheme_css()`.
 
 **`maxHeight`** — rendered as an inline `max-height` style on `<pre>` by both render paths (skipped when ≤1.2.3 markup already carries it); the expand button keys off `pre.style.maxHeight`.
 
@@ -122,7 +126,7 @@ Assets load only on pages containing at least one `core/code` block. `Styles_Han
 1. Add the theme mapping in `build-prism.js`
 2. Copy the CSS to `includes/assets/`
 3. Register the slug in `includes/admin/class-settings.php`
-4. Run `pnpm run build:prism`
+4. Run `pnpm run build:prism` twice — `build-assets.js` builds `-rtl.min.css` from the `.min.css` files that existed when it started, so a new theme (and its `scoped/` copy) only gets one on the second run
 
 ## Adding a language
 

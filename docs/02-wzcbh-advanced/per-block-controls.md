@@ -58,9 +58,13 @@ A dropdown that overrides the global **Download Snippet** setting for this block
 
 The downloaded file is named after **File name or title** when one is set; otherwise it is `snippet.{ext}`, with the extension derived from the block's language. The button works identically in client-side and server-side modes, and the line-numbers gutter is excluded from the saved file.
 
+## Color Scheme
+
+A dropdown that overrides the global **Color Scheme** setting for this block. **Use global setting** (default) follows the settings page; any other choice styles this block, its file name tab and its toolbar with that theme in both client-side and server-side modes. The editor preview shows the chosen theme's background and text color. The theme's stylesheet loads only on pages that use it.
+
 ## Save as Default
 
-After configuring the controls above, click **Save as default** at the bottom of the **Syntax Highlighting** panel to copy the current block's settings (language, line numbers, line numbers start, word wrap, max height) into the global `default-lang` setting and the equivalent global defaults. Future code blocks inserted via the editor will inherit these values.
+After configuring the controls above, click **Save as default** at the bottom of the **Syntax Highlighting** panel to copy the current block's settings (language, line numbers, line numbers start, word wrap, max height, download button and color scheme) into the global defaults. Future code blocks inserted via the editor will inherit these values. The file name and highlighted lines are specific to each snippet, so they are not saved. Saving a color scheme as the default only affects new blocks; the global **Color Scheme** setting is unchanged.
 
 The button calls the `POST /wzcbh/v1/default-settings` REST endpoint under the `wzcbh/v1` namespace. Only users with the `manage_options` capability can call it. See the [Developer Reference](https://webberzone.com/support/knowledgebase/code-block-highlighting-developer-reference/) for the full route schema.
 
