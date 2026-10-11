@@ -212,15 +212,16 @@ class Settings {
 	 */
 	public static function get_defaults(): array {
 		return array(
-			'highlighting-mode'   => 'client',
-			'color-scheme'        => 'prism-onedark',
-			'copy-to-clipboard'   => 1,
-			'download-button'     => 1,
-			'show-language-label' => 1,
-			'show-file-name'      => 1,
-			'file-name-style'     => 'tab',
-			'default-lang'        => '',
-			'font-size'           => 0,
+			'highlighting-mode'    => 'client',
+			'color-scheme'         => 'prism-onedark',
+			'copy-to-clipboard'    => 1,
+			'download-button'      => 1,
+			'show-language-label'  => 1,
+			'show-file-name'       => 1,
+			'file-name-style'      => 'tab',
+			'auto-detect-language' => 0,
+			'default-lang'         => '',
+			'font-size'            => 0,
 		);
 	}
 
@@ -246,6 +247,13 @@ class Settings {
 						'client' => __( 'Client-side (Prism.js)', 'webberzone-code-block-highlighting' ),
 						'server' => __( 'Server-side (highlight.php)', 'webberzone-code-block-highlighting' ),
 					),
+				),
+				array(
+					'id'      => 'auto-detect-language',
+					'name'    => __( 'Detect Language', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Server-side mode only. Detect the language of code blocks that have none set, and highlight them. Blocks set to Plain Text are left as they are, and blocks that do not clearly match a language stay plain.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'checkbox',
+					'default' => $defaults['auto-detect-language'],
 				),
 				array(
 					'id'      => 'color-scheme',

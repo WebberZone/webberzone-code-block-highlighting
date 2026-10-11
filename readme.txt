@@ -186,6 +186,7 @@ Release date: TBD
 
 * Tools > Convert Code Blocks screen and `wp wzcbh migrate-code-blocks` WP-CLI command to convert code blocks saved by earlier versions in bulk.
 * Per-block color scheme option to override the global color scheme for a single code block, also stored by **Save as default**.
+* Language detection for code blocks with no language set, in server-side mode. Turn on **Detect Language** in the settings; blocks that do not clearly match a language stay plain.
 
 **Changed**
 
@@ -205,4 +206,4 @@ For the changelog of earlier versions, please refer to the [releases page on Git
 == Upgrade Notice ==
 
 = 1.3.0 =
-Code blocks now stay valid if the plugin is deactivated. Existing blocks convert when their post is updated, or all at once from Tools > Convert Code Blocks. Back up your database before converting.
+Code blocks now stay valid if the plugin is deactivated. Existing blocks convert when their post is updated, or all at once from Tools > Convert Code Blocks; back up your database first. Also adds per-block color schemes and server-side language detection.

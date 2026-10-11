@@ -325,13 +325,20 @@ class Blocks {
 			'color_scheme'       => Settings::sanitize_block_color_scheme( (string) ( $attrs['colorScheme'] ?? '' ) ),
 		);
 
+		$server_mode = 'server' === wzcbh_get_option( 'highlighting-mode', 'client' );
+
+		// Before the download filename, so a detected language also sets the extension.
+		if ( $server_mode && '' === $params['language'] && wzcbh_get_option( 'auto-detect-language', false ) ) {
+			$params['language'] = self::detect_language( $block_content );
+		}
+
 		// Resolved before either render path runs: both mutate `language` ('' in
 		// client mode, 'none' in server mode) for plain-text blocks, which would
 		// lose the .txt extension if the filename were derived afterwards.
 		$params['download']          = self::is_download_enabled( (string) ( $attrs['downloadButton'] ?? '' ) );
 		$params['download_filename'] = self::get_download_filename( $params['title'], $params['language'] );
 
-		if ( 'server' === wzcbh_get_option( 'highlighting-mode', 'client' ) ) {
+		if ( $server_mode ) {
 			$block_content = $this->render_code_block_server( $block_content, $params );
 		} else {
 			$block_content = $this->render_code_block_client( $block_content, $params );
@@ -1395,5 +1402,133 @@ class Blocks {
 		 * @param array<string, string> $languages Language slug => display label.
 		 */
 		return apply_filters( 'wzcbh_languages', $languages ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+	}
+
+	/**
+	 * Detect the language of a code block that has none set, for server mode.
+	 *
+	 * Detection highlights the code once per candidate language, so the result,
+	 * including no match, is cached per code block.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  string $block_content The rendered block HTML.
+	 * @return string Prism language slug, or an empty string when none is detected.
+	 */
+	protected static function detect_language( string $block_content ): string {
+		if ( ! preg_match( '/<code[^>]*>([\s\S]*?)<\/code>/i', $block_content, $m ) ) {
+			return '';
+		}
+		$code = html_entity_decode( $m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+
+		/**
+		 * Filter the largest code block whose language is detected server-side.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param int $limit Size limit in bytes. Zero or less disables detection.
+		 */
+		$limit = (int) apply_filters( 'wzcbh_auto_detect_max_bytes', 16384 ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+		if ( '' === trim( $code, " \t\n\r\0\x0B" ) || strlen( $code ) > min( $limit, self::get_highlight_size_limit( '' ) ) ) {
+			return '';
+		}
+
+		$slugs = self::get_auto_detect_languages();
+		if ( ! $slugs ) {
+			return '';
+		}
+
+		/**
+		 * Filter the relevance highlight.php must score before a detected language is used.
+		 *
+		 * Lower values detect more blocks, but label more plain text as code.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param int $min_relevance Minimum relevance. Default 6.
+		 */
+		$min_relevance = (int) apply_filters( 'wzcbh_auto_detect_min_relevance', 6 ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+		$cache_key = 'wzcbh_lang_' . md5( WZCBH_VERSION . '|' . implode( ',', $slugs ) . '|' . $min_relevance . '|' . $code );
+		$cached    = get_transient( $cache_key );
+		if ( is_string( $cached ) ) {
+			return $cached;
+		}
+
+		$language = '';
+		try {
+			$candidates = self::get_detection_candidates( $slugs );
+			$result     = self::get_highlighter()->highlightAuto( $code, array_keys( $candidates ) );
+
+			if ( $result->relevance >= $min_relevance && isset( $candidates[ $result->language ] ) ) {
+				$language = $candidates[ $result->language ];
+			}
+		} catch ( \Throwable $e ) {
+			$language = '';
+		}
+
+		set_transient( $cache_key, $language, MONTH_IN_SECONDS );
+
+		return $language;
+	}
+
+	/**
+	 * Languages, as Prism slugs, that server-side detection chooses between.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @return string[]
+	 */
+	protected static function get_auto_detect_languages(): array {
+		// Earlier wins a tie. Groovy and Vim match prose, TypeScript and Dart outscore JavaScript, and TOML is only INI here.
+		$preferred = array( 'php', 'markup', 'css', 'sass', 'javascript', 'json', 'sql', 'bash', 'yaml', 'python', 'ruby', 'java', 'c', 'cpp', 'csharp', 'go', 'rust', 'kotlin', 'swift', 'perl', 'lua', 'r', 'haskell', 'scala', 'fsharp', 'objectivec', 'powershell', 'markdown', 'nginx', 'apacheconf', 'docker' );
+		$slugs     = array_values( array_intersect( $preferred, array_keys( self::get_languages() ) ) );
+
+		/**
+		 * Filter the languages that server-side detection chooses between.
+		 *
+		 * On a tie, the language listed first wins.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param string[] $slugs Prism language slugs, most likely first.
+		 */
+		$slugs = (array) apply_filters( 'wzcbh_auto_detect_languages', $slugs ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+		return array_values( array_unique( array_filter( array_map( 'sanitize_key', array_map( 'strval', $slugs ) ) ) ) );
+	}
+
+	/**
+	 * Map highlight.php's name for each detection language back to its Prism slug.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  string[] $slugs Prism language slugs.
+	 * @return array<string, string> highlight.php language name => Prism slug, in detection order.
+	 */
+	protected static function get_detection_candidates( array $slugs ): array {
+		$highlighter = self::get_highlighter();
+		$candidates  = array();
+
+		foreach ( $slugs as $slug ) {
+			$hljs = self::get_hljs_language( $slug );
+			if ( '' === $hljs ) {
+				continue;
+			}
+
+			try {
+				// Detection reports the canonical name, not the alias (csharp is cs, c is arduino).
+				$name = $highlighter->highlight( $hljs, '' )->language;
+			} catch ( \Throwable $e ) {
+				continue;
+			}
+
+			if ( ! isset( $candidates[ $name ] ) ) {
+				$candidates[ $name ] = $slug;
+			}
+		}
+
+		return $candidates;
 	}
 }

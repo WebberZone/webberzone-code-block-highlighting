@@ -119,6 +119,9 @@ Assets load only on pages containing at least one `core/code` block. `Styles_Han
 - `wzcbh_force_load_assets` — force Prism assets to load on every page
 - `wzcbh_download_extensions` — language slug => download file extension map (`$extensions, $language`)
 - REST route: `wzcbh/v1/default-settings`
+- `wzcbh_auto_detect_languages` — Prism slugs server-side detection chooses between, most likely first
+- `wzcbh_auto_detect_min_relevance` — relevance a detected language must reach; default 6
+- `wzcbh_auto_detect_max_bytes` — largest block whose language is detected; default 16384
 - Settings key: `wzcbh_settings`
 
 ## Adding a Prism theme

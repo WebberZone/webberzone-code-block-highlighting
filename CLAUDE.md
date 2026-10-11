@@ -111,6 +111,8 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **Server-mode line counting** — `$line_count` counts one line per newline plus a final line only when the code does not end on one, matching what Prism's line-numbers plugin counts in the browser. `wrap_lines()` uses the same rule via its `$line_has_text` tracker: highlight.php closes its outermost span *after* the trailing newline, so testing the line buffer alone emitted a phantom final line that the highlight stripe could land on. The gutter row count and the `.wzcbh-line` span count must always agree.
 
+**Server-mode language detection** — with the `auto-detect-language` setting on, `render_code_block()` calls `detect_language()` for blocks whose language is `''` (never `text`), before the download filename and wrapper class are derived from `$params['language']`. It runs `highlightAuto()` over `get_auto_detect_languages()` (ordered: the earlier language wins a tie, so PHP beats HTML on `<?php`) and requires a relevance of 6. Both were tuned on real untagged blocks: lower thresholds, Groovy, Vim, TypeScript and Dart label prose, command output or plain JavaScript wrongly. highlight.php reports canonical names (`csharp` is `cs`, `c` is `arduino`), so `get_detection_candidates()` maps them back to Prism slugs. Results, including no match, are cached in a `wzcbh_lang_{md5}` transient whose key covers the plugin version, candidates, threshold and code; the cache is checked before the candidates are resolved, since resolving compiles every grammar.
+
 **`hljs-clipboard.js` reads `textContent`, never `innerText`** — `hljs-server-mode.css` gives `.wzcbh-highlighted-line` `display: block`, and those spans already end in a newline, so `innerText` doubles the newline on every highlighted line. Client mode is unaffected: Prism's copy plugin uses `textContent`.
 
 **`hljs-server-mode.css`** — only handles `.wzcbh-highlighted-line` line highlighting; font-size, line-numbers gutter, and word-wrap are all in `frontend.css` (webpack build), loaded in both modes.
@@ -132,6 +134,9 @@ Assets load only on pages containing at least one `core/code` block. `Styles_Han
 - `wzcbh_file_tab_html` — override the file name tab markup (`$tab, $title, $language`)
 - `wzcbh_download_extensions` — language slug => download file extension map (`$extensions, $language`)
 - `wzcbh_server_highlight_max_bytes` — largest code block highlighted server-side (`$limit, $language`); default 131072
+- `wzcbh_auto_detect_languages` — Prism slugs server-side detection chooses between, most likely first
+- `wzcbh_auto_detect_min_relevance` — relevance a detected language must reach; default 6
+- `wzcbh_auto_detect_max_bytes` — largest block whose language is detected; default 16384
 - REST route: `wzcbh/v1/default-settings`
 - Settings key: `wzcbh_settings`
 - `file-name-style` setting: `tab` (default) | `toolbar` — how the block's file name is displayed
