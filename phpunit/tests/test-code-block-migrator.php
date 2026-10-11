@@ -70,7 +70,7 @@ class Test_Code_Block_Migrator extends WP_UnitTestCase {
 		return array(
 			'every option'       => array(
 				$this->block( '{"lineNumbers":true,"lineNumbersStart":5,"wordWrap":true,"highlightLines":"2,3-4","maxHeight":120,"downloadButton":"show"}', '<pre class="wp-block-code language-php line-numbers word-wrap" data-title="demo $0 &quot;x&quot;.php" data-start="5" data-line="2,3-4" style="max-height:120px;overflow-y:auto"><code lang="php" class="language-php">' . $code . '</code></pre>' ),
-				$this->block( '{"lineNumbers":true,"lineNumbersStart":5,"wordWrap":true,"highlightLines":"2,3-4","maxHeight":120,"downloadButton":"show","language":"php","title":"demo $0 \u0022x\u0022.php"}', $core ),
+				$this->block( '{"language":"php","lineNumbers":true,"lineNumbersStart":5,"wordWrap":true,"highlightLines":"2,3-4","maxHeight":120,"downloadButton":"show","title":"demo $0 \u0022x\u0022.php"}', $core ),
 			),
 			'language'           => array(
 				$this->block( '', '<pre class="wp-block-code language-php"><code lang="php" class="language-php">' . $code . '</code></pre>' ),
@@ -94,11 +94,11 @@ class Test_Code_Block_Migrator extends WP_UnitTestCase {
 			),
 			'block supports'     => array(
 				$this->block( '{"className":"my-class","style":{"spacing":{"padding":{"top":"10px"}}},"backgroundColor":"vivid-red","maxHeight":100}', '<pre class="wp-block-code language-javascript my-class has-vivid-red-background-color has-background" style="padding-top:10px;max-height:100px;overflow-y:auto"><code lang="javascript" class="language-javascript">' . $code . '</code></pre>' ),
-				$this->block( '{"className":"my-class","style":{"spacing":{"padding":{"top":"10px"}}},"backgroundColor":"vivid-red","maxHeight":100,"language":"javascript"}', '<pre class="wp-block-code my-class has-vivid-red-background-color has-background" style="padding-top:10px"><code>' . $code . '</code></pre>' ),
+				$this->block( '{"className":"my-class","style":{"spacing":{"padding":{"top":"10px"}}},"backgroundColor":"vivid-red","language":"javascript","maxHeight":100}', '<pre class="wp-block-code my-class has-vivid-red-background-color has-background" style="padding-top:10px"><code>' . $code . '</code></pre>' ),
 			),
 			'code syntax block'  => array(
 				$this->block( '{"lineNumbers":true}', '<pre class="wp-block-code" title="old.php"><code lang="php" class="language-php line-numbers">' . $code . '</code></pre>' ),
-				$this->block( '{"lineNumbers":true,"language":"php","title":"old.php"}', $core ),
+				$this->block( '{"language":"php","lineNumbers":true,"title":"old.php"}', $core ),
 			),
 		);
 	}

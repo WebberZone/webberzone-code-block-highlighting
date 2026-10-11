@@ -49,6 +49,15 @@ class Code_Block_Migrator {
 	const BATCH_SIZE = 50;
 
 	/**
+	 * The plugin's block attributes, in the order index.js registers them.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @var string[]
+	 */
+	const ATTRIBUTE_ORDER = array( 'language', 'lineNumbers', 'lineNumbersStart', 'wordWrap', 'highlightLines', 'maxHeight', 'downloadButton', 'colorScheme', 'title', '_legacyTitle' );
+
+	/**
 	 * Convert every legacy core/code block in a post's content.
 	 *
 	 * Only the matched code block spans are rewritten; everything else in the
@@ -173,11 +182,34 @@ class Code_Block_Migrator {
 			$attrs['title'] = $title;
 		}
 
-		$block['attrs']        = $attrs;
+		$block['attrs']        = self::order_attributes( $attrs );
 		$block['innerHTML']    = $new_html;
 		$block['innerContent'] = array( $new_html );
 
 		return $block;
+	}
+
+	/**
+	 * Order attributes the way the editor serializes them.
+	 *
+	 * The editor writes attributes in registration order: core's and block
+	 * supports' first, then the plugin's. Other keys keep their relative order.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  array<string, mixed> $attrs Block attributes.
+	 * @return array<string, mixed>
+	 */
+	protected static function order_attributes( array $attrs ): array {
+		$ordered = array_diff_key( $attrs, array_flip( self::ATTRIBUTE_ORDER ) );
+
+		foreach ( self::ATTRIBUTE_ORDER as $name ) {
+			if ( array_key_exists( $name, $attrs ) ) {
+				$ordered[ $name ] = $attrs[ $name ];
+			}
+		}
+
+		return $ordered;
 	}
 
 	/**
