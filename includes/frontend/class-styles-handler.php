@@ -30,6 +30,7 @@ class Styles_Handler {
 	 */
 	public function __construct() {
 		Hook_Registry::add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		Hook_Registry::add_filter( 'render_block_core/code', array( $this, 'enqueue_on_render' ), 5 );
 	}
 
 	/**
@@ -64,7 +65,7 @@ class Styles_Handler {
 			$has_code_block = false;
 
 			foreach ( $posts as $post ) {
-				if ( $post instanceof \WP_Post && has_block( 'core/code', $post ) ) {
+				if ( $post instanceof \WP_Post && self::post_has_code_block( $post ) ) {
 					$has_code_block = true;
 					break;
 				}
@@ -75,6 +76,41 @@ class Styles_Handler {
 			}
 		}
 
+		$this->enqueue_mode_assets();
+	}
+
+	/**
+	 * Enqueue the assets when a code block renders outside the posts checked up front.
+	 *
+	 * Covers templates, template parts, widgets and anything else outside the
+	 * main query. Block themes render the template before `wp_head`, so the
+	 * assets still print in the head; classic themes print them in the footer.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  string $block_content The rendered block HTML.
+	 * @return string Unchanged block HTML.
+	 */
+	public function enqueue_on_render( string $block_content ): string {
+		if ( is_admin() || wp_is_json_request() || is_feed() || wp_doing_ajax() ) {
+			return $block_content;
+		}
+
+		$this->enqueue_mode_assets();
+
+		return $block_content;
+	}
+
+	/**
+	 * Enqueue the assets for the active highlighting mode, once.
+	 *
+	 * @since 1.3.0
+	 */
+	private function enqueue_mode_assets(): void {
+		if ( wp_style_is( 'wzcbh-prism-css', 'enqueued' ) ) {
+			return;
+		}
+
 		$mode = wzcbh_get_option( 'highlighting-mode', 'client' );
 
 		if ( 'server' === $mode ) {
@@ -82,6 +118,62 @@ class Styles_Handler {
 		} else {
 			$this->enqueue_client_mode_assets();
 		}
+	}
+
+	/**
+	 * Whether a post contains a code block, including inside the synced patterns it uses.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  \WP_Post $post Post to check.
+	 * @return bool
+	 */
+	private static function post_has_code_block( \WP_Post $post ): bool {
+		if ( has_block( 'core/code', $post ) ) {
+			return true;
+		}
+
+		if ( ! has_block( 'core/block', $post ) ) {
+			return false;
+		}
+
+		$seen = array();
+
+		return self::blocks_have_code_block( parse_blocks( $post->post_content ), $seen );
+	}
+
+	/**
+	 * Walk parsed blocks for a code block, following synced pattern references.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param  array<int, array<string, mixed>> $blocks Parsed blocks.
+	 * @param  array<int, true>                 $seen   Synced pattern IDs already followed, so nested references cannot loop.
+	 * @return bool
+	 */
+	private static function blocks_have_code_block( array $blocks, array &$seen ): bool {
+		foreach ( $blocks as $block ) {
+			if ( 'core/code' === $block['blockName'] ) {
+				return true;
+			}
+
+			$ref = (int) ( $block['attrs']['ref'] ?? 0 );
+
+			if ( 'core/block' === $block['blockName'] && $ref && ! isset( $seen[ $ref ] ) ) {
+				$seen[ $ref ] = true;
+				$pattern      = get_post( $ref );
+
+				if ( $pattern instanceof \WP_Post && 'wp_block' === $pattern->post_type && self::blocks_have_code_block( parse_blocks( $pattern->post_content ), $seen ) ) {
+					return true;
+				}
+			}
+
+			if ( ! empty( $block['innerBlocks'] ) && self::blocks_have_code_block( $block['innerBlocks'], $seen ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

@@ -201,4 +201,117 @@ class Test_Settings_Assets extends WP_UnitTestCase {
 
 		$this->assertFalse( wp_style_is( 'wzcbh-prism-theme', 'enqueued' ) );
 	}
+
+	/**
+	 * Run the up-front check against a single post in the loop.
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	private function enqueue_for_post( $post_id ) {
+		global $posts;
+
+		$original = $posts;
+		$posts    = array( get_post( $post_id ) );
+
+		( new Styles_Handler() )->enqueue_assets();
+
+		$posts = $original;
+	}
+
+	/**
+	 * A code block inside a synced pattern is detected up front.
+	 */
+	public function test_enqueue_assets_detects_a_code_block_in_a_synced_pattern() {
+		$pattern_id = self::factory()->post->create(
+			array(
+				'post_type'    => 'wp_block',
+				'post_content' => '<!-- wp:group --><div class="wp-block-group"><!-- wp:code --><pre class="wp-block-code"><code>x</code></pre><!-- /wp:code --></div><!-- /wp:group -->',
+			)
+		);
+		$post_id    = self::factory()->post->create( array( 'post_content' => '<!-- wp:block {"ref":' . $pattern_id . '} /-->' ) );
+
+		$this->enqueue_for_post( $post_id );
+
+		$this->assertTrue( wp_style_is( 'wzcbh-prism-theme', 'enqueued' ) );
+	}
+
+	/**
+	 * Synced patterns that reference each other do not loop.
+	 */
+	public function test_enqueue_assets_survives_a_synced_pattern_loop() {
+		$first  = self::factory()->post->create( array( 'post_type' => 'wp_block' ) );
+		$second = self::factory()->post->create(
+			array(
+				'post_type'    => 'wp_block',
+				'post_content' => '<!-- wp:block {"ref":' . $first . '} /-->',
+			)
+		);
+		wp_update_post(
+			array(
+				'ID'           => $first,
+				'post_content' => '<!-- wp:block {"ref":' . $second . '} /-->',
+			)
+		);
+		$post_id = self::factory()->post->create( array( 'post_content' => '<!-- wp:block {"ref":' . $first . '} /-->' ) );
+
+		$this->enqueue_for_post( $post_id );
+
+		$this->assertFalse( wp_style_is( 'wzcbh-prism-theme', 'enqueued' ) );
+	}
+
+	/**
+	 * A reference to a post that is not a synced pattern is not followed.
+	 */
+	public function test_enqueue_assets_ignores_refs_to_other_post_types() {
+		$other   = self::factory()->post->create( array( 'post_content' => '<!-- wp:code --><pre class="wp-block-code"><code>x</code></pre><!-- /wp:code -->' ) );
+		$post_id = self::factory()->post->create( array( 'post_content' => '<!-- wp:block {"ref":' . $other . '} /-->' ) );
+
+		$this->enqueue_for_post( $post_id );
+
+		$this->assertFalse( wp_style_is( 'wzcbh-prism-theme', 'enqueued' ) );
+	}
+
+	/**
+	 * A code block rendered outside the main query, such as in a widget, loads the assets.
+	 *
+	 * @param string $mode   Highlighting mode.
+	 * @param string $handle Script the mode enqueues.
+	 *
+	 * @dataProvider data_mode_scripts
+	 */
+	public function test_rendering_a_code_block_enqueues_assets( $mode, $handle ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		new Styles_Handler();
+		do_blocks( '<!-- wp:code --><pre class="wp-block-code"><code>x</code></pre><!-- /wp:code -->' );
+
+		$this->assertTrue( wp_style_is( 'wzcbh-prism-theme', 'enqueued' ) );
+		$this->assertTrue( wp_script_is( $handle, 'enqueued' ) );
+	}
+
+	/**
+	 * Script each highlighting mode enqueues.
+	 *
+	 * @return array<string, array{string, string}>
+	 */
+	public function data_mode_scripts() {
+		return array(
+			'client' => array( 'client', 'wzcbh-prism-js' ),
+			'server' => array( 'server', 'wzcbh-hljs-clipboard' ),
+		);
+	}
+
+	/**
+	 * Rendering in the admin, such as a server-side preview, loads nothing.
+	 */
+	public function test_rendering_in_the_admin_does_not_enqueue() {
+		set_current_screen( 'edit-post' );
+
+		$output = ( new Styles_Handler() )->enqueue_on_render( '<pre>x</pre>' );
+
+		set_current_screen( 'front' );
+
+		$this->assertSame( '<pre>x</pre>', $output );
+		$this->assertFalse( wp_style_is( 'wzcbh-prism-theme', 'enqueued' ) );
+	}
 }

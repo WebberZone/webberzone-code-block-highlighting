@@ -115,7 +115,7 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 ## Asset loading
 
-Assets load only on pages containing at least one `core/code` block (`Styles_Handler::enqueue_assets()`). Use `wzcbh_force_load_assets` to override.
+Assets load only on pages containing at least one `core/code` block. `Styles_Handler::enqueue_assets()` checks the main query's posts up front, following `core/block` refs into synced patterns (guarded against reference loops), so the CSS lands in `<head>`; `enqueue_on_render()` on `render_block_core/code` is the fallback for code outside the main query (widgets, templates, template parts) — block themes render templates before `wp_head`, classic themes get the CSS in the footer. Both share the idempotent `enqueue_mode_assets()`. Use `wzcbh_force_load_assets` to override.
 
 - **Client mode**: `frontend.css` + Prism theme CSS + `wzcbh-prism-js` script bundle (includes all grammars and plugins)
 - **Server mode**: `frontend.css` + Prism theme CSS + `hljs-server-mode.css` + `hljs-clipboard.js` (copy-to-clipboard + expand/collapse)

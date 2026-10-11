@@ -190,6 +190,7 @@ Release date: TBD
 
 * Code blocks with a language, file name, highlighted lines, max height or custom start line showed "This block contains unexpected or invalid content" after the plugin was deactivated. Blocks saved by earlier versions convert when their post is updated.
 * In server-side mode, a custom start line was ignored when the block also had a max height or a spacing style.
+* Code blocks inside synced patterns, widgets or templates were not highlighted when the post content itself had no code block.
 
 = Earlier versions =
 
