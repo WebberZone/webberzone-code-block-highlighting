@@ -325,7 +325,7 @@ class Test_Settings_Assets extends WP_UnitTestCase {
 	 *
 	 * @param string $slug Color scheme slug.
 	 *
-	 * @dataProvider data_color_scheme_slugs
+	 * @dataProvider data_registered_color_schemes
 	 */
 	public function test_every_theme_has_scoped_css( $slug ) {
 		foreach ( array( '', '.min', '-rtl', '-rtl.min' ) as $suffix ) {
@@ -341,7 +341,7 @@ class Test_Settings_Assets extends WP_UnitTestCase {
 	 *
 	 * @return array<string, array{string}>
 	 */
-	public function data_color_scheme_slugs() {
+	public function data_registered_color_schemes() {
 		$data = array();
 		foreach ( array_keys( Settings::$color_schemes ) as $slug ) {
 			$data[ $slug ] = array( $slug );
