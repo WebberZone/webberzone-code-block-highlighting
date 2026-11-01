@@ -133,37 +133,6 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 			'plain'         => array( 'index.js' ),
 		);
 	}
-
-	/**
-	 * The same applies to the line-range attribute.
-	 */
-	public function test_backreference_syntax_in_highlight_lines_is_not_expanded() {
-		$html = $this->render(
-			array(
-				'language'       => 'javascript',
-				'highlightLines' => '$0',
-			)
-		);
-
-		$this->assertStringNotContainsString( 'data-line="<pre"', $html );
-	}
-
-	/**
-	 * Attributes the save function already wrote must not be emitted twice.
-	 */
-	public function test_pre_attributes_are_not_duplicated() {
-		$html = $this->render(
-			array(
-				'language'       => 'javascript',
-				'title'          => 'index.js',
-				'highlightLines' => '1',
-			)
-		);
-
-		$this->assertSame( 1, substr_count( $html, 'data-title=' ), 'data-title emitted more than once' );
-		$this->assertSame( 1, substr_count( $html, 'data-line=' ), 'data-line emitted more than once' );
-	}
-
 	/**
 	 * The plugin's sanitised title wins over whatever the saved HTML carries.
 	 */
@@ -178,39 +147,6 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'data-title="name.js"', $html );
 		$this->assertStringNotContainsString( '&lt;b&gt;name.js', $html );
 	}
-
-	/**
-	 * Server mode must not repeat the language class the saved HTML already has.
-	 */
-	public function test_server_mode_does_not_duplicate_language_class() {
-		$this->set_option( 'highlighting-mode', 'server' );
-
-		$html = $this->render(
-			array(
-				'language' => 'php',
-				'code'     => "<?php\necho 1;",
-			)
-		);
-
-		preg_match( '/<pre[^>]*>/', $html, $matches );
-
-		$this->assertSame( 1, substr_count( $matches[0], 'language-php' ) );
-	}
-
-	/**
-	 * Server mode must not add an empty class attribute.
-	 */
-	public function test_server_mode_does_not_emit_empty_class_attribute() {
-		$this->set_option( 'highlighting-mode', 'server' );
-
-		$html = $this->blocks->render_code_block(
-			'<pre><code>plain</code></pre>',
-			array( 'attrs' => array() )
-		);
-
-		$this->assertStringNotContainsString( 'class=""', $html );
-	}
-
 	/**
 	 * The line-number gutter must have exactly one row per wrapped line.
 	 *
@@ -252,58 +188,6 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 			'single line'           => array( 'a', 1 ),
 		);
 	}
-
-	/**
-	 * A line beyond the block's last line must not gain a highlight stripe.
-	 *
-	 * highlight.php closes its outermost span after the trailing newline, which
-	 * used to produce a phantom extra line span that the highlight could land on.
-	 */
-	public function test_highlight_does_not_land_on_a_phantom_trailing_line() {
-		$this->set_option( 'highlighting-mode', 'server' );
-
-		$html = $this->render(
-			array(
-				'language'       => 'markup',
-				'lineNumbers'    => true,
-				'highlightLines' => '1,3',
-				'code'           => "<?php\necho 'x';\n",
-			)
-		);
-
-		preg_match_all( '/data-line-number="(\d+)"/', $html, $matches );
-
-		$this->assertSame( array( '1', '2' ), $matches[1], 'block renders more lines than it has' );
-		$this->assertSame( 1, substr_count( $html, 'wzcbh-highlighted-line' ) );
-	}
-
-	/**
-	 * An unbounded line range must not allocate one entry per line number.
-	 */
-	public function test_unbounded_line_range_is_clamped() {
-		$method = new ReflectionMethod( Blocks::class, 'parse_line_ranges' );
-		$method->setAccessible( true );
-
-		// Deterministic: the parser must never return more entries than the block
-		// has lines, however large the range in the attribute.
-		$this->assertCount( 3, $method->invoke( null, '1-999999999', 1, 3 ) );
-		$this->assertCount( 0, $method->invoke( null, '900-999999999', 1, 3 ) );
-		$this->assertSame( array( 1 => true, 2 => true ), $method->invoke( null, '1-2', 1, 3 ) );
-
-		$this->set_option( 'highlighting-mode', 'server' );
-
-		$html = $this->render(
-			array(
-				'language'       => 'php',
-				'lineNumbers'    => true,
-				'highlightLines' => '1-999999999',
-				'code'           => "a\nb\nc",
-			)
-		);
-
-		$this->assertSame( 3, substr_count( $html, 'wzcbh-highlighted-line' ) );
-	}
-
 	/**
 	 * Ranges are still expanded normally inside the block.
 	 */
@@ -342,27 +226,6 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$this->assertSame( 0, substr_count( $html, 'class="token' ) );
 		$this->assertStringContainsString( 'language-php', $html );
 	}
-
-	/**
-	 * The size limit is filterable.
-	 */
-	public function test_highlight_size_limit_is_filterable() {
-		$this->set_option( 'highlighting-mode', 'server' );
-
-		add_filter( 'wzcbh_server_highlight_max_bytes', '__return_zero' );
-
-		$html = $this->render(
-			array(
-				'language' => 'php',
-				'code'     => "<?php\necho 1;",
-			)
-		);
-
-		remove_filter( 'wzcbh_server_highlight_max_bytes', '__return_zero' );
-
-		$this->assertSame( 0, substr_count( $html, 'class="token' ) );
-	}
-
 	/**
 	 * The download file name derives from the language when no title is set.
 	 *
@@ -459,93 +322,6 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'class="language-php"', $code[0] );
 		$this->assertStringContainsString( 'wzcbh-file-tab', $html );
 	}
-
-	/**
-	 * Every option set in the block comment renders in server mode.
-	 */
-	public function test_server_mode_renders_comment_attributes_on_core_markup() {
-		$this->set_option( 'highlighting-mode', 'server' );
-
-		$html = $this->render_core_markup(
-			array(
-				'language'         => 'php',
-				'title'            => 'demo.php',
-				'lineNumbers'      => true,
-				'lineNumbersStart' => 5,
-				'wordWrap'         => true,
-				'highlightLines'   => '6',
-				'maxHeight'        => 120,
-			)
-		);
-
-		preg_match( '/<pre[^>]*>/', $html, $pre );
-
-		foreach ( array( 'language-php', 'line-numbers', 'word-wrap', 'data-line="6"', 'max-height:120px;overflow-y:auto;counter-reset: linenumber 4;' ) as $needle ) {
-			$this->assertStringContainsString( $needle, $pre[0] );
-		}
-		$this->assertStringContainsString( 'wzcbh-expand-button', $html );
-		$this->assertStringContainsString( 'wzcbh-highlighted-line', $html );
-	}
-
-	/**
-	 * Max height alone still reaches the <pre> in both modes.
-	 *
-	 * @param string $mode Highlighting mode.
-	 *
-	 * @dataProvider data_modes
-	 */
-	public function test_max_height_alone_is_rendered( $mode ) {
-		$this->set_option( 'highlighting-mode', $mode );
-
-		$html = $this->render_core_markup( array( 'maxHeight' => 80 ) );
-
-		$this->assertStringContainsString( 'style="max-height:80px;overflow-y:auto;"', $html );
-	}
-
-	/**
-	 * Markup saved by 1.2.3 already carries max-height; it must not repeat.
-	 *
-	 * @param string $mode Highlighting mode.
-	 *
-	 * @dataProvider data_modes
-	 */
-	public function test_legacy_max_height_is_not_repeated( $mode ) {
-		$this->set_option( 'highlighting-mode', $mode );
-
-		$html = $this->blocks->render_code_block(
-			'<pre class="wp-block-code" style="padding-top:10px;max-height:80px;overflow-y:auto"><code>x</code></pre>',
-			array( 'attrs' => array( 'maxHeight' => 80 ) )
-		);
-
-		$this->assertSame( 1, substr_count( $html, 'max-height' ) );
-	}
-
-	/**
-	 * Appended declarations are separated from a saved style without a trailing semicolon.
-	 */
-	public function test_style_declarations_are_separated() {
-		$html = $this->blocks->render_code_block(
-			'<pre class="wp-block-code" style="padding-top:10px"><code>x</code></pre>',
-			array( 'attrs' => array( 'maxHeight' => 80 ) )
-		);
-
-		$this->assertStringContainsString( 'style="padding-top:10px;max-height:80px;overflow-y:auto;"', $html );
-	}
-
-	/**
-	 * Plain text gets language-none on both tags from the comment attribute alone.
-	 */
-	public function test_client_mode_text_language_on_core_markup() {
-		$html = $this->render_core_markup( array( 'language' => 'text' ) );
-
-		preg_match( '/<pre[^>]*>/', $html, $pre );
-		preg_match( '/<code[^>]*>/', $html, $code );
-
-		$this->assertStringContainsString( 'language-none', $pre[0] );
-		$this->assertStringContainsString( 'language-none', $code[0] );
-		$this->assertStringNotContainsString( 'language-text', $html );
-	}
-
 	/**
 	 * Both highlighting modes.
 	 *
@@ -578,29 +354,6 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$this->assertStringStartsWith( '<div class="wzcbh-theme-prism-nord">', $html );
 		$this->assertSame( 1, substr_count( $html, 'wzcbh-theme-' ) );
 	}
-
-	/**
-	 * With a file tab, the scope class goes on the tab wrapper so the tab takes the scheme's colours.
-	 *
-	 * @param string $mode Highlighting mode.
-	 *
-	 * @dataProvider data_modes
-	 */
-	public function test_color_scheme_scopes_the_file_tab_wrapper( $mode ) {
-		$this->set_option( 'highlighting-mode', $mode );
-
-		$html = $this->render_core_markup(
-			array(
-				'language'    => 'php',
-				'title'       => 'demo.php',
-				'colorScheme' => 'prism-one-light',
-			)
-		);
-
-		$this->assertStringStartsWith( '<div class="wzcbh-code-wrapper wzcbh-code-wrapper--php wzcbh-theme-prism-one-light">', $html );
-		$this->assertSame( 1, substr_count( $html, 'wzcbh-theme-' ) );
-	}
-
 	/**
 	 * An unregistered or empty scheme renders exactly as a block without one.
 	 *

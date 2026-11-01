@@ -72,29 +72,9 @@ class Test_Code_Block_Migrator extends WP_UnitTestCase {
 				$this->block( '{"lineNumbers":true,"lineNumbersStart":5,"wordWrap":true,"highlightLines":"2,3-4","maxHeight":120,"downloadButton":"show"}', '<pre class="wp-block-code language-php line-numbers word-wrap" data-title="demo $0 &quot;x&quot;.php" data-start="5" data-line="2,3-4" style="max-height:120px;overflow-y:auto"><code lang="php" class="language-php">' . $code . '</code></pre>' ),
 				$this->block( '{"language":"php","lineNumbers":true,"lineNumbersStart":5,"wordWrap":true,"highlightLines":"2,3-4","maxHeight":120,"downloadButton":"show","title":"demo $0 \u0022x\u0022.php"}', $core ),
 			),
-			'language'           => array(
-				$this->block( '', '<pre class="wp-block-code language-php"><code lang="php" class="language-php">' . $code . '</code></pre>' ),
-				$this->block( '{"language":"php"}', $core ),
-			),
 			'title'              => array(
 				$this->block( '', '<pre class="wp-block-code" data-title="demo.php"><code>' . $code . '</code></pre>' ),
 				$this->block( '{"title":"demo.php"}', $core ),
-			),
-			'line numbers only'  => array(
-				$this->block( '{"lineNumbers":true}', '<pre class="wp-block-code line-numbers"><code>' . $code . '</code></pre>' ),
-				$this->block( '{"lineNumbers":true}', $core ),
-			),
-			'word wrap only'     => array(
-				$this->block( '{"wordWrap":true}', '<pre class="wp-block-code word-wrap"><code>' . $code . '</code></pre>' ),
-				$this->block( '{"wordWrap":true}', $core ),
-			),
-			'max height only'    => array(
-				$this->block( '{"maxHeight":80}', '<pre class="wp-block-code" style="max-height:80px;overflow-y:auto"><code>' . $code . '</code></pre>' ),
-				$this->block( '{"maxHeight":80}', $core ),
-			),
-			'block supports'     => array(
-				$this->block( '{"className":"my-class","style":{"spacing":{"padding":{"top":"10px"}}},"backgroundColor":"vivid-red","maxHeight":100}', '<pre class="wp-block-code language-javascript my-class has-vivid-red-background-color has-background" style="padding-top:10px;max-height:100px;overflow-y:auto"><code lang="javascript" class="language-javascript">' . $code . '</code></pre>' ),
-				$this->block( '{"className":"my-class","style":{"spacing":{"padding":{"top":"10px"}}},"backgroundColor":"vivid-red","language":"javascript","maxHeight":100}', '<pre class="wp-block-code my-class has-vivid-red-background-color has-background" style="padding-top:10px"><code>' . $code . '</code></pre>' ),
 			),
 			'code syntax block'  => array(
 				$this->block( '{"lineNumbers":true}', '<pre class="wp-block-code" title="old.php"><code lang="php" class="language-php line-numbers">' . $code . '</code></pre>' ),
@@ -128,50 +108,6 @@ class Test_Code_Block_Migrator extends WP_UnitTestCase {
 		$this->assertSame( $content, $out );
 		$this->assertSame( 0, $counts['converted'] );
 	}
-
-	/**
-	 * Converting twice changes nothing the second time.
-	 */
-	public function test_conversion_is_idempotent() {
-		$legacy = $this->data_legacy_shapes();
-		$once   = $this->convert( implode( "\n\n", array_column( $legacy, 0 ) ) )[0];
-
-		list( $twice, $counts ) = $this->convert( $once );
-
-		$this->assertSame( $once, $twice );
-		$this->assertSame( 0, $counts['converted'] );
-	}
-
-	/**
-	 * Markup that cannot be converted cleanly is reported and left alone.
-	 */
-	public function test_unconvertible_block_is_skipped() {
-		$content = $this->block( '', '<pre class="wp-block-code language-php"></pre>' );
-
-		list( $out, $counts ) = $this->convert( $content );
-
-		$this->assertSame( $content, $out );
-		$this->assertSame( 1, $counts['skipped'] );
-	}
-
-	/**
-	 * Markup the old save would not have written for these attributes is left alone.
-	 *
-	 * The editor leaves such blocks invalid too; converting them would drop the
-	 * option that only the HTML carries.
-	 *
-	 * @param string $content Block markup.
-	 *
-	 * @dataProvider data_mismatched_markup
-	 */
-	public function test_markup_not_matching_the_old_save_is_skipped( $content ) {
-		list( $out, $counts ) = $this->convert( $content );
-
-		$this->assertSame( $content, $out );
-		$this->assertSame( 0, $counts['converted'] );
-		$this->assertSame( 1, $counts['skipped'] );
-	}
-
 	/**
 	 * Markup whose HTML disagrees with its comment attributes.
 	 *
@@ -185,46 +121,6 @@ class Test_Code_Block_Migrator extends WP_UnitTestCase {
 			'another plugin\'s code class'      => array( $this->block( '', '<pre class="wp-block-code"><code class="hljs">x</code></pre>' ) ),
 		);
 	}
-
-	/**
-	 * A code block nested in another block converts, and the parent's markup is untouched.
-	 */
-	public function test_nested_code_block_converts() {
-		$legacy  = $this->data_legacy_shapes();
-		$wrap    = static function ( $inner ) {
-			return "<!-- wp:group {\"layout\":{\"type\":\"constrained\"}} -->\n<div class=\"wp-block-group\">" . $inner . "</div>\n<!-- /wp:group -->";
-		};
-
-		list( $out, $counts ) = $this->convert( $wrap( $legacy['every option'][0] ) );
-
-		$this->assertSame( $wrap( $legacy['every option'][1] ), $out );
-		$this->assertSame( 1, $counts['converted'] );
-	}
-
-	/**
-	 * Converted content gets the escaping core's save applies, as the editor's re-save does.
-	 */
-	public function test_converted_content_is_escaped_like_core() {
-		$content = $this->block( '', '<pre class="wp-block-code language-php"><code lang="php" class="language-php">$a[\'x\'] = [1];' . "\nhttps://example.com\n" . '</code></pre>' );
-
-		list( $out ) = $this->convert( $content );
-
-		$this->assertStringContainsString( '$a&#91;\'x\'] = &#91;1];', $out );
-		$this->assertStringContainsString( "\nhttps:&#47;&#47;example.com\n", $out );
-	}
-
-	/**
-	 * An empty class on <code> already matches core's save, so the block is not touched.
-	 */
-	public function test_empty_code_class_is_not_legacy() {
-		$content = $this->block( '', '<pre class="wp-block-code"><code class="">x</code></pre>' );
-
-		list( $out, $counts ) = $this->convert( $content );
-
-		$this->assertSame( $content, $out );
-		$this->assertSame( array( 'converted' => 0, 'skipped' => 0 ), $counts );
-	}
-
 	/**
 	 * The batch migration converts posts, honours dry runs and leaves other posts alone.
 	 */

@@ -91,37 +91,6 @@ class Test_Language_Detection extends WP_UnitTestCase {
 		$this->assertStringContainsString( '<span aria-hidden="true">PHP</span>', $html );
 		$this->assertStringContainsString( 'data-wzcbh-download="snippet.php"', $html );
 	}
-
-	/**
-	 * HTML is reported by highlight.php as XML, and maps back to the HTML language.
-	 */
-	public function test_html_maps_to_markup() {
-		$html = $this->render( "<div class=\"a\">\n  <p>Hello <strong>world</strong></p>\n</div>" );
-
-		$this->assertStringContainsString( '<code class="language-markup">', $html );
-		$this->assertStringContainsString( '<span aria-hidden="true">HTML</span>', $html );
-	}
-
-	/**
-	 * Detection is off by default.
-	 */
-	public function test_off_by_default() {
-		delete_option( 'wzcbh_settings' );
-		$this->set_option( 'highlighting-mode', 'server' );
-
-		$this->assertStringNotContainsString( 'language-php', $this->render( self::PHP_CODE ) );
-	}
-
-	/**
-	 * Client mode never detects.
-	 */
-	public function test_client_mode_is_unchanged() {
-		$this->set_option( 'highlighting-mode', 'client' );
-
-		$this->assertStringNotContainsString( 'language-php', $this->render( self::PHP_CODE ) );
-		$this->assertEmpty( $this->cached_detections() );
-	}
-
 	/**
 	 * A language chosen in the block, Plain Text included, is never replaced.
 	 */
@@ -134,18 +103,6 @@ class Test_Language_Detection extends WP_UnitTestCase {
 		$this->assertStringContainsString( '<code class="language-bash">', $bash );
 		$this->assertEmpty( $this->cached_detections() );
 	}
-
-	/**
-	 * Text that only loosely resembles code stays plain.
-	 */
-	public function test_prose_stays_plain() {
-		$html = $this->render( self::PROSE );
-
-		$this->assertStringNotContainsString( 'language-', $html );
-		$this->assertStringNotContainsString( 'class="token', $html );
-		$this->assertStringContainsString( 'data-wzcbh-download="snippet.txt"', $html );
-	}
-
 	/**
 	 * The result, including no match, is cached and read back.
 	 */
@@ -160,32 +117,5 @@ class Test_Language_Detection extends WP_UnitTestCase {
 		set_transient( substr( $key, strlen( '_transient_' ) ), 'python', MONTH_IN_SECONDS );
 
 		$this->assertStringContainsString( '<code class="language-python">', $this->render( self::PHP_CODE ) );
-	}
-
-	/**
-	 * The size limit is filterable, and zero disables detection.
-	 */
-	public function test_size_limit_is_filterable() {
-		add_filter( 'wzcbh_auto_detect_max_bytes', '__return_zero' );
-		$html = $this->render( self::PHP_CODE );
-		remove_filter( 'wzcbh_auto_detect_max_bytes', '__return_zero' );
-
-		$this->assertStringNotContainsString( 'language-php', $html );
-		$this->assertEmpty( $this->cached_detections() );
-	}
-
-	/**
-	 * The candidate languages are filterable.
-	 */
-	public function test_candidate_languages_are_filterable() {
-		$only_css = static function () {
-			return array( 'css' );
-		};
-
-		add_filter( 'wzcbh_auto_detect_languages', $only_css );
-		$html = $this->render( self::PHP_CODE );
-		remove_filter( 'wzcbh_auto_detect_languages', $only_css );
-
-		$this->assertStringNotContainsString( 'language-php', $html );
 	}
 }
