@@ -108,6 +108,7 @@ class Test_Code_Block_Migrator extends WP_UnitTestCase {
 		$this->assertSame( $content, $out );
 		$this->assertSame( 0, $counts['converted'] );
 	}
+
 	/**
 	 * Markup whose HTML disagrees with its comment attributes.
 	 *
@@ -121,6 +122,7 @@ class Test_Code_Block_Migrator extends WP_UnitTestCase {
 			'another plugin\'s code class'      => array( $this->block( '', '<pre class="wp-block-code"><code class="hljs">x</code></pre>' ) ),
 		);
 	}
+
 	/**
 	 * The batch migration converts posts, honours dry runs and leaves other posts alone.
 	 */

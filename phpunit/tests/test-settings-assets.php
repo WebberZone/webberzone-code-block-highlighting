@@ -92,6 +92,7 @@ class Test_Settings_Assets extends WP_UnitTestCase {
 			'null byte'        => array( "prism-dracula\0", 'prism-onedark' ),
 		);
 	}
+
 	/**
 	 * Every registered colour scheme.
 	 *
@@ -106,6 +107,7 @@ class Test_Settings_Assets extends WP_UnitTestCase {
 
 		return $cases;
 	}
+
 	/**
 	 * Assets load when a post in the loop carries a code block.
 	 */
@@ -126,6 +128,7 @@ class Test_Settings_Assets extends WP_UnitTestCase {
 
 		$this->assertTrue( wp_style_is( 'wzcbh-prism-theme', 'enqueued' ) );
 	}
+
 	/**
 	 * Run the up-front check against a single post in the loop.
 	 *
@@ -182,6 +185,7 @@ class Test_Settings_Assets extends WP_UnitTestCase {
 
 		$this->assertFalse( wp_style_is( 'wzcbh-prism-theme', 'enqueued' ) );
 	}
+
 	/**
 	 * A code block rendered outside the main query, such as in a widget, loads the assets.
 	 *
@@ -225,6 +229,7 @@ class Test_Settings_Assets extends WP_UnitTestCase {
 		$this->assertSame( '<pre>x</pre>', $output );
 		$this->assertFalse( wp_style_is( 'wzcbh-prism-theme', 'enqueued' ) );
 	}
+
 	/**
 	 * Registered color scheme slugs.
 	 *
@@ -265,6 +270,7 @@ class Test_Settings_Assets extends WP_UnitTestCase {
 		$this->assertSame( 1, substr_count( $inline, '.wzcbh-theme-prism-nord' ) );
 		$this->assertStringContainsString( '--wzcbh-tab-bg:', $inline );
 	}
+
 	/**
 	 * Schemes used by main-query posts, including inside synced patterns, load up front.
 	 */

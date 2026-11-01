@@ -133,6 +133,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 			'plain'         => array( 'index.js' ),
 		);
 	}
+
 	/**
 	 * The plugin's sanitised title wins over whatever the saved HTML carries.
 	 */
@@ -147,6 +148,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'data-title="name.js"', $html );
 		$this->assertStringNotContainsString( '&lt;b&gt;name.js', $html );
 	}
+
 	/**
 	 * The line-number gutter must have exactly one row per wrapped line.
 	 *
@@ -188,6 +190,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 			'single line'           => array( 'a', 1 ),
 		);
 	}
+
 	/**
 	 * Ranges are still expanded normally inside the block.
 	 */
@@ -226,6 +229,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$this->assertSame( 0, substr_count( $html, 'class="token' ) );
 		$this->assertStringContainsString( 'language-php', $html );
 	}
+
 	/**
 	 * The download file name derives from the language when no title is set.
 	 *
@@ -322,6 +326,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'class="language-php"', $code[0] );
 		$this->assertStringContainsString( 'wzcbh-file-tab', $html );
 	}
+
 	/**
 	 * Both highlighting modes.
 	 *
@@ -354,6 +359,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$this->assertStringStartsWith( '<div class="wzcbh-theme-prism-nord">', $html );
 		$this->assertSame( 1, substr_count( $html, 'wzcbh-theme-' ) );
 	}
+
 	/**
 	 * An unregistered or empty scheme renders exactly as a block without one.
 	 *

@@ -91,6 +91,7 @@ class Test_Language_Detection extends WP_UnitTestCase {
 		$this->assertStringContainsString( '<span aria-hidden="true">PHP</span>', $html );
 		$this->assertStringContainsString( 'data-wzcbh-download="snippet.php"', $html );
 	}
+
 	/**
 	 * A language chosen in the block, Plain Text included, is never replaced.
 	 */
@@ -103,6 +104,7 @@ class Test_Language_Detection extends WP_UnitTestCase {
 		$this->assertStringContainsString( '<code class="language-bash">', $bash );
 		$this->assertEmpty( $this->cached_detections() );
 	}
+
 	/**
 	 * The result, including no match, is cached and read back.
 	 */
