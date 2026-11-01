@@ -72,6 +72,10 @@ class Test_Code_Block_Migrator extends WP_UnitTestCase {
 				$this->block( '{"lineNumbers":true,"lineNumbersStart":5,"wordWrap":true,"highlightLines":"2,3-4","maxHeight":120,"downloadButton":"show"}', '<pre class="wp-block-code language-php line-numbers word-wrap" data-title="demo $0 &quot;x&quot;.php" data-start="5" data-line="2,3-4" style="max-height:120px;overflow-y:auto"><code lang="php" class="language-php">' . $code . '</code></pre>' ),
 				$this->block( '{"language":"php","lineNumbers":true,"lineNumbersStart":5,"wordWrap":true,"highlightLines":"2,3-4","maxHeight":120,"downloadButton":"show","title":"demo $0 \u0022x\u0022.php"}', $core ),
 			),
+			'language'           => array(
+				$this->block( '', '<pre class="wp-block-code language-php"><code lang="php" class="language-php">' . $code . '</code></pre>' ),
+				$this->block( '{"language":"php"}', $core ),
+			),
 			'title'              => array(
 				$this->block( '', '<pre class="wp-block-code" data-title="demo.php"><code>' . $code . '</code></pre>' ),
 				$this->block( '{"title":"demo.php"}', $core ),
