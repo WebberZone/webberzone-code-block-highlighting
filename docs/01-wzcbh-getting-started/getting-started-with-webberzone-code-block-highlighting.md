@@ -6,7 +6,10 @@ sections: ["01-wzcbh-getting-started"]
 tags: [code-block-highlighting, installation]
 status: publish
 order: 0
+toc: true
 ---
+
+[toc]
 
 WebberZone Code Block Highlighting extends the native WordPress Gutenberg `core/code` block with syntax highlighting, and is available for free on WordPress.org.
 
@@ -38,4 +41,4 @@ wp plugin install webberzone-code-block-highlighting --activate-network
 
 After activation, open the block editor and add a **Code** block (or select an existing one). A **Code Highlighting** panel appears in the Inspector Controls sidebar on the right. Use that panel to choose the language, color scheme, and other display options for that block.
 
-The plugin works as a filter on top of `core/code` — it never replaces the block. Code blocks are saved with the core block's own markup, so if you deactivate the plugin, syntax highlighting is removed but all code blocks remain intact and valid. No content is lost. Blocks last saved with version 1.2.3 or earlier convert to this format when you update their post with the plugin active, or all at once from **Convert Code Blocks** in the banner at the top of **Settings > Code Block Highlighting**, or with `wp wzcbh migrate-code-blocks`. Back up your database first, because posts are updated in place without creating revisions.
+The plugin works as a filter on top of `core/code`: it never replaces the block. Code blocks are saved with the core block's own markup, so if you deactivate the plugin, syntax highlighting is removed but all code blocks remain intact and valid. No content is lost. Blocks last saved with version 1.2.3 or earlier convert to this format when you update their post with the plugin active, or all at once from **Convert Code Blocks** in the banner at the top of **Settings > Code Block Highlighting**, or with `wp wzcbh migrate-code-blocks`. Back up your database first, because posts are updated in place without creating revisions.

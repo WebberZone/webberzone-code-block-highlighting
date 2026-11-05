@@ -15,11 +15,11 @@ toc: true
 
 ## Client-side mode (default)
 
-<a href="https://prismjs.com/" target="_blank" rel="noopener">Prism.js</a> loads in the visitor's browser and highlights the code on page load. The Prism JS bundle (containing all bundled grammars and plugins) and the active theme CSS are enqueued on pages that contain at least one code block. Interactive toolbar features — copy-to-clipboard, expand/collapse, and the language label — are all available in this mode.
+<a href="https://prismjs.com/" target="_blank" rel="noopener">Prism.js</a> loads in the visitor's browser and highlights the code on page load. The Prism JS bundle (containing all bundled grammars and plugins) and the active theme CSS are enqueued on pages that contain at least one code block. Interactive toolbar features (copy-to-clipboard, expand/collapse, and the language label) are all available in this mode.
 
 ## Server-side mode
 
-<a href="https://github.com/scrivo/highlight.php" target="_blank" rel="noopener">highlight.php</a> runs during WordPress page rendering and pre-bakes the highlighted token spans directly into the HTML. No Prism.js is loaded — syntax highlighting runs entirely on the server. The active Prism theme CSS, `frontend.css`, `hljs-server-mode.css`, and a lightweight script (`hljs-clipboard.js`) for copy-to-clipboard and expand/collapse are enqueued.
+<a href="https://github.com/scrivo/highlight.php" target="_blank" rel="noopener">highlight.php</a> runs during WordPress page rendering and pre-bakes the highlighted token spans directly into the HTML. No Prism.js is loaded: syntax highlighting runs entirely on the server. The active Prism theme CSS, `frontend.css`, `hljs-server-mode.css`, and a lightweight script (`hljs-clipboard.js`) for copy-to-clipboard and expand/collapse are enqueued.
 
 This mode is suitable for:
 
@@ -35,7 +35,7 @@ highlight.php slows sharply as a block grows, and that work runs while the page 
 
 ### Language detection
 
-With **Detect Language** turned on, server-side mode highlights code blocks that have no language set, using the language highlight.php detects. Blocks set to **Plain Text** are left alone, and a block stays plain unless one language clearly matches, so command output and prose are not coloured as code. Each block is detected once and the result is cached. Client-side mode does not detect languages.
+With **Detect Language** turned on, server-side mode highlights code blocks that have no language set, using the language highlight.php detects. Blocks set to **Plain Text** are left alone, and a block stays plain unless one language clearly matches, so command output and prose are not colored as code. Each block is detected once and the result is cached. Client-side mode does not detect languages.
 
 Developers can change the candidate languages with [`wzcbh_auto_detect_languages`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_languages/), how strict the match must be with [`wzcbh_auto_detect_min_relevance`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_min_relevance/), and the largest block detected (16KB by default) with [`wzcbh_auto_detect_max_bytes`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_max_bytes/).
 

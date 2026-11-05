@@ -17,8 +17,8 @@ All [WebberZone Code Block Highlighting](https://webberzone.com/plugins/webberzo
 
 Controls whether syntax highlighting runs in the browser or on the server. Setting key: `highlighting-mode`.
 
-- **Client-side (Prism.js)** *(default)* — Prism.js runs in the browser. This mode supports interactive features such as copy-to-clipboard and expand/collapse.
-- **Server-side (highlight.php)** — highlight.php pre-renders syntax token spans on the server before the page is sent to the browser. No JavaScript is loaded for highlighting in this mode.
+- **Client-side (Prism.js)** *(default)*: Prism.js runs in the browser. This mode supports interactive features such as copy-to-clipboard and expand/collapse.
+- **Server-side (highlight.php)**: highlight.php pre-renders syntax token spans on the server before the page is sent to the browser. No JavaScript is loaded for highlighting in this mode.
 
 Both modes use the same 21 Prism themes.
 
@@ -27,7 +27,7 @@ Both modes use the same 21 Prism themes.
 Server-side mode only. When enabled, code blocks with no language set are highlighted in the language highlight.php detects. Setting key: `auto-detect-language`. Default: disabled.
 
 - Blocks set to **Plain Text** are never detected.
-- A block stays plain when no language matches clearly, so command output and prose are not coloured as code.
+- A block stays plain when no language matches clearly, so command output and prose are not colored as code.
 - Detection runs the first time a block is shown and the result is cached, so later page views do not repeat it.
 - The language label and the download file extension follow the detected language.
 - Blocks larger than 16KB are not detected. See [Client-Side vs Server-Side Highlighting](https://webberzone.com/support/knowledgebase/client-side-vs-server-side-highlighting/) for the developer filters.
@@ -60,8 +60,8 @@ When enabled, the file name or title is displayed above each code block, provide
 
 Controls how the file name is displayed when **Show File Name** is enabled. Setting key: `file-name-style`. Default: `tab`.
 
-- **Tab above the code block** (`tab`) — an editor-style tab sits flush on top of the block. Its background and text color are taken from the active Prism theme, so the tab matches the block below it across all 21 themes. The markup is rendered by PHP in both highlighting modes.
-- **Toolbar label** (`toolbar`) — the file name appears as a label in the hover toolbar, next to the language label and copy button.
+- **Tab above the code block** (`tab`): an editor-style tab sits flush on top of the block. Its background and text color are taken from the active Prism theme, so the tab matches the block below it across all 21 themes. The markup is rendered by PHP in both highlighting modes.
+- **Toolbar label** (`toolbar`): the file name appears as a label in the hover toolbar, next to the language label and copy button.
 
 ## Default Language
 

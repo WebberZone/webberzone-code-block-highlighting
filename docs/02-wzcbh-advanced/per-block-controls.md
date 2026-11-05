@@ -21,7 +21,7 @@ The [`wzcbh_languages`](https://webberzone.dev/webberzone-code-block-highlightin
 
 ## Line Numbers
 
-Toggle to show or hide line numbers on this block. When enabled, a **Start Line** field appears. Set this to any integer to begin numbering from that value — useful when showing a code excerpt that starts partway through a file.
+Toggle to show or hide line numbers on this block. When enabled, a **Start Line** field appears. Set this to any integer to begin numbering from that value: useful when showing a code excerpt that starts partway through a file.
 
 ## File Name or Title
 
@@ -29,8 +29,8 @@ A text field for an optional filename or label (e.g. `config.yml`). When **Show 
 
 **File Name Style** in the global settings controls how it is displayed:
 
-- **Tab above the code block** (default) — an editor-style tab sits flush on top of the block, colored to match the active theme's own background and foreground. Rendered by PHP, so it looks the same in client-side and server-side modes.
-- **Toolbar label** — the value appears as a label in the hover toolbar, alongside the language label and copy button.
+- **Tab above the code block** (default): an editor-style tab sits flush on top of the block, colored to match the active theme's own background and foreground. Rendered by PHP, so it looks the same in client-side and server-side modes.
+- **Toolbar label**: the value appears as a label in the hover toolbar, alongside the language label and copy button.
 
 If **Show File Name** is disabled globally, the field is still saved but not displayed.
 
@@ -52,9 +52,9 @@ Toggle soft word wrapping for long lines. When disabled (the default), long line
 
 A dropdown that overrides the global **Download Snippet** setting for this block:
 
-- **Use global setting** (default) — follow whatever the settings page says.
-- **Show** — always show the **Download** button on this block, even when the global setting is off.
-- **Hide** — never show it on this block, even when the global setting is on.
+- **Use global setting** (default): follow whatever the settings page says.
+- **Show**: always show the **Download** button on this block, even when the global setting is off.
+- **Hide**: never show it on this block, even when the global setting is on.
 
 The downloaded file is named after **File name or title** when one is set; otherwise it is `snippet.{ext}`, with the extension derived from the block's language. The button works identically in client-side and server-side modes, and the line-numbers gutter is excluded from the saved file.
 

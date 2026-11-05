@@ -33,8 +33,8 @@ $mode = wzcbh_get_option( 'highlighting-mode', 'client' );
 
 **Parameters:**
 
-- `$key` *(string)* — The setting key.
-- `$default_value` *(mixed, optional)* — Value to return if the key does not exist. Default `null`.
+- `$key` *(string)*: The setting key.
+- `$default_value` *(mixed, optional)*: Value to return if the key does not exist. Default `null`.
 
 **Returns:** `mixed`
 
@@ -46,10 +46,10 @@ Updates a single setting key in the database and in the in-memory settings array
 
 **Parameters:**
 
-- `$key` *(string)* — The setting key.
-- `$value` *(string|bool|int)* — The value to set.
+- `$key` *(string)*: The setting key.
+- `$value` *(string|bool|int)*: The value to set.
 
-**Returns:** `bool` — `true` on success, `false` on failure.
+**Returns:** `bool`: `true` on success, `false` on failure.
 
 ---
 
@@ -59,4 +59,4 @@ Removes a setting key from the database and from the in-memory settings array.
 
 **Parameters:**
 
-- `$key` *(string)* — The setting key to remove.
+- `$key` *(string)*: The setting key to remove.
