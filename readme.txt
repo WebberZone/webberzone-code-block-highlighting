@@ -178,6 +178,12 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 == Changelog ==
 
+= 1.3.1 =
+
+**Added**
+
+* Save Changes button in settings navigation.
+
 = 1.3.0 =
 
 Release date: 11 October 2026
