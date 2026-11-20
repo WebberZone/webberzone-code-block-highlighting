@@ -4,7 +4,7 @@ Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code highlighting
 Requires at least: 6.6
 Tested up to: 7.1
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -180,9 +180,16 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 = 1.3.1 =
 
+Release date: 20 November 2026
+
 **Added**
 
-* Save Changes button in settings navigation.
+* Save Changes button in the settings navigation.
+
+**Fixed**
+
+* Backslashes were stripped from settings values when they were saved from the settings page or setup wizard.
+* A single-value setting that received an array, for example from a modified form submission, could trigger a PHP error on save.
 
 = 1.3.0 =
 
@@ -212,5 +219,5 @@ For the changelog of earlier versions, please refer to the [releases page on Git
 
 == Upgrade Notice ==
 
-= 1.3.0 =
-Code blocks now stay valid if the plugin is deactivated. Existing blocks convert when their post is updated, or all at once from Convert Code Blocks on the settings page; back up your database first. Also adds per-block color schemes and server-side language detection.
+= 1.3.1 =
+Keeps backslashes in settings values and adds a Save Changes button to the settings navigation. No action needed.
