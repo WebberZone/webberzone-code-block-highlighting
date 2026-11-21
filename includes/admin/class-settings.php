@@ -490,7 +490,12 @@ class Settings {
 		 */
 		$selector = (string) apply_filters( 'wzcbh_dark_mode_selector', $selector ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
-		$selector = trim( str_replace( array( '/*', '*/' ), '', (string) preg_replace( '/[<{};@\\\\\r\n]/', '', $selector ) ), " \t\n\r\0\x0B" );
+		$selector = trim( (string) preg_replace( '/[<{};@\\\\\r\n]/', '', $selector ), " \t\n\r\0\x0B" );
+
+		// Removing the delimiters would let the leftovers form a new one, so a selector that has any is rejected.
+		if ( false !== strpos( $selector, '/*' ) || false !== strpos( $selector, '*/' ) ) {
+			return '';
+		}
 
 		return self::is_balanced_selector( $selector ) ? $selector : '';
 	}
