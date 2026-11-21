@@ -52,6 +52,7 @@ import 'prismjs/components/prism-go';
 import 'prismjs/components/prism-graphql';
 import 'prismjs/components/prism-haskell';
 import 'prismjs/components/prism-json';
+import './prism-kujo';
 import 'prismjs/components/prism-kotlin';
 import 'prismjs/components/prism-lua';
 import 'prismjs/components/prism-nginx';

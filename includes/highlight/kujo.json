@@ -1,0 +1,63 @@
+{
+    "aliases": [],
+    "disableAutodetect": true,
+    "keywords": {
+        "keyword": "async await case const else for from func if import in let match mut return struct while",
+        "literal": "true false"
+    },
+    "contains": [
+        {
+            "className": "comment",
+            "begin": "\/\/",
+            "end": "$"
+        },
+        {
+            "className": "comment",
+            "begin": "#",
+            "end": "$"
+        },
+        {
+            "className": "comment",
+            "begin": "\/\\*",
+            "end": "\\*\/"
+        },
+        {
+            "className": "string",
+            "begin": "\"",
+            "end": "\"",
+            "illegal": "\\n",
+            "contains": [
+                {
+                    "begin": "\\\\[\\s\\S]",
+                    "relevance": 0
+                }
+            ]
+        },
+        {
+            "className": "number",
+            "begin": "\\b\\d+(\\.\\d+)?\\b",
+            "relevance": 0
+        },
+        {
+            "className": "function",
+            "beginKeywords": "func",
+            "end": "\\s*(\\{|$)",
+            "excludeEnd": true,
+            "contains": [
+                {
+                    "className": "title",
+                    "begin": "[a-zA-Z_]\\w*",
+                    "relevance": 0
+                },
+                {
+                    "className": "params",
+                    "begin": "\\(",
+                    "end": "\\)"
+                }
+            ]
+        },
+        {
+            "begin": ":="
+        }
+    ]
+}

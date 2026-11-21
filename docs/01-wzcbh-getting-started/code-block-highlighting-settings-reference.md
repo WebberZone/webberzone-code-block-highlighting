@@ -36,6 +36,21 @@ Server-side mode only. When enabled, code blocks with no language set are highli
 
 Selects the syntax highlighting theme applied to all code blocks. The same Prism theme is used in both client-side and server-side modes. Setting key: `color-scheme`. Default: **One Dark**.
 
+## Dark Mode Color Scheme
+
+Optional. Pick a second theme to show when your site or the visitor's device is in dark mode. The **Color Scheme** above is then used in light mode. Leave it on **None** to use one theme everywhere. A block's own color scheme overrides both. Setting key: `dark-color-scheme`. Default: none.
+
+## Dark Mode Detection
+
+How dark mode is detected. Setting key: `dark-mode-method`. Default: **Visitor's device or browser setting**.
+
+- **Visitor's device or browser setting** follows the `prefers-color-scheme` media query.
+- **Your site's dark mode switch** applies the dark theme while the **Dark Mode Selector** matches a parent of the code block, for themes and plugins that add a class or attribute to the `html` or `body` element when dark mode is on.
+
+## Dark Mode Selector
+
+The CSS selector your site adds in dark mode, such as `[data-theme="dark"]` or `.dark`. Used only when **Dark Mode Detection** is set to your site's dark mode switch. Setting key: `dark-mode-selector`. Default: `[data-theme="dark"]`. Developers can also change it with the [`wzcbh_dark_mode_selector`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_dark_mode_selector/) filter.
+
 ## Copy to Clipboard
 
 When enabled, a **Copy** button appears in the code block toolbar. Visitors can copy the entire code snippet with one click. Setting key: `copy-to-clipboard`. Default: enabled.

@@ -214,6 +214,9 @@ class Settings {
 		return array(
 			'highlighting-mode'    => 'client',
 			'color-scheme'         => 'prism-onedark',
+			'dark-color-scheme'    => '',
+			'dark-mode-method'     => 'media',
+			'dark-mode-selector'   => '[data-theme="dark"]',
 			'copy-to-clipboard'    => 1,
 			'download-button'      => 1,
 			'show-language-label'  => 1,
@@ -262,6 +265,32 @@ class Settings {
 					'type'    => 'select',
 					'default' => $defaults['color-scheme'],
 					'options' => self::$color_schemes,
+				),
+				array(
+					'id'      => 'dark-color-scheme',
+					'name'    => __( 'Dark Mode Color Scheme', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'Optional. When set, the Color Scheme above is used in light mode and this one in dark mode. Individual blocks can still override both.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'select',
+					'default' => $defaults['dark-color-scheme'],
+					'options' => array( '' => __( 'None (use the same color scheme)', 'webberzone-code-block-highlighting' ) ) + self::$color_schemes,
+				),
+				array(
+					'id'      => 'dark-mode-method',
+					'name'    => __( 'Dark Mode Detection', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'How dark mode is detected when a Dark Mode Color Scheme is set.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'radio',
+					'default' => $defaults['dark-mode-method'],
+					'options' => array(
+						'media'    => __( 'Visitor\'s device or browser setting (prefers-color-scheme)', 'webberzone-code-block-highlighting' ),
+						'selector' => __( 'Your site\'s dark mode switch (CSS selector below)', 'webberzone-code-block-highlighting' ),
+					),
+				),
+				array(
+					'id'      => 'dark-mode-selector',
+					'name'    => __( 'Dark Mode Selector', 'webberzone-code-block-highlighting' ),
+					'desc'    => __( 'CSS selector that is present on a parent element, usually the html or body element, while your site is in dark mode, e.g. [data-theme="dark"] or .dark. Used only when Dark Mode Detection is set to your site\'s dark mode switch.', 'webberzone-code-block-highlighting' ),
+					'type'    => 'text',
+					'default' => $defaults['dark-mode-selector'],
 				),
 				array(
 					'id'      => 'copy-to-clipboard',
@@ -417,6 +446,76 @@ class Settings {
 		$option = (string) wzcbh_get_option( 'color-scheme', 'prism-onedark' );
 
 		return array_key_exists( $option, self::$color_schemes ) ? $option : 'prism-onedark';
+	}
+
+	/**
+	 * Get the dark mode color scheme slug.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @return string A key of self::$color_schemes, or an empty string when dark mode has no scheme of its own.
+	 */
+	public static function get_dark_color_scheme_slug(): string {
+		$slug = (string) wzcbh_get_option( 'dark-color-scheme', '' );
+
+		if ( ! array_key_exists( $slug, self::$color_schemes ) || self::get_color_scheme_slug() === $slug ) {
+			return '';
+		}
+
+		return $slug;
+	}
+
+	/**
+	 * Get the CSS selector that marks the site as being in dark mode.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @return string The selector, or an empty string when dark mode follows `prefers-color-scheme`.
+	 */
+	public static function get_dark_mode_selector(): string {
+		if ( 'selector' !== wzcbh_get_option( 'dark-mode-method', 'media' ) ) {
+			return '';
+		}
+
+		$selector = (string) wzcbh_get_option( 'dark-mode-selector', '[data-theme="dark"]' );
+
+		/**
+		 * Filter the CSS selector that marks the site as being in dark mode.
+		 *
+		 * Used when Dark Mode Detection is set to the site's dark mode switch.
+		 *
+		 * @since 1.4.0
+		 *
+		 * @param string $selector CSS selector, e.g. `[data-theme="dark"]`.
+		 */
+		$selector = (string) apply_filters( 'wzcbh_dark_mode_selector', $selector ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+		return trim( (string) preg_replace( '/[<{};@\\\\\r\n]/', '', $selector ), " \t\n\r\0\x0B" );
+	}
+
+	/**
+	 * Get the CSS that scopes rules to dark mode: the selector, or `:root` inside a media query.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @return string
+	 */
+	public static function get_dark_mode_scope(): string {
+		$selector = self::get_dark_mode_selector();
+
+		return '' === $selector ? ':root' : ':is(' . $selector . ')';
+	}
+
+	/**
+	 * Wrap CSS in the `prefers-color-scheme: dark` media query, unless dark mode uses a selector.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $css Rules scoped with get_dark_mode_scope().
+	 * @return string
+	 */
+	public static function wrap_dark_mode_css( string $css ): string {
+		return '' === self::get_dark_mode_selector() ? '@media (prefers-color-scheme: dark){' . $css . '}' : $css;
 	}
 
 	/**

@@ -37,7 +37,7 @@ Both modes use the same 21 Prism themes and produce visually identical output, s
 
 ### Supported languages
 
-40 languages including: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, YAML. Use the `wzcbh_languages` filter to add or remove entries from the language picker.
+41 languages including: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Kujo, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, YAML. Use the `wzcbh_languages` filter to add or remove entries from the language picker.
 
 ### Included themes (21)
 
@@ -129,7 +129,7 @@ Blocks last saved with version 1.2.3 or earlier carry extra markup that the core
 
 = Which programming languages are supported? =
 
-40 languages out of the box: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML.
+41 languages out of the box: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Kujo, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML.
 
 Use the `wzcbh_languages` filter to add or remove entries from the language picker. Note: adding a language to the filter only affects the UI dropdown — the corresponding Prism.js grammar must also be available on the frontend (either bundled in `frontend.js` or loaded separately).
 
@@ -188,6 +188,8 @@ Release date: 21 November 2026
 * Per-page limit on the code sent to the browser fallback, filterable with the new `wzcbh_prism_fallback_page_budget` (default 1MB; 0 turns it off). Blocks beyond it stay plain text.
 * Per-page limit on the amount of code highlighted on the server, so pages with many large code blocks no longer slow down. Blocks beyond the limit use the browser fallback. The limit and the fallback apply to front-end pages only; feeds, the REST API, AJAX, WP-CLI and admin screens keep the previous behavior. The limit is filterable with the new `wzcbh_server_highlight_request_budget` (default 256KB; 0 turns it off).
 * Per-page limit on server-side language detection, so pages with many untagged code blocks no longer slow down when uncached. Blocks beyond the limit show as plain text and are detected on a later visit. Front-end pages only; filterable with the new `wzcbh_auto_detect_request_limit` (default 25; 0 turns it off).
+* Dark mode color scheme. Pick a second theme for dark mode and it switches automatically, following the visitor's device setting or your site's dark mode switch. Use the new `wzcbh_dark_mode_selector` filter to set the selector from code.
+* Kujo language support in the language picker, with `.kujo` snippet downloads, in both client-side and server-side modes.
 * Save Changes button in the settings navigation.
 
 **Changed**

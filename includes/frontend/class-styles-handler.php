@@ -261,6 +261,7 @@ class Styles_Handler {
 		self::enqueue_prism_script( $asset );
 
 		self::add_root_css_vars();
+		self::enqueue_dark_color_scheme();
 	}
 
 	/**
@@ -357,6 +358,44 @@ class Styles_Handler {
 	}
 
 	/**
+	 * Add the dark mode color scheme as inline CSS after the global theme.
+	 *
+	 * Reuses the per-block scoped theme file, whose rules sit under `.wzcbh-theme-{slug}` and begin
+	 * with a reset of the global theme, and swaps that class for the dark mode scope.
+	 *
+	 * @since 1.4.0
+	 */
+	private static function enqueue_dark_color_scheme(): void {
+		$slug = Settings::get_dark_color_scheme_slug();
+
+		if ( '' === $slug ) {
+			return;
+		}
+
+		$path = WZCBH_PLUGIN_DIR . 'includes/assets/scoped/' . self::get_prism_theme_css_file_name( $slug );
+
+		if ( ! file_exists( $path ) ) {
+			return;
+		}
+
+		$scope = Settings::get_dark_mode_scope();
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$css = (string) preg_replace( '/\.' . preg_quote( Blocks::get_color_scheme_class( $slug ), '/' ) . '(?![\w-])/', addcslashes( $scope, '\\$' ), (string) file_get_contents( $path ) );
+
+		wp_add_inline_style( 'wzcbh-prism-theme', Settings::wrap_dark_mode_css( $css ) );
+
+		$colors = Settings::extract_theme_colors( WZCBH_PLUGIN_DIR . 'includes/assets/' . self::get_prism_theme_css_file_name( $slug ) );
+		$vars   = '--wzcbh-tab-bg: ' . ( '' !== $colors['background'] ? $colors['background'] : Settings::FALLBACK_TAB_BACKGROUND ) . ';';
+
+		if ( '' !== $colors['color'] ) {
+			$vars .= ' --wzcbh-tab-color: ' . $colors['color'] . ';';
+		}
+
+		wp_add_inline_style( 'wzcbh-prism-css', Settings::wrap_dark_mode_css( $scope . ' {' . $vars . '}' ) );
+	}
+
+	/**
 	 * Enqueue assets for server-side (highlight.php) mode.
 	 *
 	 * @since 1.1.0
@@ -394,6 +433,7 @@ class Styles_Handler {
 		);
 
 		self::add_root_css_vars();
+		self::enqueue_dark_color_scheme();
 
 		// Copy-to-clipboard + expand/collapse script.
 		wp_enqueue_script(

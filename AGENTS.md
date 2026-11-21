@@ -101,6 +101,8 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **`wzcbh_languages` filter** — controls editor UI dropdown only, not which Prism grammars are bundled; a slug without a matching grammar import in `frontend.js` renders as plain text.
 
+**Dark mode color scheme** — `dark-color-scheme` (empty = off; equal to `color-scheme` also counts as off) pairs a second theme with the global one. `Styles_Handler::enqueue_dark_color_scheme()` reads that theme's per-block *scoped* file and swaps `.wzcbh-theme-{slug}` for `Settings::get_dark_mode_scope()` — `:root` inside `@media (prefers-color-scheme: dark)` for `dark-mode-method` `media`, or `:is({selector})` for `selector` — then adds it as inline CSS on `wzcbh-prism-theme`, so per-block schemes (which depend on that handle) still win ties. The scoped file's reset prefix is what stops the light theme leaking. The dark `--wzcbh-tab-*` vars go inline on `wzcbh-prism-css` after the light `:root` ones. The selector has `<{};@\\` stripped; never emit it unsanitised. `Blocks::get_editor_dark_mode_css()` mirrors it for the editor canvas.
+
 **Editor canvas styling** — `enqueue_editor_canvas_styles()` extracts only `background`/`color` from the active Prism theme CSS and re-injects them with `.block-editor-block-list__layout` prepended to win specificity against the editor's own `pre` styles; layout properties are intentionally excluded.
 
 **Theme colour extraction** — `Settings::extract_theme_colors()` is the single parser for a theme's base `background`/`color`, used by both `enqueue_editor_canvas_styles()` (unminified path) and `Styles_Handler::add_root_css_vars()` (minified + RTL path). Two load-bearing requirements across the 21 themes: `@media`/`@supports` blocks must be stripped first (several themes end with a forced-colors block declaring `background: window`), and selector lists must be evaluated per comma-separated part (Gruvbox et al. declare the background on `:not(pre)>code[class*="language-"], pre[class*="language-"]`). Transparent backgrounds resolve to an empty string so callers fall back to their own default — Synthwave '84 is the only theme that does this.
@@ -148,6 +150,7 @@ Assets load only on pages containing at least one `core/code` block. `Styles_Han
 
 - `wzcbh_languages` — language picker UI list (`slug => label`); UI only, not grammar loader
 - `wzcbh_color_scheme_css_url` — override the Prism theme CSS URL
+- `wzcbh_dark_mode_selector` — CSS selector marking the site as in dark mode (`$selector`); used when `dark-mode-method` is `selector`
 - `wzcbh_force_load_assets` — force Prism assets to load on every page
 - `wzcbh_file_tab_html` — override the file name tab markup (`$tab, $title, $language`)
 - `wzcbh_download_extensions` — language slug => download file extension map (`$extensions, $language`)

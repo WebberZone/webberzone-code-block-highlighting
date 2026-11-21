@@ -273,8 +273,38 @@ class Blocks {
 		}
 
 		if ( wp_style_is( 'wzcbh-editor-canvas-style', 'enqueued' ) ) {
-			wp_add_inline_style( 'wzcbh-editor-canvas-style', self::get_editor_color_scheme_css() );
+			wp_add_inline_style( 'wzcbh-editor-canvas-style', self::get_editor_dark_mode_css() . self::get_editor_color_scheme_css() );
 		}
+	}
+
+	/**
+	 * Build the editor canvas rules for the dark mode color scheme.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @return string
+	 */
+	protected static function get_editor_dark_mode_css(): string {
+		$slug = Settings::get_dark_color_scheme_slug();
+
+		if ( '' === $slug ) {
+			return '';
+		}
+
+		$colors = Settings::extract_theme_colors( WZCBH_PLUGIN_DIR . "includes/assets/{$slug}.css" );
+		$props  = array( 'background: ' . ( '' !== $colors['background'] ? $colors['background'] : Settings::FALLBACK_TAB_BACKGROUND ) . ';' );
+
+		if ( '' !== $colors['color'] ) {
+			$props[] = 'color: ' . $colors['color'] . ';';
+		}
+
+		$selector = Settings::get_dark_mode_selector();
+		$prefix   = '' === $selector ? '' : ':is(' . $selector . ') ';
+
+		return Settings::wrap_dark_mode_css(
+			$prefix . '.block-editor-block-list__layout pre[class*="language-"],' .
+			$prefix . '.block-editor-block-list__layout code[class*="language-"]{' . implode( ' ', $props ) . '}'
+		);
 	}
 
 	/**
@@ -684,6 +714,7 @@ class Blocks {
 			'json'       => '.json',
 			'jsx'        => '.jsx',
 			'kotlin'     => '.kt',
+			'kujo'       => '.kujo',
 			'lua'        => '.lua',
 			'markdown'   => '.md',
 			'nginx'      => '.conf',
@@ -1432,7 +1463,8 @@ class Blocks {
 
 		if ( null === $highlighter ) {
 			self::load_highlighter();
-			$highlighter       = new \Highlight\Highlighter();
+			$highlighter = new \Highlight\Highlighter();
+			\Highlight\Highlighter::registerLanguage( 'kujo', WZCBH_PLUGIN_DIR . 'includes/highlight/kujo.json' );
 			self::$highlighter = $highlighter;
 		}
 
@@ -1837,6 +1869,7 @@ class Blocks {
 			'json'       => 'JSON',
 			'jsx'        => 'JSX',
 			'kotlin'     => 'Kotlin',
+			'kujo'       => 'Kujo',
 			'lua'        => 'Lua',
 			'markdown'   => 'Markdown',
 			'nginx'      => 'Nginx',
