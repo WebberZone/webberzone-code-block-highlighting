@@ -528,11 +528,32 @@ class Code_Block_Migrator {
 					$attributes .= ' ' . $part[1] . ( isset( $part[2] ) ? '=' . ltrim( (string) substr( ltrim( $part[2], " \t\n\r\0\x0B" ), 1 ), " \t\n\r\0\x0B" ) : '' );
 				}
 
-				return '<' . $tag . $attributes . '>';
+				$tidied = '<' . $tag . $attributes . '>';
+
+				// Malformed markup such as `=onclick=` must not be re-parsed into a different attribute.
+				return self::get_attribute_names( $tidied ) === self::get_attribute_names( $matches[0] ) ? $tidied : $matches[0];
 			},
 			$html,
 			1
 		);
+	}
+
+	/**
+	 * Attribute names of a single opening tag, as the HTML parser reads them.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $tag_html Opening tag HTML.
+	 * @return string[]|null
+	 */
+	protected static function get_attribute_names( string $tag_html ): ?array {
+		$processor = new \WP_HTML_Tag_Processor( $tag_html );
+
+		if ( ! $processor->next_tag() ) {
+			return null;
+		}
+
+		return $processor->get_attribute_names_with_prefix( '' );
 	}
 
 	/**

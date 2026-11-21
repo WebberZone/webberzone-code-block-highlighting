@@ -70,6 +70,7 @@ const config = {
 		/-rtl\.css$/,
 		/^build-assets\.js$/,
 		/^build-prism\.js$/,
+		/^[^/]+\.config\.js$/,
 	],
 
 	// CSS files to combine - order matters!

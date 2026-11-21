@@ -23,3 +23,6 @@ assets/prism-*.css
 # Testing
 /.playwright-mcp
 .phpunit.result.cache
+
+# Stray minified tool configs
+*.config.min.js

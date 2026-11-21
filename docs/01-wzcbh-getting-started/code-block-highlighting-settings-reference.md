@@ -18,7 +18,7 @@ All [WebberZone Code Block Highlighting](https://webberzone.com/plugins/webberzo
 Controls whether syntax highlighting runs in the browser or on the server. Setting key: `highlighting-mode`.
 
 - **Client-side (Prism.js)** *(default)*: Prism.js runs in the browser. This mode supports interactive features such as copy-to-clipboard and expand/collapse.
-- **Server-side (highlight.php)**: highlight.php pre-renders syntax token spans on the server before the page is sent to the browser. No JavaScript is loaded for highlighting in this mode.
+- **Server-side (highlight.php)**: highlight.php pre-renders syntax token spans on the server before the page is sent to the browser. No JavaScript is loaded for highlighting in this mode, except on pages with a block too large for the server, which is highlighted in the browser instead. See [Client-Side vs Server-Side Highlighting](https://webberzone.com/support/knowledgebase/client-side-vs-server-side-highlighting/) for the limits.
 
 Both modes use the same 21 Prism themes.
 
@@ -44,7 +44,7 @@ When enabled, a **Copy** button appears in the code block toolbar. Visitors can 
 
 When enabled, a **Download** button appears next to **Copy** in the code block toolbar. Clicking it saves the snippet as a file. Setting key: `download-button`. Default: enabled.
 
-The file is named after the block's **File name or title** when one is set; otherwise it falls back to `snippet.{ext}`, where the extension comes from the block's language (`snippet.js`, `snippet.py`, `snippet.txt` for plain text). Docker blocks download as `Dockerfile`.
+The file is named after the block's **File name or title** when one is set; otherwise it falls back to `snippet.{ext}`, where the extension comes from the block's language (`snippet.js`, `snippet.py`, `snippet.txt` for plain text). Docker blocks download as `Dockerfile`. A file name that ends in an executable extension, such as `.exe`, `.bat` or `.msi`, gets the language's extension instead, so `notes.exe` on a PHP block downloads as `notes.php`. Developers can change the blocked extensions with the [`wzcbh_download_blocked_extensions`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_download_blocked_extensions/) filter.
 
 Individual blocks can override this setting from the **Download button** control in the block sidebar.
 

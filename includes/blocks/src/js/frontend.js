@@ -251,12 +251,61 @@ Prism.hooks.add('before-highlightall', function () {
 
 		// 2. Add `language-{lang}` class from the `lang` attribute when the
 		//    class is not already present (old plugin stored lang as an attr).
-		const lang = code.getAttribute('lang');
+		const lang = (code.getAttribute('lang') || '')
+			.trim()
+			.split(/\s+/)[0]
+			.replace(/[^\w-]/g, '');
 		if (lang && !code.className.includes('language-')) {
 			code.classList.add('language-' + lang);
 		}
 	});
 });
+
+// ── Server-mode fallback: highlight only the blocks PHP handed back ───────────
+// Server-rendered blocks also carry language-* classes and data-line.
+const fallbackSetting =
+	typeof cbhSettings !== 'undefined' ? !!cbhSettings.fallbackOnly : null;
+
+if (false !== fallbackSetting) {
+	let fallbackPage = fallbackSetting;
+
+	// Without cbhSettings, the markers decide, so a stripped inline script fails closed.
+	const isFallbackPage = function () {
+		if (null !== fallbackPage) {
+			return fallbackPage;
+		}
+		const found = !!document.querySelector('pre[data-wzcbh-client]');
+		if (found || 'loading' !== document.readyState) {
+			fallbackPage = found;
+		}
+		return found;
+	};
+
+	const isServerPre = function (pre) {
+		return (
+			!!pre &&
+			!pre.hasAttribute('data-wzcbh-client') &&
+			(pre.classList.contains('wp-block-code') ||
+				!!pre.querySelector('.wzcbh-line')) &&
+			isFallbackPage()
+		);
+	};
+
+	Prism.hooks.add('before-all-elements-highlight', function (env) {
+		env.elements = env.elements.filter(function (code) {
+			return !isServerPre(code.closest('pre'));
+		});
+	});
+
+	const highlightLines = Prism.plugins.lineHighlight.highlightLines;
+	Prism.plugins.lineHighlight.highlightLines = function (pre, lines, classes) {
+		// A temporary (URL hash) highlight still runs: applyHash scrolls to it unchecked.
+		if (isServerPre(pre) && !/\btemporary\b/.test(classes || '')) {
+			return function () {};
+		}
+		return highlightLines.apply(this, arguments);
+	};
+}
 
 // ── Expand/collapse toolbar button (shown when max-height is set) ─────────────
 Prism.plugins.toolbar.registerButton('wzcbh-expand', function (env) {

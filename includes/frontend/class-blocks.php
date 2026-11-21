@@ -35,6 +35,104 @@ class Blocks {
 	protected static $highlighter = null;
 
 	/**
+	 * Bytes sent to highlight.php during this request.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @var int
+	 */
+	protected static $highlight_budget_used = 0;
+
+	/**
+	 * Filtered per-request highlight budget, read on first use.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @var int|null
+	 */
+	protected static $highlight_budget = null;
+
+	/**
+	 * Largest block that falls back to Prism.js, -1 when the fallback is off, read on first use.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @var int|null
+	 */
+	protected static $prism_fallback_max_bytes = null;
+
+	/**
+	 * Bytes sent to the Prism.js fallback during this request.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @var int
+	 */
+	protected static $prism_fallback_used = 0;
+
+	/**
+	 * Filtered per-request Prism.js fallback budget, read on first use.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @var int|null
+	 */
+	protected static $prism_fallback_budget = null;
+
+	/**
+	 * Whether this request renders a front-end page that can run Prism.js, read on first use.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @var bool|null
+	 */
+	protected static $is_page_request = null;
+
+	/**
+	 * Filtered executable download extensions, built on first use when the filter is hooked.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @var array<string, true>|null
+	 */
+	protected static $blocked_download_extensions = null;
+
+	/**
+	 * Executable file extensions a download title may not keep.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @var array<string, true>
+	 */
+	private const BLOCKED_DOWNLOAD_EXTENSIONS = array(
+		'exe' => true,
+		'bat' => true,
+		'cmd' => true,
+		'com' => true,
+		'scr' => true,
+		'msi' => true,
+		'dll' => true,
+		'vbs' => true,
+		'vbe' => true,
+		'wsf' => true,
+		'hta' => true,
+		'cpl' => true,
+		'pif' => true,
+		'lnk' => true,
+		'reg' => true,
+		'jar' => true,
+		'apk' => true,
+		'app' => true,
+		'dmg' => true,
+		'pkg' => true,
+		'deb' => true,
+		'rpm' => true,
+		'bin' => true,
+		'run' => true,
+		'iso' => true,
+	);
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 1.0.0
@@ -212,6 +310,7 @@ class Blocks {
 					'lineNumbersStart' => array(
 						'type'    => 'integer',
 						'minimum' => 1,
+						'maximum' => 1000000,
 					),
 					'wordWrap'         => array(
 						'type' => 'boolean',
@@ -288,7 +387,8 @@ class Blocks {
 	 * In client mode (Prism.js): injects language classes and data-attributes so the
 	 * Prism JS bundle can highlight in the browser.
 	 * In server mode (highlight.php): runs the highlighter server-side and replaces the
-	 * <code> innerHTML before the page is sent; no Prism JS is loaded.
+	 * <code> innerHTML before the page is sent; no Prism JS is loaded unless a block
+	 * exceeds the server highlight limits and falls back to client markup.
 	 *
 	 * @since 1.0.0
 	 *
@@ -314,14 +414,17 @@ class Blocks {
 			$attrs['title'] = html_entity_decode( $ltm[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 		}
 
+		$line_start = (int) ( $attrs['lineNumbersStart'] ?? 1 );
+		$max_height = (int) ( $attrs['maxHeight'] ?? 0 );
+
 		$params = array(
 			'language'           => sanitize_key( $attrs['language'] ?? '' ),
 			'line_numbers'       => ! empty( $attrs['lineNumbers'] ),
-			'line_numbers_start' => max( 1, (int) ( $attrs['lineNumbersStart'] ?? 1 ) ),
+			'line_numbers_start' => $line_start < 1 ? 1 : ( $line_start > 1000000 ? 1000000 : $line_start ),
 			'word_wrap'          => ! empty( $attrs['wordWrap'] ),
 			'title'              => sanitize_text_field( $attrs['title'] ?? '' ),
 			'highlight_lines'    => sanitize_text_field( $attrs['highlightLines'] ?? '' ),
-			'max_height'         => max( 0, (int) ( $attrs['maxHeight'] ?? 0 ) ),
+			'max_height'         => $max_height < 0 ? 0 : ( $max_height > 100000 ? 100000 : $max_height ),
 			'color_scheme'       => Settings::sanitize_block_color_scheme( (string) ( $attrs['colorScheme'] ?? '' ) ),
 		);
 
@@ -417,9 +520,11 @@ class Blocks {
 	 * Build the file name offered when a snippet is downloaded.
 	 *
 	 * Uses the block's file name / title when one is set, otherwise falls back to
-	 * `snippet.{ext}` derived from the language slug.
+	 * `snippet.{ext}` derived from the language slug. A title ending in an
+	 * executable extension gets the language's extension instead.
 	 *
 	 * @since 1.2.0
+	 * @since 1.4.0 Executable title extensions are replaced.
 	 *
 	 * @param  string $title    The block file name / title.
 	 * @param  string $language The block language slug.
@@ -430,7 +535,15 @@ class Blocks {
 			$filename = sanitize_file_name( $title );
 
 			if ( '' !== $filename ) {
-				return $filename;
+				$dot = strrpos( $filename, '.' );
+
+				if ( false === $dot || ! self::is_blocked_download_extension( strtolower( substr( $filename, $dot + 1 ) ) ) ) {
+					return $filename;
+				}
+
+				$extension = self::get_language_extension( $language );
+
+				return substr( $filename, 0, $dot ) . ( 0 === strpos( $extension, '.' ) ? $extension : '.txt' );
 			}
 		}
 
@@ -442,6 +555,43 @@ class Blocks {
 
 		// A value without a leading dot is already a complete file name (Dockerfile).
 		return 0 === strpos( $extension, '.' ) ? 'snippet' . $extension : $extension;
+	}
+
+	/**
+	 * Whether a download title may not keep this extension.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $extension Lowercase extension without the leading dot.
+	 * @return bool
+	 */
+	protected static function is_blocked_download_extension( string $extension ): bool {
+		if ( ! has_filter( 'wzcbh_download_blocked_extensions' ) ) {
+			return isset( self::BLOCKED_DOWNLOAD_EXTENSIONS[ $extension ] );
+		}
+
+		if ( null === self::$blocked_download_extensions ) {
+			/**
+			 * Filter the executable file extensions a download file name may not keep.
+			 *
+			 * A title ending in one of these gets the block language's extension, or `.txt`.
+			 *
+			 * @since 1.4.0
+			 *
+			 * @param string[] $extensions Lowercase extensions without the leading dot.
+			 */
+			$extensions = (array) apply_filters( 'wzcbh_download_blocked_extensions', array_keys( self::BLOCKED_DOWNLOAD_EXTENSIONS ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+			self::$blocked_download_extensions = array();
+			foreach ( $extensions as $blocked ) {
+				$blocked = strtolower( (string) $blocked );
+				if ( preg_match( '/^[a-z][a-z0-9]{0,9}$/', $blocked ) ) {
+					self::$blocked_download_extensions[ $blocked ] = true;
+				}
+			}
+		}
+
+		return isset( self::$blocked_download_extensions[ $extension ] );
 	}
 
 	/**
@@ -731,7 +881,7 @@ class Blocks {
 		// Prism has no 'text' grammar; 'none' gets theme styling without
 		// highlighting. Markup saved by 1.2.3 and earlier carries language-text.
 		if ( 'text' === $language ) {
-			$block_content = str_replace( 'language-text', 'language-none', $block_content );
+			$block_content = self::rename_text_language_class( $block_content );
 			$language      = 'none';
 		}
 
@@ -823,7 +973,7 @@ class Blocks {
 		// There is no 'text' grammar; 'none' matches the client-side class names.
 		// Markup saved by 1.2.3 and earlier carries language-text.
 		if ( 'text' === $language ) {
-			$block_content = str_replace( 'language-text', 'language-none', $block_content );
+			$block_content = self::rename_text_language_class( $block_content );
 			$language      = 'none';
 		}
 
@@ -838,16 +988,40 @@ class Blocks {
 		$hljs_lang = self::get_hljs_language( $language );
 
 		// ── Run highlight.php ──────────────────────────────────────────────────
-		$highlighted = '';
-		if ( $hljs_lang && strlen( $plain_code ) <= self::get_highlight_size_limit( $language ) ) {
-			try {
-				$result      = self::get_highlighter()->highlight( $hljs_lang, $plain_code );
-				$highlighted = self::remap_token_classes( $result->value );
-			} catch ( \Throwable $e ) {
-				$highlighted = esc_html( $plain_code );
+		$highlighted = null;
+		if ( $hljs_lang ) {
+			$size     = strlen( $plain_code );
+			$fallback = self::is_page_request();
+
+			if ( $size <= self::get_highlight_size_limit( $language ) && ( ! $fallback || self::has_highlight_budget( $size ) ) ) {
+				try {
+					$result      = self::get_highlighter()->highlight( $hljs_lang, $plain_code );
+					$highlighted = self::remap_token_classes( $result->value );
+					if ( $fallback ) {
+						self::$highlight_budget_used += $size;
+					}
+				} catch ( \Throwable $e ) {
+					$fallback = $fallback && array_key_exists( $language, self::get_languages() );
+				}
 			}
-		} else {
-			$highlighted = esc_html( $plain_code );
+
+			if ( null === $highlighted && $fallback && self::is_prism_fallback_allowed( $size ) ) {
+				Styles_Handler::enqueue_prism_fallback();
+
+				// Tells hljs-clipboard.js to leave this block to Prism's own toolbar.
+				return self::rewrite_tag_attributes(
+					$this->render_code_block_client( $block_content, $params ),
+					'pre',
+					static function ( string $attributes ): string {
+						return self::set_tag_attributes( $attributes, array( 'data-wzcbh-client' => '1' ) );
+					}
+				);
+			}
+		}
+
+		if ( null === $highlighted ) {
+			// esc_html() returns the input uncopied; it only differs by not double-encoding `&`.
+			$highlighted = false === strpos( $plain_code, '&' ) ? esc_html( $plain_code ) : htmlspecialchars( $plain_code, ENT_QUOTES, 'UTF-8' );
 		}
 
 		// ── Line count (for line-numbers-rows) ────────────────────────────────
@@ -1103,8 +1277,8 @@ class Blocks {
 	 * Largest code block, in bytes, that is highlighted server-side.
 	 *
 	 * Highlighting cost is quadratic in input size and runs inline in the page
-	 * render, so oversized blocks fall back to escaped plain text in the same
-	 * themed markup. Client mode is unaffected.
+	 * render, so oversized blocks fall back to Prism.js in the browser, or to
+	 * escaped plain text in the same themed markup. Client mode is unaffected.
 	 *
 	 * @since 1.2.2
 	 *
@@ -1115,8 +1289,9 @@ class Blocks {
 		/**
 		 * Filter the largest code block that is highlighted server-side.
 		 *
-		 * Blocks above this size render as escaped plain text. Set to 0 to disable
-		 * server-side highlighting entirely.
+		 * Blocks above this size are highlighted by Prism.js in the browser, or
+		 * render as escaped plain text when the Prism fallback is off. Set to 0 to
+		 * disable server-side highlighting entirely.
 		 *
 		 * @since 1.2.2
 		 *
@@ -1124,6 +1299,159 @@ class Blocks {
 		 * @param string $language The block language slug.
 		 */
 		return (int) apply_filters( 'wzcbh_server_highlight_max_bytes', 131072, $language ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+	}
+
+	/**
+	 * Whether a block of this size still fits in the request's highlight budget.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  int $size Block size in bytes.
+	 * @return bool
+	 */
+	protected static function has_highlight_budget( int $size ): bool {
+		if ( null === self::$highlight_budget ) {
+			/**
+			 * Filter the total bytes highlighted server-side per request.
+			 *
+			 * Blocks beyond the budget are highlighted by Prism.js in the browser,
+			 * or render as escaped plain text when the Prism fallback is off.
+			 *
+			 * @since 1.4.0
+			 *
+			 * @param int $budget Budget in bytes. Default 262144 (256KB). Zero or less disables the budget.
+			 */
+			self::$highlight_budget = (int) apply_filters( 'wzcbh_server_highlight_request_budget', 262144 ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		}
+
+		return self::$highlight_budget <= 0 || self::$highlight_budget_used + $size <= self::$highlight_budget;
+	}
+
+	/**
+	 * Reset the per-request server highlight budget and its cached filter values.
+	 *
+	 * @since 1.4.0
+	 */
+	public static function reset_server_highlight_budget(): void {
+		self::$highlight_budget_used       = 0;
+		self::$highlight_budget            = null;
+		self::$prism_fallback_max_bytes    = null;
+		self::$prism_fallback_used         = 0;
+		self::$prism_fallback_budget       = null;
+		self::$is_page_request             = null;
+		self::$blocked_download_extensions = null;
+	}
+
+	/**
+	 * Whether this request renders a front-end page, where Prism.js can run.
+	 *
+	 * Feeds, REST, Ajax, WP-CLI and admin renders keep plain text for skipped blocks.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @return bool
+	 */
+	protected static function is_page_request(): bool {
+		if ( null === self::$is_page_request ) {
+			self::$is_page_request = ! (
+				is_admin()
+				|| wp_is_json_request()
+				|| ( defined( 'REST_REQUEST' ) && REST_REQUEST )
+				|| wp_doing_ajax()
+				|| ( defined( 'WP_CLI' ) && WP_CLI )
+				|| is_feed()
+			);
+		}
+
+		return self::$is_page_request;
+	}
+
+	/**
+	 * Whether a server-mode block that was not highlighted may fall back to Prism.js.
+	 *
+	 * An allowed block is counted against the request's fallback budget.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  int $size Block size in bytes.
+	 * @return bool
+	 */
+	protected static function is_prism_fallback_allowed( int $size ): bool {
+		if ( null === self::$prism_fallback_max_bytes ) {
+			/**
+			 * Filter whether server-mode blocks that are not highlighted fall back to Prism.js.
+			 *
+			 * @since 1.4.0
+			 *
+			 * @param bool $enabled Whether the fallback is enabled. Default true.
+			 */
+			$enabled = (bool) apply_filters( 'wzcbh_server_prism_fallback', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+			/**
+			 * Filter the largest code block that falls back to Prism.js in server mode.
+			 *
+			 * Larger blocks render as escaped plain text.
+			 *
+			 * @since 1.4.0
+			 *
+			 * @param int $max_bytes Size limit in bytes. Default 524288 (512KB).
+			 */
+			$max_bytes = (int) apply_filters( 'wzcbh_prism_fallback_max_bytes', 524288 ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+			self::$prism_fallback_max_bytes = $enabled ? $max_bytes : -1;
+		}
+
+		if ( $size > self::$prism_fallback_max_bytes ) {
+			return false;
+		}
+
+		if ( null === self::$prism_fallback_budget ) {
+			/**
+			 * Filter the total bytes sent to the Prism.js fallback per request.
+			 *
+			 * Blocks beyond the budget render as escaped plain text.
+			 *
+			 * @since 1.4.0
+			 *
+			 * @param int $budget Budget in bytes. Default 1048576 (1MB). Zero or less disables the budget.
+			 */
+			self::$prism_fallback_budget = (int) apply_filters( 'wzcbh_prism_fallback_page_budget', 1048576 ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		}
+
+		if ( self::$prism_fallback_budget > 0 && self::$prism_fallback_used + $size > self::$prism_fallback_budget ) {
+			return false;
+		}
+
+		self::$prism_fallback_used += $size;
+
+		return true;
+	}
+
+	/**
+	 * Rename the `language-text` class to `language-none` on the first `<pre>` and `<code>`.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $block_content The rendered block HTML.
+	 * @return string
+	 */
+	protected static function rename_text_language_class( string $block_content ): string {
+		if ( false === strpos( $block_content, 'language-text' ) ) {
+			return $block_content;
+		}
+
+		$rename = static function ( string $attributes ): string {
+			return (string) preg_replace_callback(
+				'/(\sclass\s*=\s*)("[^"]*"|\'[^\']*\'|[^\s>]+)/i',
+				static function ( array $matches ): string {
+					return $matches[1] . preg_replace( '/(^|[\s"\'])language-text(?=[\s"\']|$)/', '$1language-none', $matches[2] );
+				},
+				$attributes,
+				1
+			);
+		};
+
+		return self::rewrite_tag_attributes( self::rewrite_tag_attributes( $block_content, 'pre', $rename ), 'code', $rename );
 	}
 
 	/**

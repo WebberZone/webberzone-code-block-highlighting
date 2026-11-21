@@ -31,6 +31,18 @@ function wzcbh_uninstall_site() {
 	// Transients.
 	delete_transient( 'wzcbh_show_wizard_activation_redirect' );
 	delete_transient( 'wzcbh_notice_dismissed_wzcbh_wizard_notice' );
+
+	// Language detection and Convert Code Blocks result transients, keyed by hash or user ID.
+	global $wpdb;
+	foreach ( array( 'wzcbh_lang_', 'wzcbh_migrate_' ) as $prefix ) {
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+				$wpdb->esc_like( '_transient_' . $prefix ) . '%',
+				$wpdb->esc_like( '_transient_timeout_' . $prefix ) . '%'
+			)
+		);
+	}
 }
 
 if ( is_multisite() ) {

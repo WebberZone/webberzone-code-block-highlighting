@@ -21,7 +21,7 @@ The [`wzcbh_languages`](https://webberzone.dev/webberzone-code-block-highlightin
 
 ## Line Numbers
 
-Toggle to show or hide line numbers on this block. When enabled, a **Start Line** field appears. Set this to any integer to begin numbering from that value: useful when showing a code excerpt that starts partway through a file.
+Toggle to show or hide line numbers on this block. When enabled, a **Start Line** field appears. Set this to a whole number from 1 to 1,000,000 to begin numbering from that value: useful when showing a code excerpt that starts partway through a file.
 
 ## File Name or Title
 
@@ -38,11 +38,11 @@ Code blocks saved by the older *Code Syntax Block* plugin stored the filename in
 
 ## Highlight Lines
 
-Enter a comma-separated list of line numbers or ranges (e.g. `1,3-5,8`) to visually highlight those lines. This maps to the Prism `data-line` attribute. Available in client-side mode only; has no effect in server-side mode.
+Enter a comma-separated list of line numbers or ranges (e.g. `1,3-5,8`) to visually highlight those lines. This maps to the Prism `data-line` attribute. Available in client-side mode and for blocks highlighted in the browser by the server-side fallback; has no effect on blocks highlighted on the server.
 
 ## Max Height
 
-Set a maximum visible height in pixels. When the code block content exceeds this height, an **Expand** button appears in the toolbar; clicking it reveals the full block. Set to `0` (the default) to disable this limit. The height limit is applied as inline CSS and is not affected by the highlighting mode.
+Set a maximum visible height in pixels, up to 100,000. When the code block content exceeds this height, an **Expand** button appears in the toolbar; clicking it reveals the full block. Set to `0` (the default) to disable this limit. The height limit is applied as inline CSS and is not affected by the highlighting mode.
 
 ## Word Wrap
 
@@ -56,7 +56,7 @@ A dropdown that overrides the global **Download Snippet** setting for this block
 - **Show**: always show the **Download** button on this block, even when the global setting is off.
 - **Hide**: never show it on this block, even when the global setting is on.
 
-The downloaded file is named after **File name or title** when one is set; otherwise it is `snippet.{ext}`, with the extension derived from the block's language. The button works identically in client-side and server-side modes, and the line-numbers gutter is excluded from the saved file.
+The downloaded file is named after **File name or title** when one is set; otherwise it is `snippet.{ext}`, with the extension derived from the block's language. An executable file name extension, such as `.exe`, is replaced with the language's extension. The button works identically in client-side and server-side modes, and the line-numbers gutter is excluded from the saved file.
 
 ## Color Scheme
 

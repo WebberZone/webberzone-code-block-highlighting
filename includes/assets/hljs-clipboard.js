@@ -46,9 +46,15 @@
 	}
 
 	// ── Copy button (class matches Prism copy-to-clipboard plugin) ───────────
-	function handleCopy( btn ) {
+	// data-wzcbh-client blocks belong to the Prism bundle's own toolbar buttons.
+	function getServerPre( btn ) {
 		var toolbar = btn.closest( '.code-toolbar' );
 		var pre = toolbar ? toolbar.querySelector( 'pre' ) : null;
+		return pre && ! pre.hasAttribute( 'data-wzcbh-client' ) ? pre : null;
+	}
+
+	function handleCopy( btn ) {
+		var pre = getServerPre( btn );
 		var code = pre ? pre.querySelector( 'code' ) : null;
 		if ( ! code ) {
 			return;
@@ -98,8 +104,7 @@
 
 	// ── Download button (mirrors wzcbh-download in frontend.js) ──────────────
 	function handleDownload( btn ) {
-		var toolbar = btn.closest( '.code-toolbar' );
-		var pre = toolbar ? toolbar.querySelector( 'pre' ) : null;
+		var pre = getServerPre( btn );
 		var code = pre ? pre.querySelector( 'code' ) : null;
 		if ( ! code ) {
 			return;
@@ -127,8 +132,7 @@
 
 	// ── Expand/collapse button (mirrors wzcbh-expand in frontend.js) ─────────
 	function setupExpandButton( btn ) {
-		var pre = btn.closest( '.code-toolbar' );
-		pre = pre ? pre.querySelector( 'pre' ) : null;
+		var pre = getServerPre( btn );
 		if ( ! pre || ! pre.style.maxHeight ) {
 			return;
 		}

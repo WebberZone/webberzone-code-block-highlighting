@@ -32,6 +32,7 @@ test-tools/
 docs/
 build-assets.js
 jest.config.js
+*.config.min.js
 includes/blocks/src/js/test/
 *.zip
 eslint.config.*

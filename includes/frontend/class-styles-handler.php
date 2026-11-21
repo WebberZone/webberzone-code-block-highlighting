@@ -214,7 +214,7 @@ class Styles_Handler {
 				$seen[ $ref ] = true;
 				$pattern      = get_post( $ref );
 
-				if ( $pattern instanceof \WP_Post && 'wp_block' === $pattern->post_type && self::walk_blocks( parse_blocks( $pattern->post_content ), $seen, $visit ) ) {
+				if ( $pattern instanceof \WP_Post && 'wp_block' === $pattern->post_type && 'publish' === $pattern->post_status && '' === $pattern->post_password && self::walk_blocks( parse_blocks( $pattern->post_content ), $seen, $visit ) ) {
 					return true;
 				}
 			}
@@ -258,6 +258,39 @@ class Styles_Handler {
 			$asset['version']
 		);
 
+		self::enqueue_prism_script( $asset );
+
+		self::add_root_css_vars();
+	}
+
+	/**
+	 * Enqueue the Prism bundle, in the footer, for code blocks that server mode hands back to the browser, once.
+	 *
+	 * @since 1.4.0
+	 */
+	public static function enqueue_prism_fallback(): void {
+		if ( wp_script_is( 'wzcbh-prism-js', 'enqueued' ) ) {
+			return;
+		}
+
+		$asset_file = WZCBH_PLUGIN_DIR . 'includes/blocks/build/frontend.asset.php';
+
+		if ( ! file_exists( $asset_file ) ) {
+			return;
+		}
+
+		self::enqueue_prism_script( require $asset_file, true );
+	}
+
+	/**
+	 * Enqueue the Prism bundle and its inline `cbhSettings`.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  array{dependencies: string[], version: string} $asset    The bundle's asset manifest.
+	 * @param  bool                                           $fallback Whether only blocks marked `data-wzcbh-client` are highlighted.
+	 */
+	private static function enqueue_prism_script( array $asset, bool $fallback = false ): void {
 		// Prism core + all language grammars + plugins, bundled by webpack.
 		wp_enqueue_script(
 			'wzcbh-prism-js',
@@ -274,13 +307,15 @@ class Styles_Handler {
 			'fileNameStyle'     => (string) wzcbh_get_option( 'file-name-style', 'tab' ),
 		);
 
+		if ( $fallback ) {
+			$settings['fallbackOnly'] = true;
+		}
+
 		wp_add_inline_script(
 			'wzcbh-prism-js',
-			'const cbhSettings = ' . wp_json_encode( $settings ) . ';',
+			'const cbhSettings = ' . wp_json_encode( $settings, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) . ';',
 			'before'
 		);
-
-		self::add_root_css_vars();
 	}
 
 	/**
@@ -381,7 +416,8 @@ class Styles_Handler {
 					'collapse'    => __( 'Collapse', 'webberzone-code-block-highlighting' ),
 					/* translators: %s: file name of the downloaded snippet */
 					'downloaded'  => __( 'Downloaded code as %s.', 'webberzone-code-block-highlighting' ),
-				)
+				),
+				JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
 			) . ';',
 			'before'
 		);

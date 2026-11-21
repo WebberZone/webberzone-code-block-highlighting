@@ -4,7 +4,7 @@ Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code highlighting
 Requires at least: 6.6
 Tested up to: 7.1
-Stable tag: 1.3.1
+Stable tag: 1.3.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -178,16 +178,32 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 == Changelog ==
 
-= 1.3.1 =
+= 1.4.0 =
 
-Release date: 20 November 2026
+Release date: 21 November 2026
 
 **Added**
 
+* In server-side mode, code blocks too large to highlight on the server now fall back to Prism.js highlighting in the browser instead of plain text. Prism.js loads only on pages that need it. Turn this off with the new `wzcbh_server_prism_fallback` filter; blocks larger than `wzcbh_prism_fallback_max_bytes` (default 512KB) stay plain text.
+* Per-page limit on the code sent to the browser fallback, filterable with the new `wzcbh_prism_fallback_page_budget` (default 1MB; 0 turns it off). Blocks beyond it stay plain text.
+* Per-page limit on the amount of code highlighted on the server, so pages with many large code blocks no longer slow down. Blocks beyond the limit use the browser fallback. The limit and the fallback apply to front-end pages only; feeds, the REST API, AJAX, WP-CLI and admin screens keep the previous behavior. The limit is filterable with the new `wzcbh_server_highlight_request_budget` (default 256KB; 0 turns it off).
 * Save Changes button in the settings navigation.
+
+**Changed**
+
+* Uninstalling the plugin now also removes cached language detection results and Convert Code Blocks results on every site.
+* Settings passed to the frontend scripts are now encoded with stricter JSON escaping.
+* On front-end pages, setting `wzcbh_server_highlight_max_bytes` to 0 now sends every server-side block with a language to the browser fallback instead of showing it as plain text. Also return `false` from `wzcbh_server_prism_fallback` to keep plain text.
 
 **Fixed**
 
+* A very large custom start line number broke line numbers and line highlighting. The start line is now limited to 1,000,000 and the max height to 100,000 pixels.
+* In server-side mode, HTML entities typed as code text, such as `&lt;`, showed as the character they stand for in blocks that were not highlighted.
+* The download button kept an executable extension such as `.exe` or `.bat` from the block's file name. Such an extension is now replaced with the language's extension, and other file names download as before. The list is filterable with the new `wzcbh_download_blocked_extensions`.
+* A malformed language value on a code block could stop Prism.js highlighting every block on the page.
+* Code containing the text `language-text` was changed in blocks set to Plain text.
+* Converting code blocks from the Convert Code Blocks screen or with WP-CLI could turn malformed attribute markup into a different attribute. Such markup is now left as it is.
+* Draft, private and password-protected synced patterns were scanned for code blocks when deciding which styles to load.
 * Backslashes were stripped from settings values when they were saved from the settings page or setup wizard.
 * A single-value setting that received an array, for example from a modified form submission, could trigger a PHP error on save.
 
@@ -219,5 +235,5 @@ For the changelog of earlier versions, please refer to the [releases page on Git
 
 == Upgrade Notice ==
 
-= 1.3.1 =
-Keeps backslashes in settings values and adds a Save Changes button to the settings navigation. No action needed.
+= 1.4.0 =
+Large server-side code blocks now fall back to browser highlighting, with a per-page server highlighting limit, plus several fixes. No action needed.

@@ -84,6 +84,10 @@ class Test_Code_Block_Migrator extends WP_UnitTestCase {
 				$this->block( '{"lineNumbers":true}', '<pre class="wp-block-code" title="old.php"><code lang="php" class="language-php line-numbers">' . $code . '</code></pre>' ),
 				$this->block( '{"language":"php","lineNumbers":true,"title":"old.php"}', $core ),
 			),
+			'bad attribute name' => array(
+				$this->block( '', '<pre class="wp-block-code language-php" =onclick=alert(1)><code lang="php" class="language-php">x</code></pre>' ),
+				$this->block( '{"language":"php"}', '<pre class="wp-block-code" =onclick=alert(1)><code>x</code></pre>' ),
+			),
 		);
 	}
 

@@ -25,6 +25,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 		$this->blocks = new Blocks();
+		Blocks::reset_server_highlight_budget();
 		delete_option( 'wzcbh_settings' );
 		\WebberZone\Code_Block_Highlighting\Options_API::flush_cache();
 	}
@@ -77,7 +78,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 
 		return '<pre class="' . implode( ' ', $classes ) . '"' . $attrs . '>'
 			. '<code' . ( $language ? ' lang="' . $language . '" class="language-' . $language . '"' : '' ) . '>'
-			. esc_html( $code )
+			. htmlspecialchars( $code, ENT_QUOTES, 'UTF-8' )
 			. '</code></pre>';
 	}
 
@@ -209,12 +210,26 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		preg_match_all( '/wzcbh-highlighted-line" data-line-number="(\d+)"/', $html, $matches );
 
 		$this->assertSame( array( '1', '3', '4' ), $matches[1] );
+
+		$html = $this->render_core_markup(
+			array(
+				'language'         => 'php',
+				'lineNumbers'      => true,
+				'lineNumbersStart' => PHP_INT_MAX,
+				'highlightLines'   => '1',
+				'maxHeight'        => PHP_INT_MAX,
+			)
+		);
+
+		$this->assertStringContainsString( 'data-start="1000000"', $html );
+		$this->assertStringContainsString( 'data-line-number="1000000"', $html );
+		$this->assertStringContainsString( 'max-height:100000px;', $html );
 	}
 
 	/**
-	 * Oversized blocks skip server-side highlighting rather than stalling render.
+	 * Oversized blocks skip server-side highlighting and fall back to Prism rather than stalling render.
 	 */
-	public function test_oversized_block_falls_back_to_plain_text() {
+	public function test_oversized_block_falls_back_to_prism() {
 		$this->set_option( 'highlighting-mode', 'server' );
 
 		$code = str_repeat( "\$foo = bar( 'baz' );\n", 8000 );
@@ -228,50 +243,124 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 
 		$this->assertSame( 0, substr_count( $html, 'class="token' ) );
 		$this->assertStringContainsString( 'language-php', $html );
+		$this->assertStringContainsString( 'data-wzcbh-client="1"', $html );
+
+		$this->go_to( get_feed_link() );
+		Blocks::reset_server_highlight_budget();
+
+		$feed = $this->render(
+			array(
+				'language' => 'php',
+				'code'     => $code,
+			)
+		);
+
+		$this->assertSame( 0, substr_count( $feed, 'class="token' ) );
+		$this->assertStringNotContainsString( 'data-wzcbh-client', $feed );
+		$this->assertStringContainsString( 'language-php', $feed );
 	}
 
 	/**
-	 * The download file name derives from the language when no title is set.
+	 * Blocks beyond the per-request budget fall back to Prism, until the fallback page budget runs out.
+	 */
+	public function test_exhausted_request_budget_falls_back_to_prism() {
+		$this->set_option( 'highlighting-mode', 'server' );
+		$budget = static function () {
+			return 10;
+		};
+		$page_budget = 10;
+		$fallback    = static function () use ( &$page_budget ) {
+			return $page_budget;
+		};
+		add_filter( 'wzcbh_server_highlight_request_budget', $budget );
+		add_filter( 'wzcbh_prism_fallback_page_budget', $fallback );
+
+		$args = array(
+			'language' => 'php',
+			'code'     => '$a = 1;',
+		);
+
+		$first  = $this->render( $args );
+		$second = $this->render( $args );
+		$third  = $this->render( $args );
+
+		Blocks::reset_server_highlight_budget();
+		$page_budget = 0;
+		$this->render( $args );
+		$this->render( $args );
+		$unlimited = $this->render( $args );
+
+		remove_filter( 'wzcbh_server_highlight_request_budget', $budget );
+		remove_filter( 'wzcbh_prism_fallback_page_budget', $fallback );
+
+		$this->assertStringNotContainsString( 'data-wzcbh-client', $third, 'over the fallback page budget stays plain text' );
+		$this->assertSame( 0, substr_count( $third, 'class="token' ) );
+		$this->assertStringContainsString( 'data-wzcbh-client="1"', $unlimited, 'a page budget of 0 disables the cap' );
+
+		$this->assertStringContainsString( 'class="token', $first );
+		$this->assertStringNotContainsString( 'data-wzcbh-client', $first );
+		$this->assertSame( 0, substr_count( $second, 'class="token' ) );
+		$this->assertMatchesRegularExpression( '/<pre[^>]*\sdata-wzcbh-client="1"[^>]*>/', $second );
+		$this->assertStringContainsString( 'class="language-php"', $second );
+	}
+
+	/**
+	 * The download file name derives from the language, and title extensions are allowlisted.
 	 *
 	 * @param string $language Language slug.
 	 * @param string $expected Expected file name.
+	 * @param string $title    Block file name / title.
 	 *
 	 * @dataProvider data_download_filenames
 	 */
-	public function test_download_filename( $language, $expected ) {
-		$html = $this->render( array( 'language' => $language ) );
+	public function test_download_filename( $language, $expected, $title = '' ) {
+		$html = $this->render(
+			array(
+				'language' => $language,
+				'title'    => $title,
+			)
+		);
 
 		$this->assertStringContainsString( 'data-wzcbh-download="' . $expected . '"', $html );
 	}
 
 	/**
-	 * Language slugs and the file names they download as.
+	 * Language slugs, titles and the file names they download as.
 	 *
-	 * @return array<string, array{string, string}>
+	 * @return array<string, array{0: string, 1: string, 2?: string}>
 	 */
 	public function data_download_filenames() {
 		return array(
-			'javascript' => array( 'javascript', 'snippet.js' ),
-			'docker'     => array( 'docker', 'Dockerfile' ),
-			'unmapped'   => array( 'graphql', 'snippet.graphql' ),
+			'javascript'           => array( 'javascript', 'snippet.js' ),
+			'docker'               => array( 'docker', 'Dockerfile' ),
+			'unmapped'             => array( 'graphql', 'snippet.graphql' ),
+			'title ext'            => array( 'javascript', 'app.ts', 'app.ts' ),
+			'unmapped title ext'   => array( 'javascript', 'app.mjs', 'app.mjs' ),
+			'compound name'        => array( 'yaml', 'docker-compose.yaml', 'docker-compose.yaml' ),
+			'whole name title'     => array( 'docker', 'Dockerfile', 'Dockerfile' ),
+			'dotted version stem'  => array( 'text', sanitize_file_name( 'v1.2 notes' ), 'v1.2 notes' ),
+			'dotted release'       => array( 'text', 'release-1.4.0', 'release-1.4.0' ),
+			'executable'           => array( 'php', 'evil.php', 'evil.exe' ),
+			'executable uppercase' => array( 'php', 'UPPER.php', 'UPPER.EXE' ),
+			'batch no lang ext'    => array( 'docker', 'fix.txt', 'fix.bat' ),
 		);
 	}
 
 	/**
 	 * The code a visitor copies must not be altered by the render filter.
 	 *
-	 * @param string $mode Highlighting mode.
+	 * @param string $mode     Highlighting mode.
+	 * @param string $language Language slug.
+	 * @param string $code     Code text.
 	 *
-	 * @dataProvider data_modes
+	 * @dataProvider data_round_trips
 	 */
-	public function test_rendered_code_text_round_trips( $mode ) {
+	public function test_rendered_code_text_round_trips( $mode, $language, $code ) {
 		$this->set_option( 'highlighting-mode', $mode );
-
-		$code = "function foo() {\n\treturn 'a & b < c';\n}\n";
 
 		$html = $this->render(
 			array(
-				'language'    => 'php',
+				'language'    => $language,
 				'lineNumbers' => true,
 				'code'        => $code,
 			)
@@ -285,6 +374,22 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$text  = html_entity_decode( strip_tags( (string) $inner ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 
 		$this->assertSame( $code, $text );
+	}
+
+	/**
+	 * Modes, languages and code that must survive rendering, including the plain-text path with and without `&`.
+	 *
+	 * @return array<string, array{string, string, string}>
+	 */
+	public function data_round_trips() {
+		$code = "function foo() {\n\treturn 'a & b < c';\n}\n";
+
+		return array(
+			'client'                 => array( 'client', 'php', $code ),
+			'server'                 => array( 'server', 'php', $code ),
+			'server plain entity'    => array( 'server', 'text', "x &lt; y & z\n" ),
+			'server plain no ampers' => array( 'server', 'text', "if ( a < b ) { return 'c'; }\n" ),
+		);
 	}
 
 	/**
