@@ -402,11 +402,8 @@ class Blocks {
 	/**
 	 * Filter the rendered HTML of core/code blocks to inject highlighting attributes.
 	 *
-	 * In client mode (Prism.js): injects language classes and data-attributes so the
-	 * Prism JS bundle can highlight in the browser.
-	 * In server mode (highlight.php): runs the highlighter server-side and replaces the
-	 * <code> innerHTML before the page is sent; no Prism JS is loaded unless a block
-	 * exceeds the server highlight limits and falls back to client markup.
+	 * Client mode adds what Prism.js reads; server mode replaces the `<code>` content with
+	 * highlight.php output, falling back to client markup above the server limits.
 	 *
 	 * @since 1.0.0
 	 *
@@ -484,9 +481,9 @@ class Blocks {
 
 		if ( null !== $tags ) {
 			if ( $title ) {
-				$found['title'] = (string) ( $tags['pre'][2]['data-title'] ?? '' );
+				$found['title'] = $tags['pre'][2]['data-title'] ?? '';
 				if ( '' === $found['title'] ) {
-					$found['title'] = (string) ( $tags['pre'][2]['title'] ?? '' );
+					$found['title'] = $tags['pre'][2]['title'] ?? '';
 				}
 			}
 			if ( $language ) {
@@ -581,9 +578,8 @@ class Blocks {
 	/**
 	 * Build the file name offered when a snippet is downloaded.
 	 *
-	 * Uses the block's file name / title when one is set, otherwise falls back to
-	 * `snippet.{ext}` derived from the language slug. A title ending in an
-	 * executable extension gets the language's extension instead.
+	 * Uses the block's file name / title when one is set, otherwise `snippet.{ext}` from the
+	 * language slug. An executable title extension is replaced with the language's.
 	 *
 	 * @since 1.2.0
 	 * @since 1.4.0 Executable title extensions are replaced.
@@ -776,10 +772,8 @@ class Blocks {
 	/**
 	 * Rewrite the attributes of the block's `<pre>` and `<code>` opening tags.
 	 *
-	 * Tags in the plain form core saves are rebuilt from their parsed attributes;
-	 * any other markup goes through the HTML API. Either way an attribute value
-	 * can never be read as, or turned into, another attribute, and event handler
-	 * attributes are removed.
+	 * Core-form tags are rebuilt from their parsed attributes and anything else goes through
+	 * the HTML API, so a value can never become another attribute; event handlers are removed.
 	 *
 	 * @since 1.2.2
 	 * @since 1.4.0 Takes a rewrite spec per tag instead of a callback.
@@ -838,7 +832,7 @@ class Blocks {
 				}
 			}
 			foreach ( $updated as $name => $value ) {
-				if ( ! array_key_exists( $name, $attrs ) || $attrs[ $name ] !== $value ) {
+				if ( ( $attrs[ $name ] ?? null ) !== $value ) {
 					// WordPress 6.6 escapes with esc_attr(), which empties invalid UTF-8, so scrub it rather than lose the saved text.
 					if ( is_string( $value ) && ! preg_match( '//u', $value ) ) {
 						$value = htmlspecialchars_decode( htmlspecialchars( $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' ), ENT_QUOTES );
@@ -896,12 +890,8 @@ class Blocks {
 	/**
 	 * Apply a rewrite spec to a tag's decoded attributes.
 	 *
-	 * Spec keys: `classes` (added, duplicates dropped), `attrs` (set, replacing
-	 * any present: markup saved by 1.2.3 and earlier already carries
-	 * `data-title`, `data-line` and `data-start`), `max_height`, `style`
-	 * (declarations appended) and `rename_text` (`language-text` becomes
-	 * `language-none`). Event handler attributes are removed. With `$escape`,
-	 * only the text added here is escaped, so saved values stay as saved.
+	 * Spec keys: `classes` (merged), `attrs` (replacing saved ones), `max_height`, `style` (appended) and
+	 * `rename_text` (`language-text` to `language-none`). Event handlers go; `$escape` escapes added text only.
 	 *
 	 * @since 1.4.0
 	 *
@@ -927,7 +917,7 @@ class Blocks {
 
 		if ( $classes || $rename ) {
 			$existing = isset( $attrs['class'] ) && is_string( $attrs['class'] ) ? preg_split( '/[ \t\n\r\f]+/', $attrs['class'], -1, PREG_SPLIT_NO_EMPTY ) : array();
-			$existing = is_array( $existing ) ? $existing : array();
+			$existing = $existing ? $existing : array();
 
 			if ( $rename ) {
 				foreach ( array_keys( $existing, 'language-text', true ) as $index ) {
@@ -972,12 +962,7 @@ class Blocks {
 		$html = '<' . $tag;
 
 		foreach ( $attrs as $name => $value ) {
-			if ( true === $value ) {
-				$html .= ' ' . $name;
-				continue;
-			}
-
-			$html .= ' ' . $name . '="' . $value . '"';
+			$html .= ' ' . $name . ( true === $value ? '' : '="' . $value . '"' );
 		}
 
 		return $html . '>';
@@ -1016,9 +1001,9 @@ class Blocks {
 		$tags = self::parse_simple_tags( $html );
 
 		if ( null !== $tags ) {
-			$close = stripos( $html, '</code>', $tags['code'][1] );
+			$close = strpos( $html, '<', $tags['code'][1] );
 			// Core escapes `<` in code, so a raw one may hide that `</code>` in a comment, raw text element or attribute.
-			if ( false !== $close && strcspn( $html, '<', $tags['code'][1], $close - $tags['code'][1] ) === $close - $tags['code'][1] ) {
+			if ( false !== $close && 0 === substr_compare( $html, '</code>', $close, 7, true ) ) {
 				return array( $tags['code'][0], $tags['code'][1], $close, $close + 7 );
 			}
 		}
@@ -1188,8 +1173,7 @@ class Blocks {
 
 			if ( $size <= self::get_highlight_size_limit( $language ) && ( ! $fallback || self::has_highlight_budget( $size ) ) ) {
 				try {
-					$result      = self::get_highlighter()->highlight( $hljs_lang, $plain_code );
-					$highlighted = self::remap_token_classes( $result->value );
+					$highlighted = self::remap_token_classes( self::get_highlighter()->highlight( $hljs_lang, $plain_code )->value );
 					if ( $fallback ) {
 						self::$highlight_budget_used += $size;
 					}
@@ -1458,9 +1442,8 @@ class Blocks {
 	/**
 	 * Largest code block, in bytes, that is highlighted server-side.
 	 *
-	 * Highlighting cost is quadratic in input size and runs inline in the page
-	 * render, so oversized blocks fall back to Prism.js in the browser, or to
-	 * escaped plain text in the same themed markup. Client mode is unaffected.
+	 * Highlighting cost is quadratic in input size, so larger blocks fall back to Prism.js
+	 * in the browser or to escaped plain text.
 	 *
 	 * @since 1.2.2
 	 *
@@ -1471,9 +1454,8 @@ class Blocks {
 		/**
 		 * Filter the largest code block that is highlighted server-side.
 		 *
-		 * Blocks above this size are highlighted by Prism.js in the browser, or
-		 * render as escaped plain text when the Prism fallback is off. Set to 0 to
-		 * disable server-side highlighting entirely.
+		 * Larger blocks fall back to Prism.js in the browser, or to escaped plain text when the
+		 * Prism fallback is off. Set to 0 to disable server-side highlighting entirely.
 		 *
 		 * @since 1.2.2
 		 *
@@ -1721,39 +1703,42 @@ class Blocks {
 				$line_buf .= $tag;
 				$i         = $j + 1;
 			} elseif ( "\n" === $ch ) {
-				$close_str  = '';
-				$reopen_str = '';
-				foreach ( array_reverse( $open_tags ) as $open_tag ) {
-					preg_match( '/<([a-zA-Z][a-zA-Z0-9]*)/', $open_tag, $tm );
-					$close_str .= '</' . ( $tm[1] ?? 'span' ) . '>';
-				}
-				foreach ( $open_tags as $open_tag ) {
-					$reopen_str .= $open_tag;
-				}
-
-				$result       .= self::make_line_span( $line_num, $target_lines, $line_buf . $close_str . "\n" );
-				$line_buf      = $reopen_str;
+				$result       .= self::make_line_span( $line_num, $target_lines, $line_buf . self::close_tags( $open_tags ) . "\n" );
+				$line_buf      = implode( '', $open_tags );
 				$line_has_text = false;
 				++$line_num;
 				++$i;
 			} else {
-				$line_buf     .= $ch;
+				$run           = strcspn( $html, "<\n", $i );
+				$line_buf     .= substr( $html, $i, $run );
 				$line_has_text = true;
-				++$i;
+				$i            += $run;
 			}
 		}
 
 		// Emit the final line (common when code has no trailing newline).
 		if ( $line_has_text ) {
-			$close_str = '';
-			foreach ( array_reverse( $open_tags ) as $open_tag ) {
-				preg_match( '/<([a-zA-Z][a-zA-Z0-9]*)/', $open_tag, $tm );
-				$close_str .= '</' . ( $tm[1] ?? 'span' ) . '>';
-			}
-			$result .= self::make_line_span( $line_num, $target_lines, $line_buf . $close_str );
+			$result .= self::make_line_span( $line_num, $target_lines, $line_buf . self::close_tags( $open_tags ) );
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Closing tags for a stack of open tags, innermost first.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string[] $open_tags Opening tag strings, outermost first.
+	 * @return string
+	 */
+	protected static function close_tags( array $open_tags ): string {
+		$html = '';
+		for ( $i = count( $open_tags ) - 1; $i >= 0; $i-- ) {
+			preg_match( '/<([a-zA-Z][a-zA-Z0-9]*)/', $open_tags[ $i ], $tm );
+			$html .= '</' . ( $tm[1] ?? 'span' ) . '>';
+		}
+		return $html;
 	}
 
 	/**

@@ -100,10 +100,6 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 	/**
 	 * A file name containing regex backreference syntax must survive verbatim.
 	 *
-	 * The attributes are injected into the rendered HTML through a regex
-	 * replacement, where `$0` and `\0` mean "the matched text" unless the
-	 * replacement is built inside a callback.
-	 *
 	 * @param string $title Title to round-trip.
 	 *
 	 * @dataProvider data_backreference_titles
@@ -487,31 +483,25 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 	 * @return array<string, array{string, string}>
 	 */
 	public function data_attribute_smuggling() {
-		$tail     = ' data-x="\'y onfocus=window.__xss=1 autofocus tabindex=1 z"';
-		$payloads = array(
-			'class decoy'        => '<pre data-d=\'x class="\'' . $tail . '><code>x</code></pre>',
-			'download decoy'     => '<pre data-d=\'x data-wzcbh-download="\'' . $tail . ' class="wp-block-code"><code>x</code></pre>',
-			'style decoy'        => '<pre data-d=\'x style="\'' . $tail . ' class="wp-block-code"><code>x</code></pre>',
-			'code decoy'         => '<pre class="wp-block-code"><code data-d=\'x class="\'' . $tail . '>x</code></pre>',
-			'uppercase'          => "<PRE DATA-D='x CLASS=\"' DATA-X=\"'y ONFOCUS=window.__xss=1 AUTOFOCUS TABINDEX=1 z\" ONCLICK=\"alert(1)\"><CODE ONMOUSEOVER=x>x</CODE></PRE>",
-			'newlines'           => "<pre\ndata-d='x\nclass=\"'\ndata-x=\"'y\nonfocus=window.__xss=1\nautofocus\ntabindex=1 z\"\nclass=wp-block-code><code>x</code></pre>",
-			'unquoted'           => '<pre class=wp-block-code data-x=a onclick=alert(1)><code class=c onfocus=y>x</code></pre>',
-			'core form'          => '<pre class="wp-block-code" onclick="alert(1)"><code onfocus="x">x</code></pre>',
-			'no pre'             => '<div class="wp-block-code"><code onclick="alert(1)">x</code></div>',
-			'bare code'          => '<code onclick="alert(1)">x</code>',
-			'close in comment'   => '<pre class="wp-block-code"><code>a<!--</code><img src=x onerror=alert(1)>--></code></pre>',
-			'close in textarea'  => '<pre class="wp-block-code"><code>a<textarea></code><img src=x onerror=alert(1)></textarea></code></pre>',
-			'close in script'    => '<pre class="wp-block-code"><code>a<script></code><img src=x onerror=alert(1)></script></code></pre>',
-			'close in attribute' => '<pre class="wp-block-code"><code><span title="</code><img src=x onerror=alert(1)>"></span></code></pre>',
+		$tail = ' data-x="\'y onfocus=window.__xss=1 autofocus tabindex=1 z"';
+		return $this->in_both_modes(
+			array(
+				'class decoy'        => '<pre data-d=\'x class="\'' . $tail . '><code>x</code></pre>',
+				'download decoy'     => '<pre data-d=\'x data-wzcbh-download="\'' . $tail . ' class="wp-block-code"><code>x</code></pre>',
+				'style decoy'        => '<pre data-d=\'x style="\'' . $tail . ' class="wp-block-code"><code>x</code></pre>',
+				'code decoy'         => '<pre class="wp-block-code"><code data-d=\'x class="\'' . $tail . '>x</code></pre>',
+				'uppercase'          => "<PRE DATA-D='x CLASS=\"' DATA-X=\"'y ONFOCUS=window.__xss=1 AUTOFOCUS TABINDEX=1 z\" ONCLICK=\"alert(1)\"><CODE ONMOUSEOVER=x>x</CODE></PRE>",
+				'newlines'           => "<pre\ndata-d='x\nclass=\"'\ndata-x=\"'y\nonfocus=window.__xss=1\nautofocus\ntabindex=1 z\"\nclass=wp-block-code><code>x</code></pre>",
+				'unquoted'           => '<pre class=wp-block-code data-x=a onclick=alert(1)><code class=c onfocus=y>x</code></pre>',
+				'core form'          => '<pre class="wp-block-code" onclick="alert(1)"><code onfocus="x">x</code></pre>',
+				'no pre'             => '<div class="wp-block-code"><code onclick="alert(1)">x</code></div>',
+				'bare code'          => '<code onclick="alert(1)">x</code>',
+				'close in comment'   => '<pre class="wp-block-code"><code>a<!--</code><img src=x onerror=alert(1)>--></code></pre>',
+				'close in textarea'  => '<pre class="wp-block-code"><code>a<textarea></code><img src=x onerror=alert(1)></textarea></code></pre>',
+				'close in script'    => '<pre class="wp-block-code"><code>a<script></code><img src=x onerror=alert(1)></script></code></pre>',
+				'close in attribute' => '<pre class="wp-block-code"><code><span title="</code><img src=x onerror=alert(1)>"></span></code></pre>',
+			)
 		);
-
-		$data = array();
-		foreach ( $payloads as $name => $html ) {
-			$data[ "client {$name}" ] = array( 'client', $html );
-			$data[ "server {$name}" ] = array( 'server', $html );
-		}
-
-		return $data;
 	}
 
 	/**
@@ -541,18 +531,12 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 	 * @return array<string, array{string, string}>
 	 */
 	public function data_text_class_markup() {
-		$markup = array(
-			'single-quoted' => "<pre class='wp-block-code language-text'><code class='language-text'>a</code></pre>",
-			'unterminated'  => '<pre class="wp-block-code language-text"><code class="language-text" onclick="x">a',
+		return $this->in_both_modes(
+			array(
+				'single-quoted' => "<pre class='wp-block-code language-text'><code class='language-text'>a</code></pre>",
+				'unterminated'  => '<pre class="wp-block-code language-text"><code class="language-text" onclick="x">a',
+			)
 		);
-
-		$data = array();
-		foreach ( $markup as $name => $html ) {
-			$data[ "client {$name}" ] = array( 'client', $html );
-			$data[ "server {$name}" ] = array( 'server', $html );
-		}
-
-		return $data;
 	}
 
 	/**
@@ -592,11 +576,21 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 	 * @return array<string, array{string, string}>
 	 */
 	public function data_invalid_utf8_markup() {
-		$markup = array(
-			'core form'     => "<pre class=\"wp-block-code caf\xE9\" style=\"color:red\"><code class=\"c\xE9\">x</code></pre>",
-			'single-quoted' => "<pre class='wp-block-code caf\xE9' style='color:red'><code class='c\xE9'>x</code></pre>",
+		return $this->in_both_modes(
+			array(
+				'core form'     => "<pre class=\"wp-block-code caf\xE9\" style=\"color:red\"><code class=\"c\xE9\">x</code></pre>",
+				'single-quoted' => "<pre class='wp-block-code caf\xE9' style='color:red'><code class='c\xE9'>x</code></pre>",
+			)
 		);
+	}
 
+	/**
+	 * Pair each saved markup sample with both highlighting modes.
+	 *
+	 * @param  array<string, string> $markup Name => saved block HTML.
+	 * @return array<string, array{string, string}>
+	 */
+	private function in_both_modes( array $markup ) {
 		$data = array();
 		foreach ( $markup as $name => $html ) {
 			$data[ "client {$name}" ] = array( 'client', $html );

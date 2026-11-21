@@ -509,9 +509,7 @@ class Code_Block_Migrator {
 	/**
 	 * Re-join the first opening tag's attributes with single spaces.
 	 *
-	 * Attribute values are kept verbatim; only the gaps between them change.
-	 * The tag is left alone unless the HTML parser reads the same attribute
-	 * names and values from both versions.
+	 * Values are kept verbatim, and the tag is kept as is unless the parser reads the same attributes from both.
 	 *
 	 * @since 1.3.0
 	 *
