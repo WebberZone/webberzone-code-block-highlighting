@@ -298,8 +298,7 @@ class Blocks {
 			$props[] = 'color: ' . $colors['color'] . ';';
 		}
 
-		$selector = Settings::get_dark_mode_selector();
-		$prefix   = '' === $selector ? '' : ':is(' . $selector . ') ';
+		$prefix = '' === Settings::get_dark_mode_selector() ? '' : Settings::get_dark_mode_scope() . ' ';
 
 		return Settings::wrap_dark_mode_css(
 			$prefix . '.block-editor-block-list__layout pre[class*="language-"],' .
@@ -1242,8 +1241,7 @@ class Blocks {
 		}
 
 		if ( null === $highlighted ) {
-			// esc_html() returns the input uncopied; it only differs by not double-encoding `&`.
-			$highlighted = false === strpos( $plain_code, '&' ) ? esc_html( $plain_code ) : htmlspecialchars( $plain_code, ENT_QUOTES, 'UTF-8' );
+			$highlighted = self::escape_plain_text( $plain_code );
 		}
 
 		// ── Line count (for line-numbers-rows) ────────────────────────────────
@@ -1832,10 +1830,10 @@ class Blocks {
 
 		foreach ( (array) preg_split( '/(?<=\n)/', $code, -1, PREG_SPLIT_NO_EMPTY ) as $line ) {
 			$line = (string) $line;
-			$text = rtrim( $line, "\n" );
+			$text = rtrim( $line, "\r\n" );
 
 			if ( preg_match( '/^(?:\*{3}|-{3}|\+{3}|@@.*@@$|\d)/', $text ) ) {
-				$html .= self::render_diff_run( $kind, $run, $types, $hljs_lang, $language ) . '<span class="token coord">' . esc_html( $text ) . '</span>' . substr( $line, strlen( $text ) );
+				$html .= self::render_diff_run( $kind, $run, $types, $hljs_lang, $language ) . '<span class="token coord">' . self::escape_plain_text( $text ) . '</span>' . substr( $line, strlen( $text ) );
 				$run   = array();
 				$kind  = '';
 				continue;
@@ -1844,7 +1842,7 @@ class Blocks {
 			$first = $line[0];
 
 			if ( ! isset( $types[ $first ] ) ) {
-				$html .= self::render_diff_run( $kind, $run, $types, $hljs_lang, $language ) . esc_html( $line );
+				$html .= self::render_diff_run( $kind, $run, $types, $hljs_lang, $language ) . self::escape_plain_text( $line );
 				$run   = array();
 				$kind  = '';
 				continue;
@@ -1886,14 +1884,32 @@ class Blocks {
 
 		$lines = '' === $hljs_lang ? array() : self::split_html_lines( self::remap_token_classes( self::get_highlighter()->highlight( $hljs_lang, $body )->value ) );
 
-		// No base language, or a line that is only its prefix and gives highlight.php no body.
+		// A last line that is only its prefix, with no newline, leaves highlight.php nothing to return for it.
+		if ( count( $lines ) === count( $run ) - 1 && '' === substr( (string) end( $run ), 1 ) ) {
+			$lines[] = '';
+		}
+
+		// No base language, or highlight.php returned a different number of lines.
 		if ( count( $lines ) !== count( $run ) ) {
-			$lines = array_map( 'esc_html', array_map( static fn( string $line ): string => substr( $line, 1 ), $run ) );
+			$lines = array_map( array( self::class, 'escape_plain_text' ), array_map( static fn( string $line ): string => substr( $line, 1 ), $run ) );
 		}
 
 		$prefix = '<span class="token prefix ' . $types[ $kind ][1] . '">' . esc_html( $kind ) . '</span>';
 
 		return '<span class="token ' . $types[ $kind ][0] . ( '' === $language ? '' : ' language-' . esc_attr( $language ) ) . '">' . $prefix . implode( $prefix, $lines ) . '</span>';
+	}
+
+	/**
+	 * Escape code text for output, keeping typed entities such as `&lt;` as typed.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $text Decoded code text.
+	 * @return string
+	 */
+	protected static function escape_plain_text( string $text ): string {
+		// esc_html() returns the input uncopied; it only differs by not double-encoding `&`.
+		return false === strpos( $text, '&' ) ? esc_html( $text ) : htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' );
 	}
 
 	/**

@@ -490,7 +490,40 @@ class Settings {
 		 */
 		$selector = (string) apply_filters( 'wzcbh_dark_mode_selector', $selector ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
-		return trim( (string) preg_replace( '/[<{};@\\\\\r\n]/', '', $selector ), " \t\n\r\0\x0B" );
+		$selector = trim( str_replace( array( '/*', '*/' ), '', (string) preg_replace( '/[<{};@\\\\\r\n]/', '', $selector ) ), " \t\n\r\0\x0B" );
+
+		return self::is_balanced_selector( $selector ) ? $selector : '';
+	}
+
+	/**
+	 * Whether every bracket and quote in a selector is closed, so it cannot end the `:is()` it is placed in.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $selector CSS selector.
+	 * @return bool
+	 */
+	private static function is_balanced_selector( string $selector ): bool {
+		$closers = array();
+		$quote   = '';
+
+		foreach ( str_split( $selector ) as $char ) {
+			if ( '' !== $quote ) {
+				$quote = $char === $quote ? '' : $quote;
+			} elseif ( '"' === $char || "'" === $char ) {
+				$quote = $char;
+			} elseif ( '(' === $char ) {
+				$closers[] = ')';
+			} elseif ( '[' === $char ) {
+				$closers[] = ']';
+			} elseif ( ')' === $char || ']' === $char ) {
+				if ( array_pop( $closers ) !== $char ) {
+					return false;
+				}
+			}
+		}
+
+		return '' === $quote && ! $closers;
 	}
 
 	/**
@@ -503,7 +536,8 @@ class Settings {
 	public static function get_dark_mode_scope(): string {
 		$selector = self::get_dark_mode_selector();
 
-		return '' === $selector ? ':root' : ':is(' . $selector . ')';
+		// :where() adds no specificity, so an ID in the selector cannot outrank a per-block scheme; the :not() restores a class's weight.
+		return '' === $selector ? ':root' : ':where(' . $selector . '):not(.wzcbh-dark-scope)';
 	}
 
 	/**

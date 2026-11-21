@@ -57,7 +57,19 @@
             ]
         },
         {
-            "begin": ":="
+            "className": "title",
+            "begin": "\\b(?!(?:async|await|case|const|else|for|from|func|if|import|in|let|match|mut|return|struct|while)\\b)[a-zA-Z_]\\w*(?=\\s*\\()",
+            "relevance": 0
+        },
+        {
+            "className": "operator",
+            "begin": ":=|[=!<>]=|[-+*\/<>=]",
+            "relevance": 0
+        },
+        {
+            "className": "punctuation",
+            "begin": "[{}\\[\\](),.:]",
+            "relevance": 0
         }
     ]
 }

@@ -166,7 +166,7 @@ Yes. Use the **Title** field in the Inspector Controls sidebar. The label is dis
 
 = Does the plugin support dark mode or multiple themes? =
 
-The plugin ships with 21 Prism themes. The active theme is selected globally on the settings page (**Settings > Code Block Highlighting**). Per-block theme switching is not currently supported.
+The plugin ships with 21 Prism themes. The active theme is selected globally on the settings page (**Settings > Code Block Highlighting**), and each block can use its own theme. To switch themes automatically in dark mode, choose a **Dark Mode Color Scheme**; it follows the visitor's device setting or your site's dark mode switch.
 
 = Is this plugin compatible with the WordPress block editor (Gutenberg)? =
 

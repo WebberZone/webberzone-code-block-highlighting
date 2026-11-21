@@ -535,7 +535,7 @@ class Styles_Handler {
 	 * @param  string $slug A registered color scheme slug, or empty for none.
 	 */
 	private static function enqueue_color_scheme( string $slug ): void {
-		if ( '' === $slug || Settings::get_color_scheme_slug() === $slug ) {
+		if ( '' === $slug || ( Settings::get_color_scheme_slug() === $slug && '' === Settings::get_dark_color_scheme_slug() ) ) {
 			return;
 		}
 

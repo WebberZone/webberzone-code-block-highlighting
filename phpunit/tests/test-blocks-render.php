@@ -610,7 +610,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 				'language'    => 'php',
 				'diff'        => true,
 				'lineNumbers' => true,
-				'code'        => "@@ -1 +1 @@\n-\$a = 1;\n+\$a = 2;\n unchanged\n",
+				'code'        => "@@ -1 +1 @@\n-\$a = 1;\n+\$a = 2;\n unchanged\n&lt; typed\n",
 			)
 		);
 
@@ -619,8 +619,9 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 
 		if ( 'server' === $mode ) {
 			$this->assertStringContainsString( '<span class="token inserted-sign inserted language-php"><span class="token prefix inserted">+</span>', $html );
-			$this->assertSame( 4, substr_count( $html, 'class="wzcbh-line' ), 'wrapped line count' );
-			$this->assertSame( 4, substr_count( $html, '<span></span>' ), 'gutter row count' );
+			$this->assertSame( 5, substr_count( $html, 'class="wzcbh-line' ), 'wrapped line count' );
+			$this->assertSame( 5, substr_count( $html, '<span></span>' ), 'gutter row count' );
+			$this->assertStringContainsString( '&amp;lt; typed', $html );
 		}
 	}
 
