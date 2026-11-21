@@ -91,7 +91,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 	private function render( array $args ) {
 		$attrs = array_intersect_key(
 			$args,
-			array_flip( array( 'language', 'lineNumbers', 'lineNumbersStart', 'wordWrap', 'title', 'highlightLines', 'maxHeight' ) )
+			array_flip( array( 'language', 'lineNumbers', 'lineNumbersStart', 'wordWrap', 'title', 'highlightLines', 'maxHeight', 'diff' ) )
 		);
 
 		return $this->blocks->render_code_block( $this->saved_html( $args ), array( 'attrs' => $attrs ) );
@@ -610,6 +610,35 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 			'client' => array( 'client' ),
 			'server' => array( 'server' ),
 		);
+	}
+
+	/**
+	 * A diff block keeps its prefixes in prefix tokens and, in server mode, one gutter row per wrapped line.
+	 *
+	 * @param string $mode Highlighting mode.
+	 *
+	 * @dataProvider data_modes
+	 */
+	public function test_diff_block_renders_prefixed_runs( $mode ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		$html = $this->render(
+			array(
+				'language'    => 'php',
+				'diff'        => true,
+				'lineNumbers' => true,
+				'code'        => "@@ -1 +1 @@\n-\$a = 1;\n+\$a = 2;\n unchanged\n",
+			)
+		);
+
+		$this->assertStringContainsString( 'diff-highlight', $html );
+		$this->assertStringContainsString( 'language-diff-php', $html );
+
+		if ( 'server' === $mode ) {
+			$this->assertStringContainsString( '<span class="token inserted-sign inserted language-php"><span class="token prefix inserted">+</span>', $html );
+			$this->assertSame( 4, substr_count( $html, 'class="wzcbh-line' ), 'wrapped line count' );
+			$this->assertSame( 4, substr_count( $html, '<span></span>' ), 'gutter row count' );
+		}
 	}
 
 	/**

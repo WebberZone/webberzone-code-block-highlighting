@@ -36,6 +36,10 @@ If **Show File Name** is disabled globally, the field is still saved but not dis
 
 Code blocks saved by the older *Code Syntax Block* plugin stored the filename in a `title` attribute on the `<pre>` element. These are read and displayed without needing the post to be re-saved.
 
+## Show as Diff
+
+Toggle to color lines that start with `+` as added and lines that start with `-` as removed, while still highlighting the code with the block's language. A **PHP** block shown as a diff is labeled **PHP diff**. Start unchanged lines with a space so they are highlighted too, and keep file headers (`---`, `+++`) and `@@` hunk lines as they are in a unified diff. With **Plain Text** or no language selected, the block is treated as a plain **Diff**. The language list also has a **Diff** entry for pasting a whole patch. Downloaded snippets use the `.diff` extension, since the lines keep their prefixes. It is saved with the block only and is not part of **Save as default**.
+
 ## Highlight Lines
 
 Enter a comma-separated list of line numbers or ranges (e.g. `1,3-5,8`) to visually highlight those lines. This maps to the Prism `data-line` attribute. It works in both highlighting modes, including blocks highlighted in the browser by the server-side fallback.
@@ -64,7 +68,7 @@ A dropdown that overrides the global **Color Scheme** setting for this block. **
 
 ## Save as Default
 
-After configuring the controls above, click **Save as default** at the bottom of the **Syntax Highlighting** panel to copy the current block's settings (language, line numbers, line numbers start, word wrap, max height, download button and color scheme) into the global defaults. Future code blocks inserted via the editor will inherit these values. The file name and highlighted lines are specific to each snippet, so they are not saved. Saving a color scheme as the default only affects new blocks; the global **Color Scheme** setting is unchanged.
+After configuring the controls above, click **Save as default** at the bottom of the **Syntax Highlighting** panel to copy the current block's settings (language, line numbers, line numbers start, word wrap, max height, download button and color scheme) into the global defaults. Future code blocks inserted via the editor will inherit these values. The file name, highlighted lines and diff setting are specific to each snippet, so they are not saved. Saving a color scheme as the default only affects new blocks; the global **Color Scheme** setting is unchanged.
 
 The button calls the `POST /wzcbh/v1/default-settings` REST endpoint under the `wzcbh/v1` namespace. Only users with the `manage_options` capability can call it. See the [Developer Reference](https://webberzone.com/support/knowledgebase/code-block-highlighting-developer-reference/) for the full route schema.
 

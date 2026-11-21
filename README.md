@@ -44,7 +44,7 @@ Both modes use the same 21 Prism themes and produce visually identical output, s
 
 ### Supported languages
 
-41 languages out of the box: Apache Config, Bash, C, C++, C#, CSS, Dart, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Kujo, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML. Use the `wzcbh_languages` filter to add or remove entries from the language picker.
+42 languages out of the box: Apache Config, Bash, C, C++, C#, CSS, Dart, Diff, Docker, F#, Go, GraphQL, Groovy, Haskell, HTML, Java, JavaScript, JSON, JSX, Kotlin, Kujo, Lua, Markdown, Nginx, Objective-C, Perl, PHP, PowerShell, Python, R, Ruby, Rust, Sass, Scala, SQL, Swift, TOML, TSX, TypeScript, Vim, XML, and YAML. Use the `wzcbh_languages` filter to add or remove entries from the language picker.
 
 ### Included themes (21)
 

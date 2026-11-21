@@ -459,11 +459,18 @@ class Blocks {
 			'line_numbers'       => ! empty( $attrs['lineNumbers'] ),
 			'line_numbers_start' => $line_start < 1 ? 1 : ( $line_start > 1000000 ? 1000000 : $line_start ),
 			'word_wrap'          => ! empty( $attrs['wordWrap'] ),
+			'diff'               => ! empty( $attrs['diff'] ),
 			'title'              => sanitize_text_field( $attrs['title'] ?? '' ),
 			'highlight_lines'    => sanitize_text_field( $attrs['highlightLines'] ?? '' ),
 			'max_height'         => $max_height < 0 ? 0 : ( $max_height > 100000 ? 100000 : $max_height ),
 			'color_scheme'       => Settings::sanitize_block_color_scheme( (string) ( $attrs['colorScheme'] ?? '' ) ),
 		);
+
+		// Without a base language there is nothing to combine with, so the block is a plain diff.
+		if ( $params['diff'] && in_array( $params['language'], array( '', 'text', 'none', 'diff' ), true ) ) {
+			$params['language'] = 'diff';
+			$params['diff']     = false;
+		}
 
 		$server_mode = 'server' === wzcbh_get_option( 'highlighting-mode', 'client' );
 
@@ -476,7 +483,7 @@ class Blocks {
 		// client mode, 'none' in server mode) for plain-text blocks, which would
 		// lose the .txt extension if the filename were derived afterwards.
 		$params['download']          = self::is_download_enabled( (string) ( $attrs['downloadButton'] ?? '' ) );
-		$params['download_filename'] = self::get_download_filename( $params['title'], $params['language'] );
+		$params['download_filename'] = self::get_download_filename( $params['title'], $params['diff'] ? 'diff' : $params['language'] );
 
 		if ( $server_mode ) {
 			$block_content = $this->render_code_block_server( $block_content, $params );
@@ -702,6 +709,7 @@ class Blocks {
 			'csharp'     => '.cs',
 			'css'        => '.css',
 			'dart'       => '.dart',
+			'diff'       => '.diff',
 			'docker'     => 'Dockerfile',
 			'fsharp'     => '.fs',
 			'go'         => '.go',
@@ -1093,9 +1101,18 @@ class Blocks {
 			$language = 'none';
 		}
 
-		$lang_class  = $language ? 'language-' . $language : '';
+		$diff        = ! empty( $params['diff'] );
+		$lang_class  = $language ? 'language-' . ( $diff ? 'diff-' : '' ) . $language : '';
 		$pre_classes = array();
 		$pre_attrs   = array();
+
+		if ( $diff || 'diff' === $language ) {
+			$pre_classes[] = 'diff-highlight';
+		}
+
+		if ( $diff ) {
+			$pre_attrs['data-language'] = self::get_diff_label( $language );
+		}
 
 		// Theme CSS selects on the <pre> class before Prism runs.
 		if ( $lang_class ) {
@@ -1171,6 +1188,7 @@ class Blocks {
 		$title              = $params['title'];
 		$highlight_lines    = $params['highlight_lines'];
 		$max_height         = $params['max_height'];
+		$diff               = ! empty( $params['diff'] );
 
 		// There is no 'text' grammar; 'none' matches the client-side class names.
 		// Markup saved by 1.2.3 and earlier carries language-text.
@@ -1204,7 +1222,9 @@ class Blocks {
 
 			if ( $size <= self::get_highlight_size_limit( $language ) && ( ! $fallback || self::has_highlight_budget( $size ) ) ) {
 				try {
-					$highlighted = self::remap_token_classes( self::get_highlighter()->highlight( $hljs_lang, $plain_code )->value );
+					$highlighted = $diff || 'diff' === $language
+						? self::highlight_diff( $plain_code, $diff ? $hljs_lang : '', $diff ? $language : '' )
+						: self::remap_token_classes( self::get_highlighter()->highlight( $hljs_lang, $plain_code )->value );
 					if ( $fallback ) {
 						self::$highlight_budget_used += $size;
 					}
@@ -1249,7 +1269,7 @@ class Blocks {
 		}
 
 		if ( $line_numbers || $target_lines ) {
-			$highlighted = self::wrap_lines( $highlighted, $line_numbers_start, $target_lines );
+			$highlighted = self::wrap_lines( $highlighted, $line_numbers_start, $target_lines, $diff || 'diff' === $language );
 		}
 
 		// ── Line-numbers gutter ───────────────────────────────────────────────
@@ -1268,7 +1288,8 @@ class Blocks {
 		}
 
 		// ── Rebuild <code> element ─────────────────────────────────────────────
-		$code_classes = $language ? 'language-' . esc_attr( $language ) : '';
+		$class_slug   = ( $diff ? 'diff-' : '' ) . $language;
+		$code_classes = $language ? 'language-' . esc_attr( $class_slug ) : '';
 		$new_code     = '<code' . ( $code_classes ? ' class="' . $code_classes . '"' : '' ) . '>'
 			. $highlighted . $line_numbers_html . '</code>';
 
@@ -1279,7 +1300,10 @@ class Blocks {
 		// data-start.
 		$pre_classes = array();
 		if ( $language ) {
-			$pre_classes[] = 'language-' . $language;
+			$pre_classes[] = 'language-' . $class_slug;
+		}
+		if ( $diff || 'diff' === $language ) {
+			$pre_classes[] = 'diff-highlight';
 		}
 		if ( $line_numbers ) {
 			$pre_classes[] = 'line-numbers';
@@ -1338,7 +1362,7 @@ class Blocks {
 		// Language label (aria-hidden decorative span, same as Prism show-language).
 		if ( $show_label && $hljs_lang ) {
 			$languages      = self::get_languages();
-			$label          = $languages[ $language ] ?? strtoupper( $hljs_lang );
+			$label          = $diff ? self::get_diff_label( $language ) : ( $languages[ $language ] ?? strtoupper( $hljs_lang ) );
 			$toolbar_items .= '<div class="toolbar-item">'
 				. '<span aria-hidden="true">' . esc_html( $label ) . '</span></div>';
 		}
@@ -1699,19 +1723,41 @@ class Blocks {
 	 * @param  string           $html         Highlighted HTML from highlight.php.
 	 * @param  int              $start        First line number.
 	 * @param  array<int, true> $target_lines Set of line numbers that should be highlighted.
+	 * @param  bool             $block_runs   Whether the HTML has block-level diff runs; see split_html_lines().
 	 * @return string
 	 */
-	protected static function wrap_lines( string $html, int $start, array $target_lines ): string {
-		$result    = '';
+	protected static function wrap_lines( string $html, int $start, array $target_lines, bool $block_runs = false ): string {
+		$result = '';
+
+		foreach ( self::split_html_lines( $html, $block_runs ) as $offset => $line ) {
+			$result .= self::make_line_span( $start + $offset, $target_lines, $line );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Split highlighted HTML into lines, closing and reopening inline tags at each line boundary.
+	 *
+	 * Each line keeps its trailing newline. A final line is returned only when it has text,
+	 * because highlight.php closes its outermost span after the trailing newline.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $html            Highlighted HTML from highlight.php.
+	 * @param  bool   $newline_inside  Keep the newline inside the open tags. A newline after a block-level
+	 *                                 diff run would otherwise add an empty line below it.
+	 * @return string[] Balanced HTML, one entry per line.
+	 */
+	protected static function split_html_lines( string $html, bool $newline_inside = false ): array {
+		$lines     = array();
 		$open_tags = array(); // Stack of opening tag strings.
 		$line_buf  = '';
-		$line_num  = $start;
 		$i         = 0;
 		$len       = strlen( $html );
 
 		// Text only — tags do not count. $line_buf is seeded with the reopened
-		// tags after a newline, and highlight.php closes its outermost span after
-		// the trailing one, so testing $line_buf emitted a phantom final line.
+		// tags after a newline, so testing $line_buf emitted a phantom final line.
 		$line_has_text = false;
 
 		while ( $i < $len ) {
@@ -1735,10 +1781,9 @@ class Blocks {
 				$line_buf .= $tag;
 				$i         = $j + 1;
 			} elseif ( "\n" === $ch ) {
-				$result       .= self::make_line_span( $line_num, $target_lines, $line_buf . self::close_tags( $open_tags ) . "\n" );
+				$lines[]       = $newline_inside ? $line_buf . "\n" . self::close_tags( $open_tags ) : $line_buf . self::close_tags( $open_tags ) . "\n";
 				$line_buf      = implode( '', $open_tags );
 				$line_has_text = false;
-				++$line_num;
 				++$i;
 			} else {
 				$run           = strcspn( $html, "<\n", $i );
@@ -1748,12 +1793,122 @@ class Blocks {
 			}
 		}
 
-		// Emit the final line (common when code has no trailing newline).
 		if ( $line_has_text ) {
-			$result .= self::make_line_span( $line_num, $target_lines, $line_buf . self::close_tags( $open_tags ) );
+			$lines[] = $line_buf . self::close_tags( $open_tags );
 		}
 
-		return $result;
+		return $lines;
+	}
+
+	/**
+	 * Highlight a unified or normal diff with the block's base language, matching Prism's diff-highlight markup.
+	 *
+	 * Runs of lines sharing a prefix (`+`, `-`, `<`, `>`, space or `!`) have the prefix removed and
+	 * the rest highlighted as one piece, then each line gets its prefix back inside a
+	 * `token prefix` span, so the same theme and diff-highlight CSS apply in both modes.
+	 * Coordinate lines (`@@ … @@`, `---`, `+++`, `***` and `12,14c12`) and lines with no prefix
+	 * are left unhighlighted, as Prism does.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $code      The plain code, entities decoded.
+	 * @param  string $hljs_lang highlight.php language slug of the base language, or empty for a plain diff.
+	 * @param  string $language  Prism language slug of the base language, or empty for a plain diff.
+	 * @return string
+	 */
+	protected static function highlight_diff( string $code, string $hljs_lang, string $language ): string {
+		$types = array(
+			'-' => array( 'deleted-sign deleted', 'deleted' ),
+			'<' => array( 'deleted-arrow deleted', 'deleted' ),
+			'+' => array( 'inserted-sign inserted', 'inserted' ),
+			'>' => array( 'inserted-arrow inserted', 'inserted' ),
+			' ' => array( 'unchanged', 'unchanged' ),
+			'!' => array( 'diff bold', 'diff' ),
+		);
+
+		$html = '';
+		$run  = array();
+		$kind = '';
+
+		foreach ( (array) preg_split( '/(?<=\n)/', $code, -1, PREG_SPLIT_NO_EMPTY ) as $line ) {
+			$line = (string) $line;
+			$text = rtrim( $line, "\n" );
+
+			if ( preg_match( '/^(?:\*{3}|-{3}|\+{3}|@@.*@@$|\d)/', $text ) ) {
+				$html .= self::render_diff_run( $kind, $run, $types, $hljs_lang, $language ) . '<span class="token coord">' . esc_html( $text ) . '</span>' . substr( $line, strlen( $text ) );
+				$run   = array();
+				$kind  = '';
+				continue;
+			}
+
+			$first = $line[0];
+
+			if ( ! isset( $types[ $first ] ) ) {
+				$html .= self::render_diff_run( $kind, $run, $types, $hljs_lang, $language ) . esc_html( $line );
+				$run   = array();
+				$kind  = '';
+				continue;
+			}
+
+			if ( $first !== $kind ) {
+				$html .= self::render_diff_run( $kind, $run, $types, $hljs_lang, $language );
+				$run   = array();
+				$kind  = $first;
+			}
+
+			$run[] = $line;
+		}
+
+		return $html . self::render_diff_run( $kind, $run, $types, $hljs_lang, $language );
+	}
+
+	/**
+	 * Render one run of diff lines that share a prefix.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string                            $kind      The prefix character, or an empty string for no run.
+	 * @param  string[]                          $run       The lines of the run, prefix included.
+	 * @param  array<string, array<int, string>> $types  Prefix => token classes and prefix alias.
+	 * @param  string                            $hljs_lang highlight.php language slug.
+	 * @param  string                            $language  Prism language slug.
+	 * @return string
+	 */
+	protected static function render_diff_run( string $kind, array $run, array $types, string $hljs_lang, string $language ): string {
+		if ( '' === $kind || ! $run ) {
+			return '';
+		}
+
+		$body = '';
+		foreach ( $run as $line ) {
+			$body .= substr( $line, 1 );
+		}
+
+		$lines = '' === $hljs_lang ? array() : self::split_html_lines( self::remap_token_classes( self::get_highlighter()->highlight( $hljs_lang, $body )->value ) );
+
+		// No base language, or a line that is only its prefix and gives highlight.php no body.
+		if ( count( $lines ) !== count( $run ) ) {
+			$lines = array_map( 'esc_html', array_map( static fn( string $line ): string => substr( $line, 1 ), $run ) );
+		}
+
+		$prefix = '<span class="token prefix ' . $types[ $kind ][1] . '">' . esc_html( $kind ) . '</span>';
+
+		return '<span class="token ' . $types[ $kind ][0] . ( '' === $language ? '' : ' language-' . esc_attr( $language ) ) . '">' . $prefix . implode( $prefix, $lines ) . '</span>';
+	}
+
+	/**
+	 * Toolbar label for a block shown as a diff, such as "PHP diff".
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $language The base language slug.
+	 * @return string
+	 */
+	protected static function get_diff_label( string $language ): string {
+		$languages = self::get_languages();
+
+		/* translators: %s: language name, such as PHP */
+		return sprintf( __( '%s diff', 'webberzone-code-block-highlighting' ), $languages[ $language ] ?? $language );
 	}
 
 	/**
@@ -1857,6 +2012,7 @@ class Blocks {
 			'csharp'     => 'C#',
 			'css'        => 'CSS',
 			'dart'       => 'Dart',
+			'diff'       => 'Diff',
 			'docker'     => 'Docker',
 			'fsharp'     => 'F#',
 			'go'         => 'Go',

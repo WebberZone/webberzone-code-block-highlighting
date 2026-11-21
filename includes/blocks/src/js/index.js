@@ -45,6 +45,7 @@ const edit = ({ attributes, setAttributes, clientId }) => {
 		maxHeight,
 		downloadButton,
 		colorScheme,
+		diff,
 	} = attributes;
 	const [isSaving, setIsSaving] = useState(false);
 	const [savedNotice, setSavedNotice] = useState('');
@@ -223,6 +224,22 @@ const edit = ({ attributes, setAttributes, clientId }) => {
 							checked={!!wordWrap}
 							onChange={(state) =>
 								setAttributes({ wordWrap: state })
+							}
+						/>
+					</PanelRow>
+					<PanelRow>
+						<ToggleControl
+							label={__(
+								'Show as diff',
+								'webberzone-code-block-highlighting'
+							)}
+							help={__(
+								'Color lines starting with + and - as added and removed. Start unchanged lines with a space.',
+								'webberzone-code-block-highlighting'
+							)}
+							checked={!!diff}
+							onChange={(state) =>
+								setAttributes({ diff: state || undefined })
 							}
 						/>
 					</PanelRow>
@@ -569,6 +586,9 @@ const addSyntaxToCodeBlock = (settings, name, deprecation) => {
 			type: 'number',
 		},
 		wordWrap: {
+			type: 'boolean',
+		},
+		diff: {
 			type: 'boolean',
 		},
 		highlightLines: {

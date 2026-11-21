@@ -46,6 +46,7 @@ import 'prismjs/components/prism-groovy'; // depends: clike
 import 'prismjs/components/prism-apacheconf';
 import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-dart';
+import 'prismjs/components/prism-diff';
 import 'prismjs/components/prism-docker';
 import 'prismjs/components/prism-fsharp';
 import 'prismjs/components/prism-go';
@@ -76,6 +77,8 @@ import 'prismjs/plugins/line-highlight/prism-line-highlight.css';
 import 'prismjs/plugins/toolbar/prism-toolbar';
 import 'prismjs/plugins/toolbar/prism-toolbar.css';
 import 'prismjs/plugins/show-language/prism-show-language';
+import 'prismjs/plugins/diff-highlight/prism-diff-highlight';
+import 'prismjs/plugins/diff-highlight/prism-diff-highlight.css';
 import 'prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard';
 
 // ── Frontend utilities ────────────────────────────────────────────────────────
