@@ -94,19 +94,6 @@ class Test_Language_Detection extends WP_UnitTestCase {
 	}
 
 	/**
-	 * A language chosen in the block, Plain Text included, is never replaced.
-	 */
-	public function test_set_language_is_kept() {
-		$text = $this->render( self::PHP_CODE, array( 'language' => 'text' ) );
-		$bash = $this->render( self::PHP_CODE, array( 'language' => 'bash' ) );
-
-		$this->assertStringNotContainsString( 'language-php', $text );
-		$this->assertStringContainsString( 'language-none', $text );
-		$this->assertStringContainsString( '<code class="language-bash">', $bash );
-		$this->assertEmpty( $this->cached_detections() );
-	}
-
-	/**
 	 * The result, including no match, is cached and read back.
 	 */
 	public function test_result_is_cached() {

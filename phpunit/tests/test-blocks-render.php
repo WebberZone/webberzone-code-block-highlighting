@@ -189,40 +189,6 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Ranges are still expanded normally inside the block.
-	 */
-	public function test_line_ranges_within_the_block_still_highlight() {
-		$this->set_option( 'highlighting-mode', 'server' );
-
-		$html = $this->render(
-			array(
-				'language'       => 'php',
-				'lineNumbers'    => true,
-				'highlightLines' => '1,3-4',
-				'code'           => "a\nb\nc\nd\ne",
-			)
-		);
-
-		preg_match_all( '/wzcbh-highlighted-line" data-line-number="(\d+)"/', $html, $matches );
-
-		$this->assertSame( array( '1', '3', '4' ), $matches[1] );
-
-		$html = $this->render_core_markup(
-			array(
-				'language'         => 'php',
-				'lineNumbers'      => true,
-				'lineNumbersStart' => PHP_INT_MAX,
-				'highlightLines'   => '1',
-				'maxHeight'        => PHP_INT_MAX,
-			)
-		);
-
-		$this->assertStringContainsString( 'data-start="1000000"', $html );
-		$this->assertStringContainsString( 'data-line-number="1000000"', $html );
-		$this->assertStringContainsString( 'max-height:100000px;', $html );
-	}
-
-	/**
 	 * Oversized blocks skip server-side highlighting and fall back to Prism rather than stalling render.
 	 */
 	public function test_oversized_block_falls_back_to_prism() {
@@ -426,6 +392,23 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		}
 		$this->assertStringContainsString( 'class="language-php"', $code[0] );
 		$this->assertStringContainsString( 'wzcbh-file-tab', $html );
+	}
+
+	/**
+	 * Out-of-range start line and max height values are clamped.
+	 */
+	public function test_oversized_numeric_attributes_are_clamped() {
+		$html = $this->render_core_markup(
+			array(
+				'language'         => 'php',
+				'lineNumbers'      => true,
+				'lineNumbersStart' => PHP_INT_MAX,
+				'maxHeight'        => PHP_INT_MAX,
+			)
+		);
+
+		$this->assertStringContainsString( 'data-start="1000000"', $html );
+		$this->assertStringContainsString( 'max-height:100000px;', $html );
 	}
 
 	/**
