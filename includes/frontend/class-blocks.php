@@ -89,6 +89,24 @@ class Blocks {
 	protected static $is_page_request = null;
 
 	/**
+	 * Uncached language detections run during this request.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @var int
+	 */
+	protected static $auto_detect_used = 0;
+
+	/**
+	 * Filtered per-request language detection limit, read on first use.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @var int|null
+	 */
+	protected static $auto_detect_limit = null;
+
+	/**
 	 * Filtered executable download extensions, built on first use when the filter is hooked.
 	 *
 	 * @since 1.4.0
@@ -399,19 +417,11 @@ class Blocks {
 	public function render_code_block( string $block_content, array $block ): string {
 		$attrs = $block['attrs'] ?? array();
 
-		// Blocks saved by 1.2.3 and earlier keep `language` and `title` in the HTML
-		// (lang= on <code>, data-title= on <pre>), not in the block comment.
-		if ( empty( $attrs['language'] ) && preg_match( '/<code[^>]+\blang="([^"]+)"/', $block_content, $lm ) ) {
-			$attrs['language'] = sanitize_key( $lm[1] );
-		}
-		if ( empty( $attrs['title'] ) && preg_match( '/<pre[^>]+\bdata-title="([^"]*)"/', $block_content, $tm ) ) {
-			$attrs['title'] = html_entity_decode( $tm[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-		}
-		// Fallback for posts saved by the old code-syntax-block plugin, which
-		// stored the file name in pre[title] and was never re-saved. Mirrors the
-		// `data-title || title` lookup in the client-side toolbar button.
-		if ( empty( $attrs['title'] ) && preg_match( '/<pre[^>]*\stitle="([^"]*)"/', $block_content, $ltm ) ) {
-			$attrs['title'] = html_entity_decode( $ltm[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		// Markup saved by 1.2.3 and earlier, or by code-syntax-block, keeps the language and title in the HTML.
+		$need_language = empty( $attrs['language'] ) && false !== stripos( $block_content, 'lang' );
+		$need_title    = empty( $attrs['title'] ) && false !== stripos( $block_content, 'title' );
+		if ( $need_language || $need_title ) {
+			$attrs = array_merge( $attrs, self::get_legacy_attributes( $block_content, $need_language, $need_title ) );
 		}
 
 		$line_start = (int) ( $attrs['lineNumbersStart'] ?? 1 );
@@ -456,6 +466,58 @@ class Blocks {
 		}
 
 		return $block_content;
+	}
+
+	/**
+	 * Read the language and title that markup saved by 1.2.3 and earlier keeps in the HTML.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $block_content The rendered block HTML.
+	 * @param  bool   $language      Whether to read `lang` from the `<code>`.
+	 * @param  bool   $title         Whether to read `data-title`, then `title`, from the `<pre>`.
+	 * @return array<string, string> Found `language` and `title` attributes.
+	 */
+	protected static function get_legacy_attributes( string $block_content, bool $language, bool $title ): array {
+		$found = array();
+		$tags  = self::parse_simple_tags( $block_content );
+
+		if ( null !== $tags ) {
+			if ( $title ) {
+				$found['title'] = (string) ( $tags['pre'][2]['data-title'] ?? '' );
+				if ( '' === $found['title'] ) {
+					$found['title'] = (string) ( $tags['pre'][2]['title'] ?? '' );
+				}
+			}
+			if ( $language ) {
+				$found['language'] = sanitize_key( $tags['code'][2]['lang'] ?? '' );
+			}
+
+			return array_filter( $found );
+		}
+
+		$processor = new \WP_HTML_Tag_Processor( $block_content );
+
+		if ( $processor->next_tag( array( 'tag_name' => 'PRE' ) ) ) {
+			if ( $title ) {
+				foreach ( array( 'data-title', 'title' ) as $name ) {
+					$value = $processor->get_attribute( $name );
+					if ( is_string( $value ) && '' !== $value ) {
+						$found['title'] = $value;
+						break;
+					}
+				}
+			}
+
+			if ( $language && $processor->next_tag( array( 'tag_name' => 'CODE' ) ) ) {
+				$value = $processor->get_attribute( 'lang' );
+				if ( is_string( $value ) ) {
+					$found['language'] = sanitize_key( $value );
+				}
+			}
+		}
+
+		return array_filter( $found );
 	}
 
 	/**
@@ -712,129 +774,213 @@ class Blocks {
 	}
 
 	/**
-	 * Rewrite the attributes of the first `<pre>` (or `<code>`) opening tag.
+	 * Rewrite the attributes of the block's `<pre>` and `<code>` opening tags.
 	 *
-	 * Callback rather than a `preg_replace()` replacement string: the injected
-	 * values are editor-supplied, and `$1` / `\0` / `\\` in a replacement are
-	 * backreferences that `esc_attr()` does not escape.
-	 *
-	 * @since 1.2.2
-	 *
-	 * @param  string   $html    The block HTML.
-	 * @param  string   $tag     Tag name to rewrite (`pre` or `code`).
-	 * @param  callable $rewrite Receives the attribute string, returns its replacement.
-	 * @return string
-	 */
-	protected static function rewrite_tag_attributes( string $html, string $tag, callable $rewrite ): string {
-		return (string) preg_replace_callback(
-			'/<' . $tag . '\b([^>]*)>/i',
-			static function ( array $matches ) use ( $tag, $rewrite ): string {
-				return '<' . $tag . $rewrite( $matches[1] ) . '>';
-			},
-			$html,
-			1
-		);
-	}
-
-	/**
-	 * Merge class names into a tag's attribute string.
-	 *
-	 * Duplicates are dropped, and an empty list leaves the tag alone rather than
-	 * adding `class=""`.
+	 * Tags in the plain form core saves are rebuilt from their parsed attributes;
+	 * any other markup goes through the HTML API. Either way an attribute value
+	 * can never be read as, or turned into, another attribute, and event handler
+	 * attributes are removed.
 	 *
 	 * @since 1.2.2
+	 * @since 1.4.0 Takes a rewrite spec per tag instead of a callback.
 	 *
-	 * @param  string   $attributes Raw attribute string of a single tag.
-	 * @param  string[] $classes    Class names to add.
+	 * @param  string                              $html  The block HTML.
+	 * @param  array<string, array<string, mixed>> $specs `pre` and/or `code` => spec for apply_tag_spec().
 	 * @return string
 	 */
-	protected static function merge_tag_classes( string $attributes, array $classes ): string {
-		// Escape only what we add; the existing text is already escaped.
-		$classes = array_map( 'esc_attr', array_filter( $classes ) );
+	protected static function rewrite_tag_attributes( string $html, array $specs ): string {
+		$tags = self::parse_simple_tags( $html );
 
-		if ( ! $classes ) {
-			return $attributes;
+		if ( null !== $tags ) {
+			// The <code> first, so the <pre> offsets stay valid.
+			foreach ( array( 'code', 'pre' ) as $tag ) {
+				if ( ! isset( $specs[ $tag ] ) ) {
+					continue;
+				}
+
+				list( $start, $end, $attrs ) = $tags[ $tag ];
+				$updated                     = self::apply_tag_spec( $attrs, $specs[ $tag ], 'esc_attr' );
+
+				if ( $updated !== $attrs ) {
+					$html = substr_replace( $html, self::build_simple_tag( $tag, $updated ), $start, $end - $start );
+				}
+			}
+
+			return $html;
 		}
 
-		if ( preg_match( '/\sclass="([^"]*)"/i', $attributes, $matches ) ) {
-			$existing = preg_split( '/\s+/', trim( $matches[1], " \t\n\r\0\x0B" ), -1, PREG_SPLIT_NO_EMPTY );
-			$existing = is_array( $existing ) ? $existing : array();
-			$merged   = array_unique( array_merge( $existing, $classes ) );
+		$processor = new \WP_HTML_Tag_Processor( $html );
 
-			return substr_replace(
-				$attributes,
-				' class="' . implode( ' ', $merged ) . '"',
-				(int) strpos( $attributes, $matches[0] ),
-				strlen( $matches[0] )
-			);
-		}
-
-		return $attributes . ' class="' . implode( ' ', array_unique( $classes ) ) . '"';
-	}
-
-	/**
-	 * Set attributes on a tag's attribute string, replacing any already present.
-	 *
-	 * Markup saved by 1.2.3 and earlier already carries `data-title`, `data-line`
-	 * and `data-start`, so these replace rather than duplicate them — the value
-	 * written here is the sanitised one.
-	 *
-	 * @since 1.2.2
-	 *
-	 * @param  string                $attributes Raw attribute string of a single tag.
-	 * @param  array<string, string> $new_attrs  Attribute name => already-escaped value.
-	 * @return string
-	 */
-	protected static function set_tag_attributes( string $attributes, array $new_attrs ): string {
-		foreach ( $new_attrs as $name => $value ) {
-			$replacement = ' ' . $name . '="' . $value . '"';
-			$pattern     = '/\s' . preg_quote( $name, '/' ) . '="[^"]*"/i';
-
-			if ( preg_match( $pattern, $attributes, $matches ) ) {
-				$attributes = substr_replace(
-					$attributes,
-					$replacement,
-					(int) strpos( $attributes, $matches[0] ),
-					strlen( $matches[0] )
-				);
+		foreach ( array( 'pre', 'code' ) as $tag ) {
+			if ( ! isset( $specs[ $tag ] ) ) {
 				continue;
 			}
 
-			$attributes .= $replacement;
+			if ( ! $processor->next_tag( array( 'tag_name' => strtoupper( $tag ) ) ) ) {
+				if ( 'code' === $tag ) {
+					break;
+				}
+				// No <pre>: start over so a bare <code> is still rewritten.
+				$processor = new \WP_HTML_Tag_Processor( $html );
+				continue;
+			}
+
+			$attrs = array();
+			foreach ( (array) $processor->get_attribute_names_with_prefix( '' ) as $name ) {
+				$attrs[ $name ] = $processor->get_attribute( $name );
+			}
+
+			$updated = self::apply_tag_spec( $attrs, $specs[ $tag ] );
+
+			foreach ( $attrs as $name => $value ) {
+				if ( ! array_key_exists( $name, $updated ) ) {
+					$processor->remove_attribute( $name );
+				}
+			}
+			foreach ( $updated as $name => $value ) {
+				if ( ! array_key_exists( $name, $attrs ) || $attrs[ $name ] !== $value ) {
+					// WordPress 6.6 escapes with esc_attr(), which empties invalid UTF-8, so scrub it rather than lose the saved text.
+					if ( is_string( $value ) && ! preg_match( '//u', $value ) ) {
+						$value = htmlspecialchars_decode( htmlspecialchars( $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' ), ENT_QUOTES );
+					}
+					$processor->set_attribute( $name, $value );
+				}
+			}
 		}
 
-		return $attributes;
+		return $processor->get_updated_html();
 	}
 
 	/**
-	 * Append declarations to a tag's inline `style` attribute.
+	 * Parse the block's leading `<pre>` and `<code>` opening tags when they are in the plain form core saves.
 	 *
-	 * @since 1.2.2
+	 * That form is lowercase names with double-quoted values containing no `&`,
+	 * so the raw values are the decoded ones. Anything else returns null.
 	 *
-	 * @param  string $attributes   Raw attribute string of a single tag.
-	 * @param  string $declarations CSS declarations to append, semicolon terminated.
+	 * @since 1.4.0
+	 *
+	 * @param  string $html The block HTML.
+	 * @return array<string, array{0: int, 1: int, 2: array<string, string>}>|null Tag => start offset, end offset and attributes.
+	 */
+	protected static function parse_simple_tags( string $html ): ?array {
+		$offset = strspn( $html, " \t\n\r\f" );
+
+		if ( ! preg_match( '/\G<pre((?: [a-z][a-z0-9-]*+="[^"&]*+")*+)><code((?: [a-z][a-z0-9-]*+="[^"&]*+")*+)>/', $html, $matches, 0, $offset ) ) {
+			return null;
+		}
+
+		$tags  = array();
+		$start = $offset;
+		foreach ( array(
+			'pre'  => 1,
+			'code' => 2,
+		) as $tag => $group ) {
+			$attrs = array();
+			if ( '' !== $matches[ $group ] && preg_match_all( '/ ([a-z][a-z0-9-]*+)="([^"]*+)"/', $matches[ $group ], $pairs, PREG_SET_ORDER ) ) {
+				foreach ( $pairs as $pair ) {
+					// A repeated attribute is ignored by browsers, so it is dropped.
+					if ( ! isset( $attrs[ $pair[1] ] ) ) {
+						$attrs[ $pair[1] ] = $pair[2];
+					}
+				}
+			}
+
+			$end          = $start + strlen( $tag ) + strlen( $matches[ $group ] ) + 2;
+			$tags[ $tag ] = array( $start, $end, $attrs );
+			$start        = $end;
+		}
+
+		return $tags;
+	}
+
+	/**
+	 * Apply a rewrite spec to a tag's decoded attributes.
+	 *
+	 * Spec keys: `classes` (added, duplicates dropped), `attrs` (set, replacing
+	 * any present: markup saved by 1.2.3 and earlier already carries
+	 * `data-title`, `data-line` and `data-start`), `max_height`, `style`
+	 * (declarations appended) and `rename_text` (`language-text` becomes
+	 * `language-none`). Event handler attributes are removed. With `$escape`,
+	 * only the text added here is escaped, so saved values stay as saved.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  array<string, string|true> $attrs  Attribute name => value, true when valueless.
+	 * @param  array<string, mixed>       $spec   Rewrite spec.
+	 * @param  callable|null              $escape Escapes added text, for a tag serialized by build_simple_tag().
+	 * @return array<string, string|true>
+	 */
+	protected static function apply_tag_spec( array $attrs, array $spec, ?callable $escape = null ): array {
+		foreach ( $attrs as $name => $value ) {
+			if ( 0 === strncmp( (string) $name, 'on', 2 ) ) {
+				unset( $attrs[ $name ] );
+			}
+		}
+
+		$classes = array();
+		foreach ( (array) ( $spec['classes'] ?? array() ) as $class_name ) {
+			if ( '' !== $class_name ) {
+				$classes[] = $escape ? $escape( $class_name ) : $class_name;
+			}
+		}
+		$rename = ! empty( $spec['rename_text'] );
+
+		if ( $classes || $rename ) {
+			$existing = isset( $attrs['class'] ) && is_string( $attrs['class'] ) ? preg_split( '/[ \t\n\r\f]+/', $attrs['class'], -1, PREG_SPLIT_NO_EMPTY ) : array();
+			$existing = is_array( $existing ) ? $existing : array();
+
+			if ( $rename ) {
+				foreach ( array_keys( $existing, 'language-text', true ) as $index ) {
+					$existing[ $index ] = 'language-none';
+				}
+			}
+
+			$merged = array_unique( array_merge( $existing, $classes ) );
+			if ( $merged ) {
+				$attrs['class'] = implode( ' ', $merged );
+			}
+		}
+
+		foreach ( (array) ( $spec['attrs'] ?? array() ) as $name => $value ) {
+			$attrs[ $name ] = $escape ? $escape( (string) $value ) : (string) $value;
+		}
+
+		$style        = $attrs['style'] ?? null;
+		$declarations = self::get_max_height_declarations( (int) ( $spec['max_height'] ?? 0 ), $style ) . ( $spec['style'] ?? '' );
+
+		if ( '' !== $declarations ) {
+			// Saved inline styles have no trailing semicolon.
+			$existing       = is_string( $style ) ? rtrim( $style, " \t\n\r\0\x0B;" ) : '';
+			$attrs['style'] = ( '' === $existing ? '' : $existing . ';' ) . ( $escape ? $escape( $declarations ) : $declarations );
+		}
+
+		return $attrs;
+	}
+
+	/**
+	 * Serialize an opening tag parsed by parse_simple_tags().
+	 *
+	 * Values are written as given: parsed ones contain no `"`, and apply_tag_spec() escaped the rest.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string                     $tag   Tag name.
+	 * @param  array<string, string|true> $attrs Attribute name => value safe to write between double quotes.
 	 * @return string
 	 */
-	protected static function merge_tag_style( string $attributes, string $declarations ): string {
-		if ( '' === $declarations ) {
-			return $attributes;
+	protected static function build_simple_tag( string $tag, array $attrs ): string {
+		$html = '<' . $tag;
+
+		foreach ( $attrs as $name => $value ) {
+			if ( true === $value ) {
+				$html .= ' ' . $name;
+				continue;
+			}
+
+			$html .= ' ' . $name . '="' . $value . '"';
 		}
 
-		$declarations = esc_attr( $declarations );
-
-		if ( preg_match( '/\sstyle="([^"]*)"/i', $attributes, $matches ) ) {
-			// Saved inline styles have no trailing semicolon.
-			$existing = rtrim( $matches[1], " \t\n\r\0\x0B;" );
-
-			return substr_replace(
-				$attributes,
-				' style="' . ( '' === $existing ? '' : $existing . ';' ) . $declarations . '"',
-				(int) strpos( $attributes, $matches[0] ),
-				strlen( $matches[0] )
-			);
-		}
-
-		return $attributes . ' style="' . $declarations . '"';
+		return $html . '>';
 	}
 
 	/**
@@ -844,17 +990,63 @@ class Blocks {
 	 * repeated there. The expand button keys off `pre.style.maxHeight`.
 	 *
 	 * @since 1.3.0
+	 * @since 1.4.0 Takes the decoded `style` value instead of the raw attribute string.
 	 *
-	 * @param  int    $max_height Max height in pixels; zero or less for none.
-	 * @param  string $attributes Raw attribute string of the `<pre>` tag.
+	 * @param  int              $max_height Max height in pixels; zero or less for none.
+	 * @param  string|bool|null $style      The `<pre>` tag's `style` value, if any.
 	 * @return string
 	 */
-	protected static function get_max_height_declarations( int $max_height, string $attributes = '' ): string {
-		if ( $max_height <= 0 || preg_match( '/\sstyle="[^"]*\bmax-height\s*:/i', $attributes ) ) {
+	protected static function get_max_height_declarations( int $max_height, $style = null ): string {
+		if ( $max_height <= 0 || ( is_string( $style ) && preg_match( '/\bmax-height\s*:/i', $style ) ) ) {
 			return '';
 		}
 
 		return 'max-height:' . $max_height . 'px;overflow-y:auto;';
+	}
+
+	/**
+	 * Find the first `<code>` element in the block HTML.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @param  string $html The block HTML.
+	 * @return array{0: int, 1: int, 2: int, 3: int}|null Element start, inner start, inner end and element end offsets.
+	 */
+	protected static function find_code_element( string $html ): ?array {
+		$tags = self::parse_simple_tags( $html );
+
+		if ( null !== $tags ) {
+			$close = stripos( $html, '</code>', $tags['code'][1] );
+			// Core escapes `<` in code, so a raw one may hide that `</code>` in a comment, raw text element or attribute.
+			if ( false !== $close && strcspn( $html, '<', $tags['code'][1], $close - $tags['code'][1] ) === $close - $tags['code'][1] ) {
+				return array( $tags['code'][0], $tags['code'][1], $close, $close + 7 );
+			}
+		}
+
+		$processor = new Tag_Processor( $html );
+
+		if ( ! $processor->next_tag( array( 'tag_name' => 'CODE' ) ) ) {
+			return null;
+		}
+		$opener = $processor->get_tag_span();
+
+		while ( $processor->next_tag(
+			array(
+				'tag_name'    => 'CODE',
+				'tag_closers' => 'visit',
+			)
+		) ) {
+			if ( $processor->is_tag_closer() ) {
+				$closer = $processor->get_tag_span();
+				if ( null === $opener || null === $closer ) {
+					return null;
+				}
+
+				return array( $opener[0], $opener[0] + $opener[1], $closer[0], $closer[0] + $closer[1] );
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -880,36 +1072,24 @@ class Blocks {
 
 		// Prism has no 'text' grammar; 'none' gets theme styling without
 		// highlighting. Markup saved by 1.2.3 and earlier carries language-text.
+		$rename_text = 'text' === $language && false !== strpos( $block_content, 'language-text' );
 		if ( 'text' === $language ) {
-			$block_content = self::rename_text_language_class( $block_content );
-			$language      = 'none';
+			$language = 'none';
 		}
 
-		// ── Apply language class to <code> (duplicates are dropped) ──────────
-		if ( $language ) {
-			$lang_class    = 'language-' . $language;
-			$block_content = self::rewrite_tag_attributes(
-				$block_content,
-				'code',
-				static function ( string $attributes ) use ( $lang_class ): string {
-					return self::merge_tag_classes( $attributes, array( $lang_class ) );
-				}
-			);
-		}
-
-		// ── Apply classes and data attributes to <pre> ────────────────────────
+		$lang_class  = $language ? 'language-' . $language : '';
 		$pre_classes = array();
 		$pre_attrs   = array();
 
 		// Theme CSS selects on the <pre> class before Prism runs.
-		if ( $language ) {
-			$pre_classes[] = 'language-' . $language;
+		if ( $lang_class ) {
+			$pre_classes[] = $lang_class;
 		}
 
 		if ( $line_numbers ) {
 			$pre_classes[] = 'line-numbers';
 			if ( 1 !== $line_numbers_start ) {
-				$pre_attrs['data-start'] = esc_attr( (string) $line_numbers_start );
+				$pre_attrs['data-start'] = (string) $line_numbers_start;
 			}
 		}
 
@@ -918,34 +1098,40 @@ class Blocks {
 		}
 
 		if ( $title ) {
-			$pre_attrs['data-title'] = esc_attr( $title );
+			$pre_attrs['data-title'] = $title;
 		}
 
 		if ( $highlight_lines ) {
-			$pre_attrs['data-line'] = esc_attr( $highlight_lines );
+			$pre_attrs['data-line'] = $highlight_lines;
 		}
 
 		// The global setting and the per-block override are already resolved, so
 		// the toolbar button only has to check for the attribute's presence.
 		if ( ! empty( $params['download'] ) ) {
-			$pre_attrs['data-wzcbh-download'] = esc_attr( (string) $params['download_filename'] );
+			$pre_attrs['data-wzcbh-download'] = (string) $params['download_filename'];
 		}
 
-		if ( $pre_classes || $pre_attrs || $max_height ) {
-			$block_content = self::rewrite_tag_attributes(
-				$block_content,
-				'pre',
-				static function ( string $attributes ) use ( $pre_classes, $pre_attrs, $max_height ): string {
-					$attributes = self::set_tag_attributes(
-						self::merge_tag_classes( $attributes, $pre_classes ),
-						$pre_attrs
-					);
-					return self::merge_tag_style( $attributes, self::get_max_height_declarations( $max_height, $attributes ) );
-				}
-			);
+		// Tells hljs-clipboard.js to leave this server-mode block to Prism's own toolbar.
+		if ( ! empty( $params['client_fallback'] ) ) {
+			$pre_attrs['data-wzcbh-client'] = '1';
 		}
 
-		return $block_content;
+		// Always rewritten, so event handler attributes never reach the page.
+		return self::rewrite_tag_attributes(
+			$block_content,
+			array(
+				'pre'  => array(
+					'rename_text' => $rename_text,
+					'classes'     => $pre_classes,
+					'attrs'       => $pre_attrs,
+					'max_height'  => $max_height,
+				),
+				'code' => array(
+					'rename_text' => $rename_text,
+					'classes'     => array( $lang_class ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -972,16 +1158,23 @@ class Blocks {
 
 		// There is no 'text' grammar; 'none' matches the client-side class names.
 		// Markup saved by 1.2.3 and earlier carries language-text.
+		$rename_text = 'text' === $language && false !== strpos( $block_content, 'language-text' );
 		if ( 'text' === $language ) {
-			$block_content = self::rename_text_language_class( $block_content );
-			$language      = 'none';
+			$language = 'none';
 		}
 
 		// ── Extract raw code from saved HTML ──────────────────────────────────
-		if ( ! preg_match( '/<code[^>]*>([\s\S]*?)<\/code>/i', $block_content, $m ) ) {
-			return $block_content;
+		$code_element = self::find_code_element( $block_content );
+		if ( null === $code_element ) {
+			return self::rewrite_tag_attributes(
+				$block_content,
+				array(
+					'pre'  => array( 'rename_text' => $rename_text ),
+					'code' => array( 'rename_text' => $rename_text ),
+				)
+			);
 		}
-		$inner_html = $m[1];
+		$inner_html = substr( $block_content, $code_element[1], $code_element[2] - $code_element[1] );
 		$plain_code = html_entity_decode( $inner_html, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 
 		// ── Map Prism slug → hljs slug ────────────────────────────────────────
@@ -1008,14 +1201,8 @@ class Blocks {
 			if ( null === $highlighted && $fallback && self::is_prism_fallback_allowed( $size ) ) {
 				Styles_Handler::enqueue_prism_fallback();
 
-				// Tells hljs-clipboard.js to leave this block to Prism's own toolbar.
-				return self::rewrite_tag_attributes(
-					$this->render_code_block_client( $block_content, $params ),
-					'pre',
-					static function ( string $attributes ): string {
-						return self::set_tag_attributes( $attributes, array( 'data-wzcbh-client' => '1' ) );
-					}
-				);
+				$params['client_fallback'] = true;
+				return $this->render_code_block_client( $block_content, $params );
 			}
 		}
 
@@ -1070,14 +1257,7 @@ class Blocks {
 		$new_code     = '<code' . ( $code_classes ? ' class="' . $code_classes . '"' : '' ) . '>'
 			. $highlighted . $line_numbers_html . '</code>';
 
-		$block_content = preg_replace_callback(
-			'/<code[^>]*>[\s\S]*?<\/code>/i',
-			static function () use ( $new_code ): string {
-				return $new_code;
-			},
-			$block_content,
-			1
-		);
+		$block_content = substr_replace( $block_content, $new_code, $code_element[0], $code_element[3] - $code_element[0] );
 
 		// ── Apply classes and the line-number counter offset to <pre> ─────────
 		// The counter-reset mirrors what Prism JS does at runtime by reading
@@ -1101,26 +1281,28 @@ class Blocks {
 		// pre[data-line], so they are kept for parity with client mode.
 		$pre_attrs = array();
 		if ( $title ) {
-			$pre_attrs['data-title'] = esc_attr( $title );
+			$pre_attrs['data-title'] = $title;
 		}
 		if ( $line_numbers && 1 !== $line_numbers_start ) {
-			$pre_attrs['data-start'] = esc_attr( (string) $line_numbers_start );
+			$pre_attrs['data-start'] = (string) $line_numbers_start;
 		}
 		if ( $highlight_lines ) {
-			$pre_attrs['data-line'] = esc_attr( $highlight_lines );
+			$pre_attrs['data-line'] = $highlight_lines;
 		}
 
-		if ( $pre_classes || $pre_attrs || $max_height ) {
-			$block_content = self::rewrite_tag_attributes(
-				$block_content,
-				'pre',
-				static function ( string $attributes ) use ( $pre_classes, $pre_attrs, $style_decl, $max_height ): string {
-					$attributes = self::set_tag_attributes( self::merge_tag_classes( $attributes, $pre_classes ), $pre_attrs );
-					$attributes = self::merge_tag_style( $attributes, self::get_max_height_declarations( $max_height, $attributes ) );
-					return self::merge_tag_style( $attributes, $style_decl );
-				}
-			);
-		}
+		// Always rewritten, so event handler attributes never reach the page.
+		$block_content = self::rewrite_tag_attributes(
+			$block_content,
+			array(
+				'pre' => array(
+					'rename_text' => $rename_text,
+					'classes'     => $pre_classes,
+					'attrs'       => $pre_attrs,
+					'max_height'  => $max_height,
+					'style'       => $style_decl,
+				),
+			)
+		);
 
 		// ── Toolbar: same HTML structure as Prism's toolbar plugin ────────────
 		$show_copy  = (bool) wzcbh_get_option( 'copy-to-clipboard', true );
@@ -1340,6 +1522,8 @@ class Blocks {
 		self::$prism_fallback_budget       = null;
 		self::$is_page_request             = null;
 		self::$blocked_download_extensions = null;
+		self::$auto_detect_used            = 0;
+		self::$auto_detect_limit           = null;
 	}
 
 	/**
@@ -1425,33 +1609,6 @@ class Blocks {
 		self::$prism_fallback_used += $size;
 
 		return true;
-	}
-
-	/**
-	 * Rename the `language-text` class to `language-none` on the first `<pre>` and `<code>`.
-	 *
-	 * @since 1.4.0
-	 *
-	 * @param  string $block_content The rendered block HTML.
-	 * @return string
-	 */
-	protected static function rename_text_language_class( string $block_content ): string {
-		if ( false === strpos( $block_content, 'language-text' ) ) {
-			return $block_content;
-		}
-
-		$rename = static function ( string $attributes ): string {
-			return (string) preg_replace_callback(
-				'/(\sclass\s*=\s*)("[^"]*"|\'[^\']*\'|[^\s>]+)/i',
-				static function ( array $matches ): string {
-					return $matches[1] . preg_replace( '/(^|[\s"\'])language-text(?=[\s"\']|$)/', '$1language-none', $matches[2] );
-				},
-				$attributes,
-				1
-			);
-		};
-
-		return self::rewrite_tag_attributes( self::rewrite_tag_attributes( $block_content, 'pre', $rename ), 'code', $rename );
 	}
 
 	/**
@@ -1744,10 +1901,11 @@ class Blocks {
 	 * @return string Prism language slug, or an empty string when none is detected.
 	 */
 	protected static function detect_language( string $block_content ): string {
-		if ( ! preg_match( '/<code[^>]*>([\s\S]*?)<\/code>/i', $block_content, $m ) ) {
+		$code_element = self::find_code_element( $block_content );
+		if ( null === $code_element ) {
 			return '';
 		}
-		$code = html_entity_decode( $m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$code = html_entity_decode( substr( $block_content, $code_element[1], $code_element[2] - $code_element[1] ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 
 		/**
 		 * Filter the largest code block whose language is detected server-side.
@@ -1784,6 +1942,14 @@ class Blocks {
 			return $cached;
 		}
 
+		// Past the cap the block stays plain and uncached, so a later request detects it.
+		if ( self::is_page_request() ) {
+			if ( ! self::has_auto_detect_budget() ) {
+				return '';
+			}
+			++self::$auto_detect_used;
+		}
+
 		$language = '';
 		try {
 			$candidates = self::get_detection_candidates( $slugs );
@@ -1799,6 +1965,30 @@ class Blocks {
 		set_transient( $cache_key, $language, MONTH_IN_SECONDS );
 
 		return $language;
+	}
+
+	/**
+	 * Whether this request may run another uncached language detection.
+	 *
+	 * @since 1.4.0
+	 *
+	 * @return bool
+	 */
+	protected static function has_auto_detect_budget(): bool {
+		if ( null === self::$auto_detect_limit ) {
+			/**
+			 * Filter how many uncached language detections a front-end page request runs.
+			 *
+			 * Blocks beyond the limit render as plain text and are detected on a later request.
+			 *
+			 * @since 1.4.0
+			 *
+			 * @param int $limit Detections per request. Default 25. Zero or less disables the limit.
+			 */
+			self::$auto_detect_limit = (int) apply_filters( 'wzcbh_auto_detect_request_limit', 25 ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		}
+
+		return self::$auto_detect_limit <= 0 || self::$auto_detect_used < self::$auto_detect_limit;
 	}
 
 	/**

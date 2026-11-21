@@ -433,6 +433,180 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Saved markup cannot smuggle attributes into the rewritten `<pre>` or `<code>`, and event handlers are removed.
+	 *
+	 * @param string $mode Highlighting mode.
+	 * @param string $html Saved block HTML.
+	 *
+	 * @dataProvider data_attribute_smuggling
+	 */
+	public function test_rewritten_tags_gain_no_smuggled_attributes( $mode, $html ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		$output = $this->blocks->render_code_block(
+			$html,
+			array(
+				'attrs' => array(
+					'language'       => 'javascript',
+					'title'          => 't.js',
+					'maxHeight'      => 10,
+					'downloadButton' => 'show',
+				),
+			)
+		);
+
+		$added = array( 'class', 'style', 'data-title', 'data-wzcbh-download' );
+
+		foreach ( array( 'PRE', 'CODE' ) as $tag ) {
+			$input  = new WP_HTML_Tag_Processor( $html );
+			$parsed = new WP_HTML_Tag_Processor( $output );
+			if ( ! $input->next_tag( array( 'tag_name' => $tag ) ) ) {
+				continue;
+			}
+			$this->assertTrue( $parsed->next_tag( array( 'tag_name' => $tag ) ), "no {$tag} rendered" );
+
+			$names = (array) $parsed->get_attribute_names_with_prefix( '' );
+
+			$this->assertSame( array(), array_intersect( $names, array( 'autofocus', 'tabindex' ) ), "smuggled attribute on {$tag}" );
+			$this->assertSame( array(), array_diff( $names, (array) $input->get_attribute_names_with_prefix( '' ), $added ), "new attribute on {$tag}" );
+		}
+
+		$parsed = new WP_HTML_Tag_Processor( $output );
+		while ( $parsed->next_tag() ) {
+			$this->assertSame( array(), (array) $parsed->get_attribute_names_with_prefix( 'on' ), 'event handler on ' . $parsed->get_tag() );
+		}
+
+		$parsed = new WP_HTML_Tag_Processor( $output );
+		$parsed->next_tag( array( 'tag_name' => 'CODE' ) );
+		$this->assertTrue( $parsed->has_class( 'language-javascript' ) );
+	}
+
+	/**
+	 * Saved markup whose attributes read across each other to a regex, in both modes.
+	 *
+	 * @return array<string, array{string, string}>
+	 */
+	public function data_attribute_smuggling() {
+		$tail     = ' data-x="\'y onfocus=window.__xss=1 autofocus tabindex=1 z"';
+		$payloads = array(
+			'class decoy'        => '<pre data-d=\'x class="\'' . $tail . '><code>x</code></pre>',
+			'download decoy'     => '<pre data-d=\'x data-wzcbh-download="\'' . $tail . ' class="wp-block-code"><code>x</code></pre>',
+			'style decoy'        => '<pre data-d=\'x style="\'' . $tail . ' class="wp-block-code"><code>x</code></pre>',
+			'code decoy'         => '<pre class="wp-block-code"><code data-d=\'x class="\'' . $tail . '>x</code></pre>',
+			'uppercase'          => "<PRE DATA-D='x CLASS=\"' DATA-X=\"'y ONFOCUS=window.__xss=1 AUTOFOCUS TABINDEX=1 z\" ONCLICK=\"alert(1)\"><CODE ONMOUSEOVER=x>x</CODE></PRE>",
+			'newlines'           => "<pre\ndata-d='x\nclass=\"'\ndata-x=\"'y\nonfocus=window.__xss=1\nautofocus\ntabindex=1 z\"\nclass=wp-block-code><code>x</code></pre>",
+			'unquoted'           => '<pre class=wp-block-code data-x=a onclick=alert(1)><code class=c onfocus=y>x</code></pre>',
+			'core form'          => '<pre class="wp-block-code" onclick="alert(1)"><code onfocus="x">x</code></pre>',
+			'no pre'             => '<div class="wp-block-code"><code onclick="alert(1)">x</code></div>',
+			'bare code'          => '<code onclick="alert(1)">x</code>',
+			'close in comment'   => '<pre class="wp-block-code"><code>a<!--</code><img src=x onerror=alert(1)>--></code></pre>',
+			'close in textarea'  => '<pre class="wp-block-code"><code>a<textarea></code><img src=x onerror=alert(1)></textarea></code></pre>',
+			'close in script'    => '<pre class="wp-block-code"><code>a<script></code><img src=x onerror=alert(1)></script></code></pre>',
+			'close in attribute' => '<pre class="wp-block-code"><code><span title="</code><img src=x onerror=alert(1)>"></span></code></pre>',
+		);
+
+		$data = array();
+		foreach ( $payloads as $name => $html ) {
+			$data[ "client {$name}" ] = array( 'client', $html );
+			$data[ "server {$name}" ] = array( 'server', $html );
+		}
+
+		return $data;
+	}
+
+	/**
+	 * A `language-text` class is renamed in place on both tags, leaving one class attribute and no event handlers.
+	 *
+	 * @param string $mode Highlighting mode.
+	 * @param string $html Saved block HTML.
+	 *
+	 * @dataProvider data_text_class_markup
+	 */
+	public function test_text_class_is_renamed_once( $mode, $html ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		$output = $this->blocks->render_code_block( $html, array( 'attrs' => array( 'language' => 'text' ) ) );
+
+		preg_match( '/<pre\b[^>]*>/', $output, $pre );
+
+		$this->assertSame( 1, substr_count( $pre[0], 'class=' ) );
+		$this->assertStringContainsString( 'language-none', $pre[0] );
+		$this->assertStringNotContainsString( 'language-text', $output );
+		$this->assertStringNotContainsString( 'onclick', $output );
+	}
+
+	/**
+	 * Single-quoted classes, and a `<code>` with no closing tag, in both modes.
+	 *
+	 * @return array<string, array{string, string}>
+	 */
+	public function data_text_class_markup() {
+		$markup = array(
+			'single-quoted' => "<pre class='wp-block-code language-text'><code class='language-text'>a</code></pre>",
+			'unterminated'  => '<pre class="wp-block-code language-text"><code class="language-text" onclick="x">a',
+		);
+
+		$data = array();
+		foreach ( $markup as $name => $html ) {
+			$data[ "client {$name}" ] = array( 'client', $html );
+			$data[ "server {$name}" ] = array( 'server', $html );
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Saved class and style text that is not valid UTF-8 survives the plugin adding its own.
+	 *
+	 * @param string $mode Highlighting mode.
+	 * @param string $html Saved block HTML.
+	 *
+	 * @dataProvider data_invalid_utf8_markup
+	 */
+	public function test_invalid_utf8_attribute_text_is_kept( $mode, $html ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		$output = $this->blocks->render_code_block(
+			$html,
+			array(
+				'attrs' => array(
+					'language'  => 'javascript',
+					'maxHeight' => 10,
+				),
+			)
+		);
+
+		$parsed = new WP_HTML_Tag_Processor( $output );
+		$parsed->next_tag( array( 'tag_name' => 'PRE' ) );
+
+		$this->assertTrue( $parsed->has_class( 'wp-block-code' ) );
+		$this->assertTrue( $parsed->has_class( 'language-javascript' ) );
+		$this->assertStringContainsString( 'caf', (string) $parsed->get_attribute( 'class' ) );
+		$this->assertStringContainsString( 'color:red', (string) $parsed->get_attribute( 'style' ) );
+		$this->assertStringContainsString( 'max-height:10px', (string) $parsed->get_attribute( 'style' ) );
+	}
+
+	/**
+	 * Core-form and single-quoted markup carrying an invalid UTF-8 byte, in both modes.
+	 *
+	 * @return array<string, array{string, string}>
+	 */
+	public function data_invalid_utf8_markup() {
+		$markup = array(
+			'core form'     => "<pre class=\"wp-block-code caf\xE9\" style=\"color:red\"><code class=\"c\xE9\">x</code></pre>",
+			'single-quoted' => "<pre class='wp-block-code caf\xE9' style='color:red'><code class='c\xE9'>x</code></pre>",
+		);
+
+		$data = array();
+		foreach ( $markup as $name => $html ) {
+			$data[ "client {$name}" ] = array( 'client', $html );
+			$data[ "server {$name}" ] = array( 'server', $html );
+		}
+
+		return $data;
+	}
+
+	/**
 	 * Both highlighting modes.
 	 *
 	 * @return array<string, array{string}>

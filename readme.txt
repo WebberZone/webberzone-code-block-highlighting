@@ -22,7 +22,7 @@ Simply activate the plugin and your code blocks will instantly display beautiful
 Pick the rendering mode that best fits your site from the settings page:
 
 * **Client-side (default)** — [Prism.js](https://prismjs.com/) highlights your code in the browser. Best for interactive features such as copy-to-clipboard and expand/collapse.
-* **Server-side (highlight.php)** — Code is pre-highlighted on the server with [highlight.php](https://github.com/scrivo/highlight.php), so no Prism.js or any other JavaScript is loaded for highlighting. Ideal for performance, Core Web Vitals, AMP-style setups, and strict content-security policies.
+* **Server-side (highlight.php)** — Code is pre-highlighted on the server with [highlight.php](https://github.com/scrivo/highlight.php), so no Prism.js or any other JavaScript is loaded for highlighting, except on pages with a code block too large for the server, which Prism.js highlights in the browser. Ideal for performance, Core Web Vitals, AMP-style setups, and strict content-security policies.
 
 Both modes use the same 21 Prism themes and produce visually identical output, so you can switch between client-side and server-side rendering at any time without changing how your code blocks look.
 
@@ -30,7 +30,7 @@ Both modes use the same 21 Prism themes and produce visually identical output, s
 
 * **Safe by design** — Works as a filter on top of `core/code` and saves blocks with core's own markup. Existing posts are never invalidated. Deactivate the plugin and your blocks are still valid standard WordPress code blocks.
 * **Zero configuration** — Activate and start writing. No setup wizard, no shortcodes.
-* **No highlighting JavaScript in server mode** — Server-side mode pre-renders syntax colours on the server. No Prism.js or any other JavaScript is enqueued for highlighting.
+* **No highlighting JavaScript in server mode** — Server-side mode pre-renders syntax colours on the server. No Prism.js or any other JavaScript is enqueued for highlighting, except on pages with a block too large for the server.
 * **Smart asset loading** — Theme CSS (and, in client mode, Prism JS) only load on pages that actually contain code blocks. Pages without code stay fast.
 * **Per-block controls** — Set language, theme, line numbers, word wrap, title, highlighted lines, and max height individually for each block.
 * **Developer-friendly** — Filters to add languages, override themes, and force asset loading.
@@ -146,11 +146,11 @@ You can also use the `wzcbh_color_scheme_css_url` filter to point to any CSS fil
 
 In **client-side** mode (the default), [Prism.js](https://prismjs.com/) runs in the visitor's browser and highlights your code on page load. This mode enables interactive toolbar features such as copy-to-clipboard and expand/collapse.
 
-In **server-side** mode, the plugin uses [highlight.php](https://github.com/scrivo/highlight.php) to pre-render the highlighted markup on the server. No JavaScript is loaded for highlighting, which is great for performance, Core Web Vitals, and sites with strict content-security policies. Both modes share the same 21 Prism themes and produce visually identical results, so you can switch freely from **Settings > Code Block Highlighting**.
+In **server-side** mode, the plugin uses [highlight.php](https://github.com/scrivo/highlight.php) to pre-render the highlighted markup on the server. No JavaScript is loaded for highlighting, except on pages with a block too large for the server, which is great for performance, Core Web Vitals, and sites with strict content-security policies. Both modes share the same 21 Prism themes and produce visually identical results, so you can switch freely from **Settings > Code Block Highlighting**.
 
 = Does server-side highlighting work without JavaScript? =
 
-Yes. When server-side mode is enabled, syntax colours are baked into the HTML on the server — no Prism.js or any other JavaScript is enqueued for highlighting.
+Yes. When server-side mode is enabled, syntax colours are baked into the HTML on the server — no Prism.js or any other JavaScript is enqueued for highlighting, except on pages with a block too large for the server, which Prism.js highlights in the browser. You can turn that fallback off with the `wzcbh_server_prism_fallback` filter.
 
 = Does Prism.js load on every page? =
 
@@ -187,6 +187,7 @@ Release date: 21 November 2026
 * In server-side mode, code blocks too large to highlight on the server now fall back to Prism.js highlighting in the browser instead of plain text. Prism.js loads only on pages that need it. Turn this off with the new `wzcbh_server_prism_fallback` filter; blocks larger than `wzcbh_prism_fallback_max_bytes` (default 512KB) stay plain text.
 * Per-page limit on the code sent to the browser fallback, filterable with the new `wzcbh_prism_fallback_page_budget` (default 1MB; 0 turns it off). Blocks beyond it stay plain text.
 * Per-page limit on the amount of code highlighted on the server, so pages with many large code blocks no longer slow down. Blocks beyond the limit use the browser fallback. The limit and the fallback apply to front-end pages only; feeds, the REST API, AJAX, WP-CLI and admin screens keep the previous behavior. The limit is filterable with the new `wzcbh_server_highlight_request_budget` (default 256KB; 0 turns it off).
+* Per-page limit on server-side language detection, so pages with many untagged code blocks no longer slow down when uncached. Blocks beyond the limit show as plain text and are detected on a later visit. Front-end pages only; filterable with the new `wzcbh_auto_detect_request_limit` (default 25; 0 turns it off).
 * Save Changes button in the settings navigation.
 
 **Changed**
@@ -202,6 +203,8 @@ Release date: 21 November 2026
 * The download button kept an executable extension such as `.exe` or `.bat` from the block's file name. Such an extension is now replaced with the language's extension, and other file names download as before. The list is filterable with the new `wzcbh_download_blocked_extensions`.
 * A malformed language value on a code block could stop Prism.js highlighting every block on the page.
 * Code containing the text `language-text` was changed in blocks set to Plain text.
+* Crafted code block markup saved by a user allowed to post unfiltered HTML could turn part of one attribute into a new one, such as an event handler, when the plugin added its own attributes. The code block's tags are now parsed per the HTML standard, and event handler attributes are removed from them.
+* In server-side mode, a closing code tag inside an HTML comment or other raw text in the saved markup ended the code block early, and the rest of that markup was output unescaped.
 * Converting code blocks from the Convert Code Blocks screen or with WP-CLI could turn malformed attribute markup into a different attribute. Such markup is now left as it is.
 * Draft, private and password-protected synced patterns were scanned for code blocks when deciding which styles to load.
 * Backslashes were stripped from settings values when they were saved from the settings page or setup wizard.

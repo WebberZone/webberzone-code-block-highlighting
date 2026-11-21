@@ -38,7 +38,7 @@ Code blocks saved by the older *Code Syntax Block* plugin stored the filename in
 
 ## Highlight Lines
 
-Enter a comma-separated list of line numbers or ranges (e.g. `1,3-5,8`) to visually highlight those lines. This maps to the Prism `data-line` attribute. Available in client-side mode and for blocks highlighted in the browser by the server-side fallback; has no effect on blocks highlighted on the server.
+Enter a comma-separated list of line numbers or ranges (e.g. `1,3-5,8`) to visually highlight those lines. This maps to the Prism `data-line` attribute. It works in both highlighting modes, including blocks highlighted in the browser by the server-side fallback.
 
 ## Max Height
 

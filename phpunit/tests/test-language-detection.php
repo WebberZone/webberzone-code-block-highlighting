@@ -29,6 +29,7 @@ class Test_Language_Detection extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 		$this->blocks = new Blocks();
+		Blocks::reset_server_highlight_budget();
 		delete_option( 'wzcbh_settings' );
 		$this->set_option( 'highlighting-mode', 'server' );
 		$this->set_option( 'auto-detect-language', 1 );
@@ -119,5 +120,47 @@ class Test_Language_Detection extends WP_UnitTestCase {
 		set_transient( substr( $key, strlen( '_transient_' ) ), 'python', MONTH_IN_SECONDS );
 
 		$this->assertStringContainsString( '<code class="language-python">', $this->render( self::PHP_CODE ) );
+	}
+
+	/**
+	 * Uncached detections are capped per page request; cache hits are free, and other requests are uncapped.
+	 */
+	public function test_uncached_detections_are_capped_per_page_request() {
+		$limit  = 2;
+		$filter = static function () use ( &$limit ) {
+			return $limit;
+		};
+		add_filter( 'wzcbh_auto_detect_request_limit', $filter );
+
+		$render = function ( $from, $to ) {
+			$html = array();
+			for ( $i = $from; $i <= $to; $i++ ) {
+				$html[ $i ] = $this->render( "<?php\nfunction f{$i}( \$a ) {\n\treturn array_map( 'trim', \$a );\n}\n" );
+			}
+			return $html;
+		};
+
+		$first = $render( 0, 2 );
+		$this->assertCount( 2, $this->cached_detections() );
+		$this->assertStringContainsString( 'language-php', $first[1] );
+		$this->assertStringNotContainsString( 'language-php', $first[2], 'past the cap renders plain' );
+
+		Blocks::reset_server_highlight_budget();
+		$second = $render( 0, 2 );
+		$this->assertCount( 3, $this->cached_detections() );
+		$this->assertStringContainsString( 'language-php', $second[2], 'a later request detects it' );
+
+		Blocks::reset_server_highlight_budget();
+		$limit = 0;
+		$render( 3, 5 );
+		$this->assertCount( 6, $this->cached_detections(), 'a limit of 0 disables the cap' );
+
+		$this->go_to( get_feed_link() );
+		Blocks::reset_server_highlight_budget();
+		$limit = 1;
+		$render( 6, 8 );
+		$this->assertCount( 9, $this->cached_detections(), 'feeds are uncapped' );
+
+		remove_filter( 'wzcbh_auto_detect_request_limit', $filter );
 	}
 }

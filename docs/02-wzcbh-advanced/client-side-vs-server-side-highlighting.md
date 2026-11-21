@@ -27,8 +27,6 @@ This mode is suitable for:
 - Sites with strict content-security policies that restrict inline scripts, with the browser fallback turned off
 - AMP-compatible pages, with the browser fallback turned off
 
-The **Highlight Lines** per-block control has no effect on blocks highlighted on the server. Blocks highlighted in the browser by the fallback support it.
-
 ### Large code blocks
 
 highlight.php slows sharply as a block grows, and that work runs while the page is built. Two limits keep a page with large code blocks fast:
@@ -63,6 +61,8 @@ With **Detect Language** turned on, server-side mode highlights code blocks that
 
 Developers can change the candidate languages with [`wzcbh_auto_detect_languages`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_languages/), how strict the match must be with [`wzcbh_auto_detect_min_relevance`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_min_relevance/), and the largest block detected (16KB by default) with [`wzcbh_auto_detect_max_bytes`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_max_bytes/).
 
+A front-end page detects at most 25 blocks that are not already cached. Blocks beyond that show as plain text and are detected on a later visit. Change the limit with [`wzcbh_auto_detect_request_limit`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_request_limit/) (0 turns it off).
+
 ## Visual output
 
 Both modes load the same 21 Prism themes and produce visually identical output. The plugin remaps the token class names emitted by highlight.php to match Prism's class conventions, so the same theme CSS applies correctly in both modes. You can switch modes at any time from **Settings > Code Block Highlighting** without any visible change to your code blocks, apart from blocks over the server-side limits described above, which are highlighted in the browser or shown as plain text.
@@ -87,3 +87,6 @@ Go to **Settings > Code Block Highlighting** and change **Highlighting Mode** to
 - [`wzcbh_prism_fallback_max_bytes`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_prism_fallback_max_bytes/)
 - [`wzcbh_prism_fallback_page_budget`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_prism_fallback_page_budget/)
 - [`wzcbh_auto_detect_languages`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_languages/)
+- [`wzcbh_auto_detect_min_relevance`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_min_relevance/)
+- [`wzcbh_auto_detect_max_bytes`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_max_bytes/)
+- [`wzcbh_auto_detect_request_limit`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_auto_detect_request_limit/)

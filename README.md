@@ -29,7 +29,7 @@ Simply activate the plugin and your code blocks will instantly display beautiful
 Pick the rendering mode that best fits your site from the settings page:
 
 * __Client-side (default)__ — [Prism.js](https://prismjs.com/) highlights your code in the browser. Best for interactive features such as copy-to-clipboard and expand/collapse.
-* __Server-side (highlight.php)__ — Code is pre-highlighted on the server with [highlight.php](https://github.com/scrivo/highlight.php), so no Prism.js or any other JavaScript is loaded for highlighting. Ideal for performance, Core Web Vitals, AMP-style setups, and strict content-security policies.
+* __Server-side (highlight.php)__ — Code is pre-highlighted on the server with [highlight.php](https://github.com/scrivo/highlight.php), so no Prism.js or any other JavaScript is loaded for highlighting, except on pages with a code block too large for the server, which Prism.js highlights in the browser. Ideal for performance, Core Web Vitals, AMP-style setups, and strict content-security policies.
 
 Both modes use the same 21 Prism themes and produce visually identical output, so you can switch between client-side and server-side rendering at any time without changing how your code blocks look.
 
@@ -37,7 +37,7 @@ Both modes use the same 21 Prism themes and produce visually identical output, s
 
 * __Safe by design__ — Works as a filter on top of `core/code` and saves blocks with core's own markup. Existing posts are never invalidated. Deactivate the plugin and your blocks are still valid standard WordPress code blocks.
 * __Zero configuration__ — Activate and start writing. No setup wizard, no shortcodes.
-* __No highlighting JavaScript in server mode__ — Server-side mode pre-renders syntax colours on the server. No Prism.js or any other JavaScript is enqueued for highlighting.
+* __No highlighting JavaScript in server mode__ — Server-side mode pre-renders syntax colours on the server. No Prism.js or any other JavaScript is enqueued for highlighting, except on pages with a block too large for the server.
 * __Smart asset loading__ — Theme CSS (and, in client mode, Prism JS) only load on pages that actually contain code blocks. Pages without code stay fast.
 * __Per-block controls__ — Set language, theme, line numbers, word wrap, title, highlighted lines, and max height individually for each block.
 * __Developer-friendly__ — Filters to add languages, override themes, and force asset loading.
@@ -111,7 +111,7 @@ __Which languages are supported?__
 40 out of the box. Use the `wzcbh_languages` filter to add or remove entries from the language picker — note the corresponding Prism.js grammar must also be available on the frontend.
 
 __What is the difference between client-side and server-side highlighting?__
-Client-side mode runs [Prism.js](https://prismjs.com/) in the browser and enables interactive toolbar features (copy-to-clipboard, expand/collapse). Server-side mode pre-renders the highlighted markup with [highlight.php](https://github.com/scrivo/highlight.php) so no JavaScript is loaded for highlighting — ideal for performance and strict content-security policies. Both modes share the same 21 themes and look identical, so you can switch freely from __Settings > Code Block Highlighting__.
+Client-side mode runs [Prism.js](https://prismjs.com/) in the browser and enables interactive toolbar features (copy-to-clipboard, expand/collapse). Server-side mode pre-renders the highlighted markup with [highlight.php](https://github.com/scrivo/highlight.php) so no JavaScript is loaded for highlighting, except on pages with a block too large for the server — ideal for performance and strict content-security policies. Both modes share the same 21 themes and look identical, so you can switch freely from __Settings > Code Block Highlighting__.
 
 __Does Prism.js load on every page?__
 No. Theme CSS and (in client-side mode) Prism JS are only enqueued on pages containing at least one code block. Use `wzcbh_force_load_assets` to override.

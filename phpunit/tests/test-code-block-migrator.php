@@ -68,25 +68,37 @@ class Test_Code_Block_Migrator extends WP_UnitTestCase {
 		$core = '<pre class="wp-block-code"><code>' . $code . '</code></pre>';
 
 		return array(
-			'every option'       => array(
+			'every option'         => array(
 				$this->block( '{"lineNumbers":true,"lineNumbersStart":5,"wordWrap":true,"highlightLines":"2,3-4","maxHeight":120,"downloadButton":"show"}', '<pre class="wp-block-code language-php line-numbers word-wrap" data-title="demo $0 &quot;x&quot;.php" data-start="5" data-line="2,3-4" style="max-height:120px;overflow-y:auto"><code lang="php" class="language-php">' . $code . '</code></pre>' ),
 				$this->block( '{"language":"php","lineNumbers":true,"lineNumbersStart":5,"wordWrap":true,"highlightLines":"2,3-4","maxHeight":120,"downloadButton":"show","title":"demo $0 \u0022x\u0022.php"}', $core ),
 			),
-			'language'           => array(
+			'language'             => array(
 				$this->block( '', '<pre class="wp-block-code language-php"><code lang="php" class="language-php">' . $code . '</code></pre>' ),
 				$this->block( '{"language":"php"}', $core ),
 			),
-			'title'              => array(
+			'title'                => array(
 				$this->block( '', '<pre class="wp-block-code" data-title="demo.php"><code>' . $code . '</code></pre>' ),
 				$this->block( '{"title":"demo.php"}', $core ),
 			),
-			'code syntax block'  => array(
+			'code syntax block'    => array(
 				$this->block( '{"lineNumbers":true}', '<pre class="wp-block-code" title="old.php"><code lang="php" class="language-php line-numbers">' . $code . '</code></pre>' ),
 				$this->block( '{"language":"php","lineNumbers":true,"title":"old.php"}', $core ),
 			),
-			'bad attribute name' => array(
+			'bad attribute name'   => array(
 				$this->block( '', '<pre class="wp-block-code language-php" =onclick=alert(1)><code lang="php" class="language-php">x</code></pre>' ),
 				$this->block( '{"language":"php"}', '<pre class="wp-block-code" =onclick=alert(1)><code>x</code></pre>' ),
+			),
+			'bad name, > in value' => array(
+				$this->block( '', '<pre class="wp-block-code language-php" =onclick=alert(1) data-k=\'a>b\'><code lang="php" class="language-php">x</code></pre>' ),
+				$this->block( '{"language":"php"}', '<pre class="wp-block-code" =onclick=alert(1) data-k=\'a>b\'><code>x</code></pre>' ),
+			),
+			'bad code name'        => array(
+				$this->block( '', '<pre class="wp-block-code language-php"><code lang="php" class="language-php" =onfocus=alert(1) autofocus data-k=\'a>b\'>x</code></pre>' ),
+				$this->block( '{"language":"php"}', '<pre class="wp-block-code"><code   =onfocus=alert(1) autofocus data-k=\'a>b\'>x</code></pre>' ),
+			),
+			'> in value'           => array(
+				$this->block( '', '<pre class="wp-block-code language-php"   data-k=\'a>b\'><code lang="php" class="language-php">x</code></pre>' ),
+				$this->block( '{"language":"php"}', '<pre class="wp-block-code" data-k=\'a>b\'><code>x</code></pre>' ),
 			),
 		);
 	}

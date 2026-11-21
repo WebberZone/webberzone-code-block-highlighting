@@ -132,7 +132,7 @@ class Code_Block_Migrator {
 		$custom    = self::get_custom_classes( $attrs );
 		$processor = new \WP_HTML_Tag_Processor( $html );
 
-		if ( ! $processor->next_tag( array( 'tag_name' => 'pre' ) ) ) {
+		if ( ! $processor->next_tag( array( 'tag_name' => 'PRE' ) ) ) {
 			return false;
 		}
 
@@ -160,7 +160,7 @@ class Code_Block_Migrator {
 			}
 		}
 
-		if ( ! $processor->next_tag( array( 'tag_name' => 'code' ) ) ) {
+		if ( ! $processor->next_tag( array( 'tag_name' => 'CODE' ) ) ) {
 			return false;
 		}
 
@@ -224,7 +224,7 @@ class Code_Block_Migrator {
 	public static function is_legacy( string $html, array $attrs = array() ): bool {
 		$processor = new \WP_HTML_Tag_Processor( $html );
 
-		if ( ! $processor->next_tag( array( 'tag_name' => 'pre' ) ) ) {
+		if ( ! $processor->next_tag( array( 'tag_name' => 'PRE' ) ) ) {
 			return false;
 		}
 
@@ -243,7 +243,7 @@ class Code_Block_Migrator {
 			return true;
 		}
 
-		if ( ! $processor->next_tag( array( 'tag_name' => 'code' ) ) ) {
+		if ( ! $processor->next_tag( array( 'tag_name' => 'CODE' ) ) ) {
 			return false;
 		}
 
@@ -267,7 +267,7 @@ class Code_Block_Migrator {
 	protected static function matches_old_save( string $html, array $attrs ): bool {
 		$processor = new \WP_HTML_Tag_Processor( $html );
 
-		if ( ! $processor->next_tag( array( 'tag_name' => 'pre' ) ) ) {
+		if ( ! $processor->next_tag( array( 'tag_name' => 'PRE' ) ) ) {
 			return false;
 		}
 
@@ -284,7 +284,7 @@ class Code_Block_Migrator {
 		$max_height = is_string( $style ) && preg_match( '/(?:^|;)\s*max-height:\s*(\d+)px;\s*overflow-y:\s*auto(?=;|$)/i', $style, $matches ) ? (int) $matches[1] : null;
 		$has_title  = null !== $processor->get_attribute( 'data-title' );
 
-		if ( ! $processor->next_tag( array( 'tag_name' => 'code' ) ) ) {
+		if ( ! $processor->next_tag( array( 'tag_name' => 'CODE' ) ) ) {
 			return false;
 		}
 
@@ -510,6 +510,8 @@ class Code_Block_Migrator {
 	 * Re-join the first opening tag's attributes with single spaces.
 	 *
 	 * Attribute values are kept verbatim; only the gaps between them change.
+	 * The tag is left alone unless the HTML parser reads the same attribute
+	 * names and values from both versions.
 	 *
 	 * @since 1.3.0
 	 *
@@ -519,7 +521,7 @@ class Code_Block_Migrator {
 	 */
 	protected static function tidy_opening_tag( string $html, string $tag ): string {
 		return (string) preg_replace_callback(
-			'/<' . $tag . '\b([^>]*)>/i',
+			'/<' . $tag . '\b((?:[^>"\']++|"[^"]*+"|\'[^\']*+\')*+)>/i',
 			static function ( array $matches ) use ( $tag ): string {
 				preg_match_all( '/([^\s=>\/]+)(\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+))?/', $matches[1], $parts, PREG_SET_ORDER );
 
@@ -531,7 +533,9 @@ class Code_Block_Migrator {
 				$tidied = '<' . $tag . $attributes . '>';
 
 				// Malformed markup such as `=onclick=` must not be re-parsed into a different attribute.
-				return self::get_attribute_names( $tidied ) === self::get_attribute_names( $matches[0] ) ? $tidied : $matches[0];
+				$original = self::get_tag_attributes( $matches[0] );
+
+				return null !== $original && self::get_tag_attributes( $tidied ) === $original ? $tidied : $matches[0];
 			},
 			$html,
 			1
@@ -539,21 +543,26 @@ class Code_Block_Migrator {
 	}
 
 	/**
-	 * Attribute names of a single opening tag, as the HTML parser reads them.
+	 * Attributes of a single opening tag, as the HTML parser reads them.
 	 *
 	 * @since 1.4.0
 	 *
 	 * @param  string $tag_html Opening tag HTML.
-	 * @return string[]|null
+	 * @return array<string, string|true>|null Attribute name => value, or null unless the whole string is one complete tag.
 	 */
-	protected static function get_attribute_names( string $tag_html ): ?array {
-		$processor = new \WP_HTML_Tag_Processor( $tag_html );
+	protected static function get_tag_attributes( string $tag_html ): ?array {
+		$processor = new Frontend\Tag_Processor( $tag_html );
 
-		if ( ! $processor->next_tag() ) {
+		if ( ! $processor->next_tag() || array( 0, strlen( $tag_html ) ) !== $processor->get_tag_span() ) {
 			return null;
 		}
 
-		return $processor->get_attribute_names_with_prefix( '' );
+		$attributes = array();
+		foreach ( (array) $processor->get_attribute_names_with_prefix( '' ) as $name ) {
+			$attributes[ $name ] = $processor->get_attribute( $name );
+		}
+
+		return $attributes;
 	}
 
 	/**
