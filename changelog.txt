@@ -1,3 +1,25 @@
+= 1.3.0 =
+
+Release date: 11 October 2026
+Release post: https://webberzone.com/announcements/code-block-highlighting-v1-3/
+
+**Added**
+
+* Convert Code Blocks screen, linked from the settings page banner, and `wp wzcbh migrate-code-blocks` WP-CLI command to convert code blocks saved by earlier versions in bulk.
+* Per-block color scheme option to override the global color scheme for a single code block, also stored by **Save as default**.
+* Language detection for code blocks with no language set, in server-side mode. Turn on **Detect Language** in the settings; blocks that do not clearly match a language stay plain.
+
+**Changed**
+
+* **Save as default** now also stores the block's download button setting.
+
+**Fixed**
+
+* Code blocks with a language, file name, highlighted lines, max height or custom start line showed "This block contains unexpected or invalid content" after the plugin was deactivated. Blocks saved by earlier versions convert when their post is updated.
+* In server-side mode, a custom start line was ignored when the block also had a max height or a spacing style.
+* Code blocks inside synced patterns, widgets or templates were not highlighted when the post content itself had no code block.
+* Opening a post in the editor applied the saved block defaults to its existing code blocks and marked the post as changed. Defaults now apply only to newly inserted blocks.
+
 = 1.2.3 =
 
 Release date: 3 October 2026

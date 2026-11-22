@@ -184,14 +184,13 @@ Release date: 21 November 2026
 
 **Added**
 
+* Dark mode color scheme. Pick a second theme for dark mode and it switches automatically, following the visitor's device setting or your site's dark mode switch. A block's own color scheme still wins. Use the new `wzcbh_dark_mode_selector` filter to set the selector from code.
+* Diff highlighting. A new Show as diff toggle colors lines starting with + and - as added and removed while keeping the block's language highlighting, in both client-side and server-side modes. Diff is also available as a language for whole patches, and diff snippets download as `.diff`.
+* Kujo language support in the language picker, with `.kujo` snippet downloads, in both client-side and server-side modes.
 * In server-side mode, code blocks too large to highlight on the server now fall back to Prism.js highlighting in the browser instead of plain text. Prism.js loads only on pages that need it. Turn this off with the new `wzcbh_server_prism_fallback` filter; blocks larger than `wzcbh_prism_fallback_max_bytes` (default 512KB) stay plain text.
 * Per-page limit on the code sent to the browser fallback, filterable with the new `wzcbh_prism_fallback_page_budget` (default 1MB; 0 turns it off). Blocks beyond it stay plain text.
 * Per-page limit on the amount of code highlighted on the server, so pages with many large code blocks no longer slow down. Blocks beyond the limit use the browser fallback. The limit and the fallback apply to front-end pages only; feeds, the REST API, AJAX, WP-CLI and admin screens keep the previous behavior. The limit is filterable with the new `wzcbh_server_highlight_request_budget` (default 256KB; 0 turns it off).
 * Per-page limit on server-side language detection, so pages with many untagged code blocks no longer slow down when uncached. Blocks beyond the limit show as plain text and are detected on a later visit. Front-end pages only; filterable with the new `wzcbh_auto_detect_request_limit` (default 25; 0 turns it off).
-* Dark mode color scheme. Pick a second theme for dark mode and it switches automatically, following the visitor's device setting or your site's dark mode switch. Use the new `wzcbh_dark_mode_selector` filter to set the selector from code.
-* Diff highlighting. A new Show as diff toggle colors lines starting with + and - as added and removed while keeping the block's language highlighting, in both client-side and server-side modes. Diff is also available as a language for whole patches.
-* Kujo language support in the language picker, with `.kujo` snippet downloads, in both client-side and server-side modes.
-* Save Changes button in the settings navigation.
 
 **Changed**
 
@@ -201,39 +200,17 @@ Release date: 21 November 2026
 
 **Fixed**
 
-* A very large custom start line number broke line numbers and line highlighting. The start line is now limited to 1,000,000 and the max height to 100,000 pixels.
+* A very large custom start line number caused a fatal error in server-side mode when line numbers were on. The start line is now limited to 1,000,000 and the max height to 100,000 pixels.
 * In server-side mode, HTML entities typed as code text, such as `&lt;`, showed as the character they stand for in blocks that were not highlighted.
 * The download button kept an executable extension such as `.exe` or `.bat` from the block's file name. Such an extension is now replaced with the language's extension, and other file names download as before. The list is filterable with the new `wzcbh_download_blocked_extensions`.
-* A malformed language value on a code block could stop Prism.js highlighting every block on the page.
+* A malformed `lang` attribute on a code element could stop Prism.js highlighting every code block on the page.
 * Code containing the text `language-text` was changed in blocks set to Plain text.
 * Crafted code block markup saved by a user allowed to post unfiltered HTML could turn part of one attribute into a new one, such as an event handler, when the plugin added its own attributes. The code block's tags are now parsed per the HTML standard, and event handler attributes are removed from them.
 * In server-side mode, a closing code tag inside an HTML comment or other raw text in the saved markup ended the code block early, and the rest of that markup was output unescaped.
 * Converting code blocks from the Convert Code Blocks screen or with WP-CLI could turn malformed attribute markup into a different attribute. Such markup is now left as it is.
-* Draft, private and password-protected synced patterns were scanned for code blocks when deciding which styles to load.
+* Draft, private and password-protected synced patterns made the plugin's styles and scripts load on pages that did not need them.
 * Backslashes were stripped from settings values when they were saved from the settings page or setup wizard.
-* A single-value setting that received an array, for example from a modified form submission, could trigger a PHP error on save.
-
-= 1.3.0 =
-
-Release date: 11 October 2026
-Release post: https://webberzone.com/announcements/code-block-highlighting-v1-3/
-
-**Added**
-
-* Convert Code Blocks screen, linked from the settings page banner, and `wp wzcbh migrate-code-blocks` WP-CLI command to convert code blocks saved by earlier versions in bulk.
-* Per-block color scheme option to override the global color scheme for a single code block, also stored by **Save as default**.
-* Language detection for code blocks with no language set, in server-side mode. Turn on **Detect Language** in the settings; blocks that do not clearly match a language stay plain.
-
-**Changed**
-
-* **Save as default** now also stores the block's download button setting.
-
-**Fixed**
-
-* Code blocks with a language, file name, highlighted lines, max height or custom start line showed "This block contains unexpected or invalid content" after the plugin was deactivated. Blocks saved by earlier versions convert when their post is updated.
-* In server-side mode, a custom start line was ignored when the block also had a max height or a spacing style.
-* Code blocks inside synced patterns, widgets or templates were not highlighted when the post content itself had no code block.
-* Opening a post in the editor applied the saved block defaults to its existing code blocks and marked the post as changed. Defaults now apply only to newly inserted blocks.
+* A single-value setting that received an array, for example from a modified form submission, could trigger a PHP warning on save.
 
 = Earlier versions =
 
@@ -242,4 +219,4 @@ For the changelog of earlier versions, please refer to the [releases page on Git
 == Upgrade Notice ==
 
 = 1.4.0 =
-Large server-side code blocks now fall back to browser highlighting, with a per-page server highlighting limit, plus several fixes. No action needed.
+Adds a dark mode color scheme, diff highlighting and Kujo. Large server-side code blocks now fall back to browser highlighting, and code block handling is hardened. No action needed.
