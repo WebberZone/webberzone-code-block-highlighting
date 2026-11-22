@@ -180,7 +180,7 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 = 1.4.0 =
 
-Release date: 21 November 2026
+Release date: 22 November 2026
 
 **Added**
 
