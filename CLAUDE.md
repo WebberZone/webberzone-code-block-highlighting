@@ -50,6 +50,22 @@ pnpm run test:unit      # Jest: core/code validation with and without the plugin
 pnpm run zip            # Plugin zip
 ```
 
+## Local test sites
+
+Push changes from this repo to Herd installs with `dev-tools/deploy-plugin.sh` (from `~/Documents/Dev/GitHub`, not from inside the plugin directory):
+
+```bash
+dev-tools/deploy-plugin.sh --site network webberzone-code-block-highlighting
+dev-tools/deploy-plugin.sh --site single webberzone-code-block-highlighting
+```
+
+Default sync is `includes/` and `docs/` only — enough for most PHP/block work. Add `--all` when the main plugin file, `readme.txt`, or root `package.json` / `composer.json` version markers change. Use `--pull --site …` to bring site edits back into the repo. Do not copy single files into `wp-content/plugins/` by hand.
+
+| Site | URL |
+|---|---|
+| Multisite | <https://wpnetwork.test/> (`--site network`) |
+| Single | <https://wpsingle.test/> (`--site single`) |
+
 ## Unit tests
 
 Keep PHPUnit tests to a minimum. Write PHPUnit tests only for reusable features; skip one-off functionality. A test earns its place only if it would catch a regression that could ship unnoticed and hurt users:
@@ -109,7 +125,7 @@ Always `require` the generated `.asset.php` manifest before enqueueing block scr
 
 **Theme colour extraction** — `Settings::extract_theme_colors()` is the single parser for a theme's base `background`/`color`, used by both `enqueue_editor_canvas_styles()` (unminified path) and `Styles_Handler::add_root_css_vars()` (minified + RTL path). Two load-bearing requirements across the 21 themes: `@media`/`@supports` blocks must be stripped first (several themes end with a forced-colors block declaring `background: window`), and selector lists must be evaluated per comma-separated part (Gruvbox et al. declare the background on `:not(pre)>code[class*="language-"], pre[class*="language-"]`). Transparent backgrounds resolve to an empty string so callers fall back to their own default — Synthwave '84 is the only theme that does this.
 
-**File name tab** — `maybe_add_file_tab()` wraps the block in `.wzcbh-code-wrapper` with a `.wzcbh-file-tab` ahead of it in both modes, so markup is identical; in client mode Prism's toolbar plugin wraps the `<pre>` in `.code-toolbar` at runtime, landing inside our wrapper. Gated on `file-name-style` = `tab`; when set, the server-mode toolbar title and the `wzcbh-title` Prism toolbar button are both suppressed so the name never renders twice. The seam-removal CSS deliberately uses an unqualified `> pre` — a block with no language never gets a `language-*` class.
+**File name tab** — `maybe_add_file_tab()` wraps the block in `.wzcbh-code-wrapper` with a `.wzcbh-file-tab` ahead of it in both modes, so markup is identical; in client mode Prism's toolbar plugin wraps the `<pre>` in `.code-toolbar` at runtime, landing inside our wrapper. Gated on `file-name-style` = `tab`; when set, the server-mode toolbar title and the `wzcbh-title` Prism toolbar button are both suppressed so the name never renders twice. The seam-removal CSS deliberately uses an unqualified `> pre` because the wrapper only holds the tab and the block (including Prism's `.code-toolbar` wrapper).
 
 **Download button** — the global `download-button` setting and the block's tri-state `downloadButton` attribute (`''` inherit / `'show'` / `'hide'`) resolve in `render_code_block()` into one `data-wzcbh-download="{filename}"` attribute, so neither JS surface repeats the logic. Two ordering traps: the filename must derive from `$params['language']` *before* either render path mutates it (client sets `''` for `text`, server sets `'none'`), and the code text must be read from a clone with `.line-numbers-rows` removed — the gutter lives inside `<code>` with `display:block` rows, so a direct read appends one blank line per row. `get_language_extension()` values starting with a dot are appended to `snippet`; a value without one is the whole file name (`docker` → `Dockerfile`). A title is `sanitize_file_name()`d and kept as in 1.3.0 unless its last extension is in `BLOCKED_DOWNLOAD_EXTENSIONS` (executables: `exe`, `bat`, `msi`, `jar`, `dmg`, `iso` …), a const keyed array checked with `isset()`. `wzcbh_download_blocked_extensions` is applied only when something is hooked to it (`has_filter()`), then cached per request; then that extension is replaced with the language's dotted extension, else `.txt`. `wzcbh_download_extensions` is unchanged from 1.3.0.
 

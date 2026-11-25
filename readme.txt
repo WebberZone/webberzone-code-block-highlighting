@@ -4,7 +4,7 @@ Donate link: https://wzn.io/donate-wz
 Tags: syntax highlighting, code block, prism, gutenberg, code highlighting
 Requires at least: 6.6
 Tested up to: 7.2
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -178,6 +178,12 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 == Changelog ==
 
+= 1.4.1 =
+
+**Fixed**
+
+* Code blocks with no language set did not receive the active colour scheme, because theme CSS is scoped to `language-*` classes. They now get `language-none`, same as Plain text blocks.
+
 = 1.4.0 =
 
 Release date: 22 November 2026
@@ -218,6 +224,9 @@ Release post: https://webberzone.com/announcements/code-block-highlighting-v1-4/
 For the changelog of earlier versions, please refer to the [releases page on GitHub](https://github.com/WebberZone/webberzone-code-block-highlighting/releases).
 
 == Upgrade Notice ==
+
+= 1.4.1 =
+Fixes colour scheme styling for code blocks with no language set. No action needed.
 
 = 1.4.0 =
 Adds a dark mode color scheme, diff highlighting and Kujo. Large server-side code blocks now fall back to browser highlighting, and code block handling is hardened. No action needed.

@@ -143,8 +143,8 @@ div.code-toolbar > .toolbar > .toolbar-item > span {
 	border-radius: var(--wzcbh-tab-radius) var(--wzcbh-tab-radius) 0 0;
 }
 
-/* Unqualified `pre` on purpose: a block with no language set never receives a
-   `language-*` class, and the wrapper only ever holds the tab and the block. */
+/* Unqualified `pre` on purpose: the file-tab wrapper only ever holds the tab
+   and the block, including when Prism wraps the <pre> in .code-toolbar. */
 .wzcbh-code-wrapper > pre,
 .wzcbh-code-wrapper > .code-toolbar > pre {
 	margin-top: 0;

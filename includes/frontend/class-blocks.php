@@ -478,9 +478,9 @@ class Blocks {
 			$params['language'] = self::detect_language( $block_content );
 		}
 
-		// Resolved before either render path runs: both mutate `language` ('' in
-		// client mode, 'none' in server mode) for plain-text blocks, which would
-		// lose the .txt extension if the filename were derived afterwards.
+		// Resolved before either render path runs: both render paths map '' and
+		// 'text' to 'none' for plain-text blocks, which would lose the .txt
+		// extension if the filename were derived afterwards.
 		$params['download']          = self::is_download_enabled( (string) ( $attrs['downloadButton'] ?? '' ) );
 		$params['download_filename'] = self::get_download_filename( $params['title'], $params['diff'] ? 'diff' : $params['language'] );
 
@@ -1094,9 +1094,10 @@ class Blocks {
 		$max_height         = $params['max_height'];
 
 		// Prism has no 'text' grammar; 'none' gets theme styling without
-		// highlighting. Markup saved by 1.2.3 and earlier carries language-text.
+		// highlighting. Empty language is treated the same so theme CSS applies.
+		// Markup saved by 1.2.3 and earlier carries language-text.
 		$rename_text = 'text' === $language && false !== strpos( $block_content, 'language-text' );
-		if ( 'text' === $language ) {
+		if ( in_array( $language, array( '', 'text' ), true ) ) {
 			$language = 'none';
 		}
 
@@ -1190,9 +1191,10 @@ class Blocks {
 		$diff               = ! empty( $params['diff'] );
 
 		// There is no 'text' grammar; 'none' matches the client-side class names.
+		// Empty language is treated the same so theme CSS applies.
 		// Markup saved by 1.2.3 and earlier carries language-text.
 		$rename_text = 'text' === $language && false !== strpos( $block_content, 'language-text' );
-		if ( 'text' === $language ) {
+		if ( in_array( $language, array( '', 'text' ), true ) ) {
 			$language = 'none';
 		}
 

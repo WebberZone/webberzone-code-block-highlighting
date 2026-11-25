@@ -509,6 +509,22 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Blocks with no language set receive language-none so theme CSS applies.
+	 *
+	 * @param string $mode Highlighting mode.
+	 *
+	 * @dataProvider data_modes
+	 */
+	public function test_empty_language_gets_none_class( $mode ) {
+		$this->set_option( 'highlighting-mode', $mode );
+
+		$output = $this->render( array() );
+
+		$this->assertStringContainsString( 'language-none', $output );
+		$this->assertStringContainsString( 'data-wzcbh-download="snippet.txt"', $output );
+	}
+
+	/**
 	 * Single-quoted classes, and a `<code>` with no closing tag, in both modes.
 	 *
 	 * @return array<string, array{string, string}>

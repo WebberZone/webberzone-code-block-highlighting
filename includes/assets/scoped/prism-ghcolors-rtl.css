@@ -58,7 +58,8 @@
 .wzcbh-theme-prism-ghcolors code[class*="language-"],
 .wzcbh-theme-prism-ghcolors pre[class*="language-"] {
 	color: #393a34;
-	font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier,
+	font-family:
+		"Consolas", "Bitstream Vera Sans Mono", "Courier New", Courier,
 		monospace;
 	direction: rtl;
 	text-align: right;

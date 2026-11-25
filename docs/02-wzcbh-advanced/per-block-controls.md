@@ -17,6 +17,8 @@ Each code block has its own highlighting settings, available in the **Syntax Hig
 
 A dropdown listing 40+ supported languages. Selecting a language applies the correct Prism grammar (or highlight.php language in server-side mode). Choosing **Plain Text** renders the code with the active theme's styling but no syntax highlighting.
 
+The list includes [Kujo](https://github.com/kujolang/kujo). Prism.js and highlight.php do not support it, so the plugin ships its own grammar for each mode. It colors keywords, strings, numbers, comments, function names, operators and punctuation, and Kujo snippets download as `.kujo` files.
+
 The [`wzcbh_languages`](https://webberzone.dev/webberzone-code-block-highlighting/hooks/wzcbh_languages/) filter can be used to add or remove entries from the dropdown. Adding a language to the filter only affects the UI dropdown; the corresponding Prism.js grammar must also be available in `frontend.js` for the language to highlight correctly in client-side mode.
 
 ## Line Numbers
