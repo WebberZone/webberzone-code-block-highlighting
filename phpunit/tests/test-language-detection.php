@@ -110,7 +110,7 @@ class Test_Language_Detection extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Uncached detections are capped per page request; cache hits are free, and other requests are uncapped.
+	 * Uncached detections are capped per request; cache hits are free.
 	 */
 	public function test_uncached_detections_are_capped_per_page_request() {
 		$limit  = 2;
@@ -146,7 +146,7 @@ class Test_Language_Detection extends WP_UnitTestCase {
 		Blocks::reset_server_highlight_budget();
 		$limit = 1;
 		$render( 6, 8 );
-		$this->assertCount( 9, $this->cached_detections(), 'feeds are uncapped' );
+		$this->assertCount( 7, $this->cached_detections(), 'feeds respect the detect cap' );
 
 		remove_filter( 'wzcbh_auto_detect_request_limit', $filter );
 	}

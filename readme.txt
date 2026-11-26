@@ -183,6 +183,8 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 **Fixed**
 
 * Code blocks with no language set did not receive the active colour scheme, because theme CSS is scoped to `language-*` classes. They now get `language-none`, same as Plain text blocks.
+* The per-request limits on server-side highlighting and language detection now also apply to feeds, the REST API, AJAX, admin and WP-CLI, not just front-end pages.
+* The downloaded file name now uses the block language's extension when the block's file name ends in a different one. For example, `x.jse` on a plain-text block downloads as `x.txt`.
 
 = 1.4.0 =
 

@@ -615,10 +615,11 @@ class Blocks {
 	 * Build the file name offered when a snippet is downloaded.
 	 *
 	 * Uses the block's file name / title when one is set, otherwise `snippet.{ext}` from the
-	 * language slug. An executable title extension is replaced with the language's.
+	 * language slug. A title extension that does not belong to the block language is replaced with the language's.
 	 *
 	 * @since 1.2.0
 	 * @since 1.4.0 Executable title extensions are replaced.
+	 * @since 1.4.1 Only the block language's extensions, aliases and plain-text ones are kept.
 	 *
 	 * @param  string $title    The block file name / title.
 	 * @param  string $language The block language slug.
@@ -626,12 +627,13 @@ class Blocks {
 	 */
 	protected static function get_download_filename( string $title, string $language ): string {
 		if ( '' !== $title ) {
-			$filename = sanitize_file_name( $title );
+			$filename = sanitize_file_name( (string) preg_replace( '/\p{Cf}/u', '', $title ) );
 
 			if ( '' !== $filename ) {
-				$dot = strrpos( $filename, '.' );
+				$dot       = strrpos( $filename, '.' );
+				$extension = false === $dot ? '' : strtolower( substr( $filename, $dot + 1 ) );
 
-				if ( false === $dot || ! self::is_blocked_download_extension( strtolower( substr( $filename, $dot + 1 ) ) ) ) {
+				if ( ! preg_match( '/^[a-z][a-z0-9-]{0,19}$/', $extension ) || self::is_allowed_download_extension( $extension, $language ) ) {
 					return $filename;
 				}
 
@@ -649,6 +651,63 @@ class Blocks {
 
 		// A value without a leading dot is already a complete file name (Dockerfile).
 		return 0 === strpos( $extension, '.' ) ? 'snippet' . $extension : $extension;
+	}
+
+	/**
+	 * Extra download extensions that share a Prism language slug.
+	 *
+	 * @since 1.4.1
+	 *
+	 * @var array<string, array<int, string>>
+	 */
+	private const DOWNLOAD_EXTENSION_ALIASES = array(
+		'apacheconf' => array( 'conf' ),
+		'bash'       => array( 'sh', 'zsh' ),
+		'c'          => array( 'h' ),
+		'cpp'        => array( 'hpp', 'hxx', 'cc', 'hh' ),
+		'csharp'     => array( 'csx' ),
+		'javascript' => array( 'mjs', 'cjs' ),
+		'jsx'        => array( 'mjs' ),
+		'markup'     => array( 'html', 'htm', 'xhtml', 'xml' ),
+		'nginx'      => array( 'conf' ),
+		'perl'       => array( 'pl' ),
+		'powershell' => array( 'psm1' ),
+		'python'     => array( 'pyw' ),
+		'ruby'       => array( 'rake' ),
+		'sass'       => array( 'scss' ),
+		'typescript' => array( 'mts', 'cts' ),
+		'tsx'        => array( 'mts' ),
+		'yaml'       => array( 'yml', 'yaml' ),
+	);
+
+	/**
+	 * Whether a download title may keep this extension for the block language.
+	 *
+	 * @since 1.4.1
+	 *
+	 * @param  string $extension Lowercase extension without the leading dot.
+	 * @param  string $language  The block language slug.
+	 * @return bool
+	 */
+	protected static function is_allowed_download_extension( string $extension, string $language ): bool {
+		if ( self::is_blocked_download_extension( $extension ) ) {
+			return false;
+		}
+
+		if ( in_array( $extension, array( 'txt', 'md', 'log' ), true ) ) {
+			return true;
+		}
+
+		$language_extension = self::get_language_extension( $language );
+		if ( '' !== $language_extension && 0 === strpos( $language_extension, '.' ) ) {
+			if ( strtolower( ltrim( $language_extension, '.' ) ) === $extension ) {
+				return true;
+			}
+		}
+
+		$aliases = self::DOWNLOAD_EXTENSION_ALIASES[ $language ] ?? array();
+
+		return in_array( $extension, $aliases, true );
 	}
 
 	/**
@@ -1218,23 +1277,21 @@ class Blocks {
 		// ── Run highlight.php ──────────────────────────────────────────────────
 		$highlighted = null;
 		if ( $hljs_lang ) {
-			$size     = strlen( $plain_code );
-			$fallback = self::is_page_request();
+			$size = strlen( $plain_code );
+			$page = self::is_page_request();
 
-			if ( $size <= self::get_highlight_size_limit( $language ) && ( ! $fallback || self::has_highlight_budget( $size ) ) ) {
+			if ( $size <= self::get_highlight_size_limit( $language ) && self::has_highlight_budget( $size ) ) {
+				self::$highlight_budget_used += $size;
 				try {
 					$highlighted = $diff || 'diff' === $language
 						? self::highlight_diff( $plain_code, $diff ? $hljs_lang : '', $diff ? $language : '' )
 						: self::remap_token_classes( self::get_highlighter()->highlight( $hljs_lang, $plain_code )->value );
-					if ( $fallback ) {
-						self::$highlight_budget_used += $size;
-					}
 				} catch ( \Throwable $e ) {
-					$fallback = $fallback && array_key_exists( $language, self::get_languages() );
+					$page = $page && array_key_exists( $language, self::get_languages() );
 				}
 			}
 
-			if ( null === $highlighted && $fallback && self::is_prism_fallback_allowed( $size ) ) {
+			if ( null === $highlighted && $page && self::is_prism_fallback_allowed( $size ) ) {
 				Styles_Handler::enqueue_prism_fallback();
 
 				$params['client_fallback'] = true;
@@ -2134,13 +2191,10 @@ class Blocks {
 			return $cached;
 		}
 
-		// Past the cap the block stays plain and uncached, so a later request detects it.
-		if ( self::is_page_request() ) {
-			if ( ! self::has_auto_detect_budget() ) {
-				return '';
-			}
-			++self::$auto_detect_used;
+		if ( ! self::has_auto_detect_budget() ) {
+			return '';
 		}
+		++self::$auto_detect_used;
 
 		$language = '';
 		try {

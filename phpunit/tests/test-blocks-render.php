@@ -264,10 +264,25 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 		$this->assertSame( 0, substr_count( $second, 'class="token' ) );
 		$this->assertMatchesRegularExpression( '/<pre[^>]*\sdata-wzcbh-client="1"[^>]*>/', $second );
 		$this->assertStringContainsString( 'class="language-php"', $second );
+
+		$this->go_to( get_feed_link() );
+		Blocks::reset_server_highlight_budget();
+		$heavy = array(
+			'language' => 'php',
+			'code'     => str_repeat( '$x = 1;' . str_repeat( ' ', 40 ) . "\n", 2600 ),
+		);
+		$feed_first  = $this->render( $heavy );
+		$feed_second = $this->render( $heavy );
+		$feed_third  = $this->render( $heavy );
+
+		$this->assertGreaterThan( 100000, strlen( $heavy['code'] ) );
+		$this->assertStringContainsString( 'class="token', $feed_first );
+		$this->assertStringContainsString( 'class="token', $feed_second );
+		$this->assertSame( 0, substr_count( $feed_third, 'class="token' ), 'feed blocks past the server budget stay plain' );
 	}
 
 	/**
-	 * The download file name derives from the language, and title extensions are allowlisted.
+	 * The download file name derives from the language, and title extensions are allowlisted per language.
 	 *
 	 * @param string $language Language slug.
 	 * @param string $expected Expected file name.
@@ -296,7 +311,7 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 			'javascript'           => array( 'javascript', 'snippet.js' ),
 			'docker'               => array( 'docker', 'Dockerfile' ),
 			'unmapped'             => array( 'graphql', 'snippet.graphql' ),
-			'title ext'            => array( 'javascript', 'app.ts', 'app.ts' ),
+			'title ext'            => array( 'javascript', 'app.js', 'app.ts' ),
 			'unmapped title ext'   => array( 'javascript', 'app.mjs', 'app.mjs' ),
 			'compound name'        => array( 'yaml', 'docker-compose.yaml', 'docker-compose.yaml' ),
 			'whole name title'     => array( 'docker', 'Dockerfile', 'Dockerfile' ),
@@ -305,6 +320,14 @@ class Test_Blocks_Render extends WP_UnitTestCase {
 			'executable'           => array( 'php', 'evil.php', 'evil.exe' ),
 			'executable uppercase' => array( 'php', 'UPPER.php', 'UPPER.EXE' ),
 			'batch no lang ext'    => array( 'docker', 'fix.txt', 'fix.bat' ),
+			'jse on text'          => array( 'text', 'x.txt', 'x.jse' ),
+			'ps1 on text'          => array( 'text', 'x.txt', 'x.ps1' ),
+			'js on javascript'     => array( 'javascript', 'x.js', 'x.js' ),
+			'js on text'           => array( 'text', 'x.txt', 'x.js' ),
+			'bidi override'        => array( 'text', 'xtxt.txt', "x\u{202E}txt.jse" ),
+			'hyphenated ext'       => array( 'text', 'x.txt', 'x.appref-ms' ),
+			'trailing zero-width'  => array( 'text', 'x.txt', "x.js.\u{200B}" ),
+			'alias on markup'      => array( 'markup', 'data.xml', 'data.xml' ),
 		);
 	}
 
