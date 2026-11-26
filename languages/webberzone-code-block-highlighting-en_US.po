@@ -268,7 +268,7 @@ msgstr "WebberZone plugins"
 msgid "Follow us"
 msgstr "Follow us"
 
-#: includes/frontend/class-blocks.php:1356
+#: includes/frontend/class-blocks.php:1415
 #: includes/frontend/class-styles-handler.php:455
 #: includes/blocks/build/frontend.js:3
 #: includes/blocks/src/js/frontend.js:329
@@ -398,7 +398,7 @@ msgstr ""
 msgid "Choose the syntax highlighting theme. The same Prism.js theme is used in both client-side and server-side modes."
 msgstr ""
 
-#: includes/frontend/class-blocks.php:1378
+#: includes/frontend/class-blocks.php:1437
 #: includes/frontend/class-styles-handler.php:451
 msgid "Copy"
 msgstr ""
@@ -444,14 +444,14 @@ msgid "Toolbar label"
 msgstr ""
 
 #. translators: %s: file name of the downloaded snippet
-#: includes/frontend/class-blocks.php:1391
+#: includes/frontend/class-blocks.php:1450
 #: includes/blocks/build/frontend.js:2
 #: includes/blocks/src/js/frontend.js:218
 #, php-format,js-format
 msgid "Download code as %s"
 msgstr ""
 
-#: includes/frontend/class-blocks.php:1395
+#: includes/frontend/class-blocks.php:1454
 #: includes/blocks/build/frontend.js:2
 #: includes/blocks/src/js/frontend.js:226
 msgid "Download"
@@ -621,7 +621,7 @@ msgid "CSS selector that is present on a parent element, usually the html or bod
 msgstr ""
 
 #. translators: %s: language name, such as PHP
-#: includes/frontend/class-blocks.php:1927
+#: includes/frontend/class-blocks.php:1986
 #, php-format
 msgid "%s diff"
 msgstr ""
