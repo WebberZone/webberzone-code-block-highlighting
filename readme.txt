@@ -180,6 +180,8 @@ Please report security bugs found in the source code of the WebberZone Code Bloc
 
 = 1.4.1 =
 
+Release date: 26 November 2026
+
 **Fixed**
 
 * Code blocks with no language set did not receive the active colour scheme, because theme CSS is scoped to `language-*` classes. They now get `language-none`, same as Plain text blocks.
@@ -228,7 +230,7 @@ For the changelog of earlier versions, please refer to the [releases page on Git
 == Upgrade Notice ==
 
 = 1.4.1 =
-Fixes colour scheme styling for code blocks with no language set. No action needed.
+Fixes colour scheme styling for code blocks with no language set, applies the server-side highlighting limits to feeds and the REST API, and corrects downloaded file names. No action needed.
 
 = 1.4.0 =
 Adds a dark mode color scheme, diff highlighting and Kujo. Large server-side code blocks now fall back to browser highlighting, and code block handling is hardened. No action needed.
